@@ -50,7 +50,7 @@ export default function Register() {
 
       router.push("/auth/signup/success")
     } catch (error: any) {
-      setError("Este e-mail já foi cadastrado")
+      setError("Este email já foi cadastrado")
     } finally {
       setLoading(false)
     }
@@ -60,8 +60,16 @@ export default function Register() {
     <div
       className={`${inter.className} flex items-center lg:justify-center lg:h-screen bg-slate-50`}
     >
-      <Card className="w-[400px] flex-row transition-all duration-300 ">
-        <CardTitle className="pt-10 text-center">
+      <Card className="w-[400px] flex-row transition-all duration-300">
+        <CardTitle className="flex pt-10 items-center justify-center">
+          <Image
+            className="px-6"
+            src="https://simplefinance-prod.vercel.app/logo.svg"
+            width={400}
+            height={100}
+            priority
+            alt="Simple Finance Logo"
+          ></Image>
         </CardTitle>
         <CardDescription className="pt-4 text-center">
           Faça seu registro abaixo

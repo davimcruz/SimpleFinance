@@ -1,5 +1,6 @@
 import Router from "next/router"
 import { Inter } from "next/font/google"
+import Image from "next/image"
 import {
   Card,
   CardContent,
@@ -17,13 +18,21 @@ const goSignIn = () => {
   Router.push("/auth/signin")
 }
 
-export default function SuccessLogin() {
+export default function SuccessRegister() {
   return (
     <div
       className={`${inter.className} flex items-center lg:justify-center lg:h-screen bg-slate-50`}
     >
       <Card className="w-[400px] flex-row transition-all duration-300 ">
-        <CardTitle className="pt-10 text-center">Sucesso!</CardTitle>
+        <CardTitle className="flex pt-10 items-center justify-center">
+          <Image
+            className="px-6"
+            src="https://simplefinance-prod.vercel.app/logo.svg"
+            width={400}
+            height={100}
+            alt="Simple Finance Logo"
+          ></Image>
+        </CardTitle>
         <CardDescription className="pt-4 text-center">
           Seu cadastro foi realizado com sucesso
         </CardDescription>
