@@ -10,10 +10,9 @@ const options = {
     },
     servers: [
       {
-        url: [
+        url: 
           "http://localhost:3000",
-          "https://simplefinance-prod.vercel.app/",
-        ],
+        
       },
     ],
   },

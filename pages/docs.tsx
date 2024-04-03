@@ -3,7 +3,7 @@ import SwaggerUI from "swagger-ui-react"
 import "swagger-ui-react/swagger-ui.css"
 
 const DocsPage: React.FC = () => {
-  return <SwaggerUI url="/api/docs" />
+  return <SwaggerUI url="/api/register" />
 }
 
 export default DocsPage
