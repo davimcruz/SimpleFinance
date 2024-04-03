@@ -40,7 +40,8 @@ export default function Register() {
       }
 
       router.push("/auth/signin")
-    } catch (error) {
+    } catch (error: any) {
+      // Adicionando uma verificação de tipo explícita para a variável error
       setError(error.message)
     }
   }
@@ -57,7 +58,6 @@ export default function Register() {
         <Separator className="mt-10"></Separator>
         <CardContent className="pt-10 pl-4">
           <form onSubmit={handleSubmit}>
-            {" "}
             {/* Adicionado o evento onSubmit ao formulário */}
             <div className="grid w-full max-w-sm items-center gap-5">
               <div>
