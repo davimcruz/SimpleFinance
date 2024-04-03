@@ -98,7 +98,7 @@ export default function LoginPage() {
               type="submit"
               disabled={loading}
             >
-              {loading ? "Logando..." : "Logar"}{" "}
+              {loading ? "Logando..." : "Logar"}
             </Button>
             {error && (
               <p className="text-red-500 mt-4 text-center transition duration-300 ease-in-out">

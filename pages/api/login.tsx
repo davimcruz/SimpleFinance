@@ -1,5 +1,10 @@
 import { NextApiRequest, NextApiResponse } from "next"
-import mysql from "mysql"
+import mysql, { Connection, MysqlError, QueryFunction } from "mysql"
+
+interface Usuario {
+  email: string
+  senha: string
+}
 
 const dbConfig = {
   host: "mysql.freehostia.com",
@@ -8,59 +13,63 @@ const dbConfig = {
   database: "davmac53_simplefinance",
 }
 
+const queryAsync = (
+  connection: Connection,
+  query: string,
+  values: any[]
+): Promise<any> => {
+  return new Promise((resolve, reject) => {
+    connection.query(
+      query,
+      values,
+      (err: MysqlError | null, results?: any[]) => {
+        if (err) {
+          reject(err)
+        } else {
+          resolve(results)
+        }
+      }
+    )
+  })
+}
+
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
-  if (req.method === "POST") {
-    const { email, password } = req.body
-    const connection = mysql.createConnection(dbConfig)
+  if (req.method !== "POST") {
+    return res.status(405).json({ error: "Método não permitido" })
+  }
 
-    console.log("Conectando ao MySQL...")
+  const { email, password } = req.body
 
-    connection.connect((err) => {
-      if (err) {
-        console.error("Erro ao conectar ao MySQL:", err)
-        res.status(500).json({ error: "Erro ao conectar ao banco de dados" })
-        return
-      }
+  const connection = mysql.createConnection(dbConfig)
 
-      const query = `SELECT * FROM usuarios WHERE email = ?`
-      console.log("Executando query:", query)
-
-      connection.query(query, [email], (err, rows) => {
-        if (err) {
-          console.error("Erro ao verificar email:", err)
-          res.status(500).json({
-            error: "Erro ao verificar email no banco de dados",
-          })
-          connection.end()
-          return
-        }
-
-        console.log("Resultado da query:", rows)
-
-        if (rows.length === 0) {
-          console.log("Email não registrado")
-          res.status(401).json({ error: "Email não registrado" })
-          connection.end()
-          return
-        }
-
-        const user = rows[0]
-        if (user.senha !== password) {
-          console.log("Senha incorreta")
-          res.status(401).json({ error: "Senha incorreta" })
-          connection.end()
-          return
-        }
-
-        console.log("Login bem-sucedido")
-        res.status(200).json({ message: "Login bem-sucedido" })
-        connection.end()
+  try {
+    await new Promise<void>((resolve, reject) => {
+      connection.connect((err: MysqlError | null) => {
+        if (err) reject(err)
+        else resolve()
       })
     })
-  } else {
-    res.status(405).json({ error: "Método não permitido" })
+
+    const query = "SELECT email, senha FROM usuarios WHERE email = ?"
+    const results = await queryAsync(connection, query, [email])
+
+    if (results.length === 0) {
+      return res.status(401).json({ error: "Email não registrado" })
+    }
+
+    const user: Usuario = results[0]
+    if (user.senha !== password) {
+      return res.status(401).json({ error: "Senha incorreta" })
+    }
+
+    return res.status(200).json({ message: "Login bem-sucedido" })
+  } catch (error) {
+    console.error("Erro:", error)
+    return res.status(500).json({ error: "Erro ao processar a requisição" })
+  } finally {
+    connection.end()
   }
 }

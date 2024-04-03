@@ -32,6 +32,9 @@
     "next-auth": "^4.24.7",
     "react": "^18",
     "react-dom": "^18",
+    "swagger-jsdoc": "^6.2.8",
+    "swagger-ui-express": "^5.0.0",
+    "swagger-ui-react": "^5.13.0",
     "tailwind-merge": "^2.2.1",
     "tailwindcss-animate": "^1.0.7",
     "uuid": "^9.0.1"
@@ -43,6 +46,8 @@
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",
+    "@types/swagger-jsdoc": "^6.0.4",
+    "@types/swagger-ui-react": "^4.18.3",
     "@types/uuid": "^9.0.8",
     "autoprefixer": "^10.0.1",
     "eslint": "^8",
