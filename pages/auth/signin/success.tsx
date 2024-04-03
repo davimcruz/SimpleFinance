@@ -42,7 +42,7 @@ export default function SuccessLogin() {
             onClick={goDashboard}
             className="mt-8 w-full transition duration-300 ease-in-out"
           >
-            Ir para o Login
+            Ir para Dashboard
           </Button>
         </CardContent>
       </Card>
