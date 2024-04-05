@@ -1,4 +1,6 @@
 import Link from "next/link"
+import { useState, useEffect } from "react"
+import { useRouter } from "next/router"
 import { Inter } from "next/font/google"
 import "../../app/globals.css"
 import { ThemeProvider } from "@/components/theme-provider"
@@ -47,10 +49,49 @@ import { GetServerSideProps } from "next"
 
 const inter = Inter({ subsets: ["latin"] })
 
-
-
-
 const DashboardPage = () => {
+  const [name, setName] = useState("")
+  const [lastName, setLastName] = useState("")
+
+  const router = useRouter()
+
+  const handleLogout = () => {
+    document.cookie.split(";").forEach((c) => {
+      document.cookie = c
+        .replace(/^ +/, "")
+        .replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/")
+    })
+
+    router.push("/auth/signin")
+  }
+
+  const handleSettings = () => {
+    router.push("/dashboard/settings")
+  }
+
+  useEffect(() => {
+    const emailFromCookie = document.cookie
+      .split("; ")
+      .find((row) => row.startsWith("email="))
+      ?.split("=")[1]
+
+    const fetchUserData = async () => {
+      try {
+        const response = await fetch(`/api/query?email=${emailFromCookie}`)
+        if (!response.ok) {
+          throw new Error("Erro ao obter dados do usuário")
+        }
+        const userData = await response.json()
+        setName(userData.nome)
+        setLastName(userData.sobrenome)
+      } catch (error) {
+        console.error(error)
+      }
+    }
+
+    fetchUserData()
+  }, [])
+
   return (
     <ThemeProvider defaultTheme="dark" attribute="class">
       <div className={`${inter.className} flex min-h-screen w-full flex-col`}>
@@ -155,7 +196,7 @@ const DashboardPage = () => {
                 />
               </div>
             </form>
-            <ModeToggle/>
+            <ModeToggle />
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button
@@ -168,17 +209,18 @@ const DashboardPage = () => {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                <DropdownMenuLabel>Minha Conta</DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem>Settings</DropdownMenuItem>
-                <DropdownMenuItem>Support</DropdownMenuItem>
+                <DropdownMenuItem onClick={handleSettings}>Configurações</DropdownMenuItem>
+                <DropdownMenuItem>Suporte</DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem>Logout</DropdownMenuItem>
+                <DropdownMenuItem onClick={handleLogout}>Logout</DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
         </header>
         <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8">
+          <h1 className="ml-2 text-2xl font-bold py-2">Olá, {name} {lastName}</h1>
           <div className="grid gap-4 md:grid-cols-2 md:gap-8 lg:grid-cols-4">
             <Card x-chunk="dashboard-01-chunk-0">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -481,3 +523,6 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
 }
 
 export default DashboardPage
+function jwt_decode(tokenString: string): any {
+  throw new Error("Function not implemented.")
+}

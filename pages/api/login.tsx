@@ -68,22 +68,30 @@ export default async function handler(
     }
 
     const token = jwt.sign(
-      { email: user.email },
-      process.env.JWT_SECRET as string, 
+      { email: user.email }, 
+      process.env.JWT_SECRET as string,
       {
         expiresIn: "24h",
       }
     )
 
     const cookie = serialize("token", token, {
-      httpOnly: true, 
-      secure: process.env.NODE_ENV !== "development", 
-      sameSite: "strict", 
-      maxAge: 86400, 
+      httpOnly: true,
+      secure: process.env.NODE_ENV !== "development",
+      sameSite: "strict",
+      maxAge: 86400,
       path: "/",
     })
 
-    res.setHeader("Set-Cookie", cookie) 
+    const emailCookie = serialize("email", user.email, {
+      httpOnly: false, 
+      secure: process.env.NODE_ENV !== "development",
+      sameSite: "strict",
+      maxAge: 86400, 
+      path: "/", 
+    })
+
+    res.setHeader("Set-Cookie", [cookie, emailCookie]) 
 
     return res.status(200).json({ message: "Login bem-sucedido." })
   } catch (error) {
