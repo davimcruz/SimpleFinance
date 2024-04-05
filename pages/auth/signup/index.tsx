@@ -1,7 +1,6 @@
 import { Inter } from "next/font/google"
 import { FormEvent, useState } from "react"
 import { useRouter } from "next/router"
-import Image from "next/image"
 import {
   Card,
   CardContent,
@@ -32,7 +31,7 @@ export default function Register() {
     event.preventDefault()
 
     if (password.length < 8) {
-      setError("Sua senha deve ter pelo menos 8 dígitos")
+      setError("Sua senha deve conter pelo menos 8 dígitos.")
       return
     }
 
@@ -48,12 +47,12 @@ export default function Register() {
       })
 
       if (!response.ok) {
-        throw new Error("Erro ao registrar novo usuário")
+        throw new Error("Erro ao registrar novo usuário.")
       }
 
       router.push("/auth/signup/success")
     } catch (error: any) {
-      setError("Este email já foi cadastrado")
+      setError("Este email já foi cadastrado.")
     } finally {
       setLoading(false)
     }
@@ -105,9 +104,7 @@ export default function Register() {
                 {loading ? "Registrando..." : "Registrar"}{" "}
               </Button>
               {error && (
-                <p className="text-red-500 mt-4 text-center transition duration-300 ease-in-out">
-                  {error}
-                </p>
+                <p className="mt-4 text-center transition text-sm">{error}</p>
               )}
             </form>
           </CardContent>

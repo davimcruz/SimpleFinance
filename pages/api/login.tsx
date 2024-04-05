@@ -1,7 +1,5 @@
 import { NextApiRequest, NextApiResponse } from "next"
 import mysql, { Connection, MysqlError } from "mysql"
-import { serialize } from "cookie"
-import jwt from "jsonwebtoken"
 
 interface Usuario {
   email: string
@@ -59,31 +57,18 @@ export default async function handler(
     const results = await queryAsync(connection, query, [email])
 
     if (results.length === 0) {
-      return res.status(401).json({ error: "Email não registrado" })
+      return res.status(401).json({ error: "Email não registrado." })
     }
 
     const user: Usuario = results[0]
     if (user.senha !== password) {
-      return res.status(401).json({ error: "Senha incorreta" })
+      return res.status(401).json({ error: "Senha incorreta." })
     }
 
-    const token = jwt.sign({ email }, "seu_segredo_secreto", {
-      expiresIn: "7d",
-    })
-
-    res.setHeader(
-      "Set-Cookie",
-      serialize("token", token, {
-        httpOnly: true,
-        maxAge: 60 * 60 * 24 * 7, // 7 dias convertidos em segundos
-        path: "/",
-      })
-    )
-
-    return res.status(200).json({ message: "Login bem-sucedido" })
+    return res.status(200).json({ message: "Login bem-sucedido." })
   } catch (error) {
     console.error("Erro:", error)
-    return res.status(500).json({ error: "Erro ao processar a requisição" })
+    return res.status(500).json({ error: "Erro ao processar a requisição." })
   } finally {
     connection.end()
   }

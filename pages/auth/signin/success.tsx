@@ -1,9 +1,5 @@
-import { useEffect } from "react"
 import Router from "next/router"
-import Cookies from "js-cookie"
-import jwt from "jsonwebtoken"
 import { Inter } from "next/font/google"
-import Image from "next/image"
 import {
   Card,
   CardContent,
@@ -12,6 +8,9 @@ import {
 } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
+
+import { ModeToggle } from "@/components/toggle"
+import { ThemeProvider } from "@/components/theme-provider"
 
 import "../../../app/globals.css"
 
@@ -22,51 +21,33 @@ const goDashboard = () => {
 }
 
 const SuccessLogin = () => {
-  useEffect(() => {
-    const token = Cookies.get("token")
-    if (!token) {
-      console.log(token)
-      return
-    }
-
-    try {
-      jwt.verify(
-        token,
-        "xZrqJqLg2l1+2KoMcRlUHgVgPvP4XmUqxCm4UF8X9IAn1xH8xS7HcU5Y+bey7FZy4/+nNg02wOT0cGtLQ+ZzRg=="
-      )
-    } catch (error) {
-      console.log("jwt invalido")
-    }
-  }, [])
-
   return (
-    <div
-      className={`${inter.className} flex items-center lg:justify-center lg:h-screen bg-slate-50`}
-    >
-      <Card className="w-[400px] flex-row transition-all duration-300 ">
-        <CardTitle className="flex pt-10 items-center justify-center">
-          <Image
-            className="px-6"
-            src="https://simplefinance-prod.vercel.app/logo.svg"
-            width={400}
-            height={100}
-            alt="Simple Finance Logo"
-          />
-        </CardTitle>
-        <CardDescription className="pt-4 text-center">
-          Seu login foi realizado com sucesso
-        </CardDescription>
-        <Separator className="mt-10" />
-        <CardContent className="flex justify-center items-center text-center">
-          <Button
-            onClick={goDashboard}
-            className="mt-8 w-full transition duration-300 ease-in-out"
-          >
-            Ir para Dashboard
-          </Button>
-        </CardContent>
-      </Card>
-    </div>
+    <ThemeProvider defaultTheme="dark" attribute="class">
+      <div
+        className={`${inter.className} flex items-center lg:justify-center min-h-screen`}
+      >
+        <div className="fixed right-4 top-4">
+          <ModeToggle />
+        </div>
+        <Card className="w-[400px] flex-row transition-all duration-300 ">
+          <CardTitle className="flex text-4xl pt-10 items-center justify-center">
+            SimpleFinance
+          </CardTitle>
+          <CardDescription className="pt-4 text-center">
+            Seu login foi realizado com sucesso.
+          </CardDescription>
+          <Separator className="mt-10" />
+          <CardContent className="flex justify-center items-center text-center">
+            <Button
+              onClick={goDashboard}
+              className="mt-8 w-full transition duration-300 ease-in-out"
+            >
+              Ir para Dashboard
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    </ThemeProvider>
   )
 }
 

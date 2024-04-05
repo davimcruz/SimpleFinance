@@ -1,7 +1,6 @@
 import { Inter } from "next/font/google"
 import { useState } from "react"
 import { useRouter } from "next/router"
-import Image from "next/image"
 import {
   Card,
   CardContent,
@@ -13,6 +12,9 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Separator } from "@/components/ui/separator"
+
+import { ModeToggle } from "@/components/toggle"
+import { ThemeProvider } from "@/components/theme-provider"
 
 import "../../../app/globals.css"
 
@@ -53,71 +55,67 @@ export default function LoginPage() {
   }
 
   return (
-    <div
-      className={`${inter.className} flex items-center lg:justify-center lg:h-screen bg-slate-50`}
-    >
-      <Card className="w-[400px] flex-row transition-all duration-300 ">
-        <CardTitle className="flex pt-10 items-center justify-center">
-          <Image
-            className="px-6"
-            src="https://simplefinance-prod.vercel.app/logo.svg"
-            width={400}
-            height={100}
-            priority
-            alt="Simple Finance Logo"
-          />
-        </CardTitle>
-        <CardDescription className="pt-4 text-center">
-          Faça login com sua conta
-        </CardDescription>
-        <Separator className="mt-10" />
-        <CardContent className="pt-10 pl-4 pb-3">
-          <form onSubmit={handleSubmit}>
-            <div className="grid max-w-sm gap-5 mx-auto">
-              <div>
-                <Label htmlFor="email">Email:</Label>
-                <Input
-                  type="email"
-                  id="email"
-                  placeholder="simplefinance@example.com"
-                  onChange={(e) => setEmail(e.target.value)}
-                />
+    <ThemeProvider defaultTheme="dark" attribute="class">
+      <div
+        className={`${inter.className} flex items-center lg:justify-center min-h-screen`}
+      >
+        <div className="fixed right-4 top-4">
+          <ModeToggle />
+        </div>
+        <Card className="w-[400px] flex-row transition-all duration-300 ">
+          <CardTitle className="flex text-4xl pt-10 items-center justify-center">
+            SimpleFinance
+          </CardTitle>
+          <CardDescription className="pt-4 text-center">
+            Faça login com sua conta
+          </CardDescription>
+          <Separator className="mt-10" />
+          <CardContent className="pt-10 pl-4 pb-3">
+            <form onSubmit={handleSubmit}>
+              <div className="grid max-w-sm gap-5 mx-auto">
+                <div>
+                  <Label htmlFor="email">Email:</Label>
+                  <Input
+                    type="email"
+                    id="email"
+                    placeholder="simplefinance@example.com"
+                    onChange={(e) => setEmail(e.target.value)}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="password">Senha:</Label>
+                  <Input
+                    type="password"
+                    id="password"
+                    placeholder="Sua senha"
+                    onChange={(e) => setPassword(e.target.value)}
+                  />
+                </div>
               </div>
-              <div>
-                <Label htmlFor="password">Senha:</Label>
-                <Input
-                  type="password"
-                  id="password"
-                  placeholder="Sua senha"
-                  onChange={(e) => setPassword(e.target.value)}
-                />
-              </div>
+              <Button
+                className="mt-8 w-full transition duration-300 ease-in-out"
+                type="submit"
+                disabled={loading}
+              >
+                {loading ? "Logando..." : "Logar"}
+              </Button>
+              {error && (
+                <p className="mt-4 text-center transition text-sm">{error}</p>
+              )}
+            </form>
+          </CardContent>
+          <CardFooter className="text-center justify-center mt-auto py-4">
+            <div className="text-center justify-center mt-auto">
+              <a
+                href="./signup"
+                className="text-center text-sm mb-2 hover:text-sky-400 text-slate-500 transition duration-300"
+              >
+                Registar uma conta
+              </a>
             </div>
-            <Button
-              className="mt-8 w-full transition duration-300 ease-in-out"
-              type="submit"
-              disabled={loading}
-            >
-              {loading ? "Logando..." : "Logar"}
-            </Button>
-            {error && (
-              <p className="text-red-500 mt-4 text-center transition duration-300 ease-in-out">
-                {error}
-              </p>
-            )}
-          </form>
-        </CardContent>
-        <CardFooter className="text-center justify-center mt-auto py-4">
-          <div className="text-center justify-center mt-auto">
-            <a
-              href="./signup"
-              className="text-center text-sm mb-2 hover:text-sky-400 text-slate-500 transition duration-300"
-            >
-              Registar uma conta
-            </a>
-          </div>
-        </CardFooter>
-      </Card>
-    </div>
+          </CardFooter>
+        </Card>
+      </div>
+    </ThemeProvider>
   )
 }
