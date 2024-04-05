@@ -57,7 +57,7 @@ export default function LoginPage() {
   return (
     <ThemeProvider defaultTheme="dark" attribute="class">
       <div
-        className={`${inter.className} flex items-center justify-center min-h-screen`}
+        className={`${inter.className} flex items-center justify-center min-h-screen md:h-screen overflow-hidden`}
       >
         <div className="fixed right-4 top-4">
           <ModeToggle />
