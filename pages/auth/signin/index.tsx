@@ -62,7 +62,7 @@ export default function LoginPage() {
         <div className="lg:fixed absolute right-4 top-4">
           <ModeToggle />
         </div>
-        <Card className="w-[400px] flex-row transition-all duration-300 ">
+        <Card className="w-[400px] flex-row">
           <CardTitle className="flex text-4xl pt-10 items-center justify-center">
             SimpleFinance
           </CardTitle>
