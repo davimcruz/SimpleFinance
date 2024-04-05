@@ -1,4 +1,7 @@
+import { useEffect } from "react"
 import Router from "next/router"
+import Cookies from "js-cookie"
+import jwt from "jsonwebtoken"
 import { Inter } from "next/font/google"
 import Image from "next/image"
 import {
@@ -18,7 +21,24 @@ const goDashboard = () => {
   Router.push("/dashboard")
 }
 
-export default function SuccessLogin() {
+const SuccessLogin = () => {
+  useEffect(() => {
+    const token = Cookies.get("token")
+    if (!token) {
+      console.log(token)
+      return
+    }
+
+    try {
+      jwt.verify(
+        token,
+        "xZrqJqLg2l1+2KoMcRlUHgVgPvP4XmUqxCm4UF8X9IAn1xH8xS7HcU5Y+bey7FZy4/+nNg02wOT0cGtLQ+ZzRg=="
+      )
+    } catch (error) {
+      console.log("jwt invalido")
+    }
+  }, [])
+
   return (
     <div
       className={`${inter.className} flex items-center lg:justify-center lg:h-screen bg-slate-50`}
@@ -31,12 +51,12 @@ export default function SuccessLogin() {
             width={400}
             height={100}
             alt="Simple Finance Logo"
-          ></Image>
+          />
         </CardTitle>
         <CardDescription className="pt-4 text-center">
           Seu login foi realizado com sucesso
         </CardDescription>
-        <Separator className="mt-10"></Separator>
+        <Separator className="mt-10" />
         <CardContent className="flex justify-center items-center text-center">
           <Button
             onClick={goDashboard}
@@ -49,3 +69,5 @@ export default function SuccessLogin() {
     </div>
   )
 }
+
+export default SuccessLogin
