@@ -59,7 +59,7 @@ export default function LoginPage() {
       <div
         className={`${inter.className} flex items-center justify-center h-screen  md:h-screen overflow-hidden`}
       >
-        <div className="fixed right-4 top-4">
+        <div className="fixed right-4 top-4 hidden lg:block">
           <ModeToggle />
         </div>
         <Card className="w-[400px] flex-row transition-all duration-300 ">
