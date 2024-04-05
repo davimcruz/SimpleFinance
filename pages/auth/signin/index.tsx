@@ -59,7 +59,7 @@ export default function LoginPage() {
       <div
         className={`${inter.className} flex items-center justify-center h-screen`}
       >
-        <div className="fixed right-4 top-4">
+        <div className="lg:fixed absolute right-4 top-4">
           <ModeToggle />
         </div>
         <Card className="w-[400px] flex-row transition-all duration-300 ">
