@@ -24,6 +24,8 @@ export default function Register() {
   const router = useRouter()
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
+  const [nome, setName] = useState("")
+  const [sobrenome, setLastName] = useState("")
   const [error, setError] = useState<string | undefined>(undefined)
   const [loading, setLoading] = useState(false)
 
@@ -34,6 +36,10 @@ export default function Register() {
       setError("Sua senha deve conter pelo menos 8 dígitos.")
       return
     }
+    if (nome.length < 4) {
+      setError("Verifique seu nome e tente novamente.")
+      return
+    } 
 
     try {
       setLoading(true)
@@ -43,7 +49,7 @@ export default function Register() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ email, password, nome, sobrenome }),
       })
 
       if (!response.ok) {
@@ -76,6 +82,28 @@ export default function Register() {
           <Separator className="mt-10"></Separator>
           <CardContent className="pt-10 pl-4 pb-3">
             <form onSubmit={handleSubmit}>
+              <div className="grid gap-4 mb-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="grid gap-2">
+                    <Label htmlFor="nome">Nome</Label>
+                    <Input
+                      id="nome"
+                      placeholder="John"
+                      required
+                      onChange={(e) => setName(e.target.value)}
+                    />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="sobrenome">Sobrenome</Label>
+                    <Input
+                      id="sobrenome"
+                      placeholder="Doe"
+                      required
+                      onChange={(e) => setLastName(e.target.value)}
+                    />
+                  </div>
+                </div>
+              </div>
               <div className="grid max-w-sm gap-5 mx-auto">
                 <div>
                   <Label htmlFor="email">Email:</Label>
@@ -83,6 +111,7 @@ export default function Register() {
                     type="email"
                     id="email"
                     placeholder="simplefinance@example.com"
+                    required
                     onChange={(e) => setEmail(e.target.value)}
                   />
                 </div>
@@ -92,6 +121,7 @@ export default function Register() {
                     type="password"
                     id="password"
                     placeholder="No mínimo 8 dígitos"
+                    required
                     onChange={(e) => setPassword(e.target.value)}
                   />
                 </div>

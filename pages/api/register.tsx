@@ -6,6 +6,8 @@ interface Usuario {
   id: string
   email: string
   senha: string
+  nome: string
+  sobrenome: string
 }
 
 const dbConfig = {
@@ -43,7 +45,7 @@ export default async function handler(
     return res.status(405).json({ error: "Método não permitido" })
   }
 
-  const { email, password } = req.body
+  const { email, password, nome, sobrenome } = req.body
   const id = uuidv4()
   const connection = mysql.createConnection(dbConfig)
 
@@ -63,8 +65,14 @@ export default async function handler(
     }
 
     const insertQuery =
-      "INSERT INTO usuarios (id, email, senha) VALUES (?, ?, ?)"
-    await queryAsync(connection, insertQuery, [id, email, password])
+      "INSERT INTO usuarios (id, email, senha, nome, sobrenome) VALUES (?, ?, ?, ?, ?)"
+    await queryAsync(connection, insertQuery, [
+      id,
+      email,
+      password,
+      nome,
+      sobrenome,
+    ])
     console.log("Usuário registrado com sucesso")
 
     return res.status(201).json({ message: "Usuário registrado com sucesso" })

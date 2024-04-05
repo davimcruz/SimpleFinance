@@ -11,7 +11,8 @@ import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import { ModeToggle } from "@/components/toggle"
 import { ThemeProvider } from "@/components/theme-provider"
-import { verifyToken } from "@/pages/api/jwtAuth" // Ajuste o caminho conforme necessário
+
+import { verifyToken } from "@/pages/api/jwtAuth"
 
 import "../../../app/globals.css"
 
