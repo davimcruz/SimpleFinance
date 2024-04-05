@@ -1,5 +1,7 @@
 import { NextApiRequest, NextApiResponse } from "next"
 import mysql, { Connection, MysqlError } from "mysql"
+import jwt from "jsonwebtoken"
+import { serialize } from "cookie"
 
 interface Usuario {
   email: string
@@ -64,6 +66,24 @@ export default async function handler(
     if (user.senha !== password) {
       return res.status(401).json({ error: "Senha incorreta." })
     }
+
+    const token = jwt.sign(
+      { email: user.email },
+      process.env.JWT_SECRET as string,
+      {
+        expiresIn: "24h",
+      }
+    )
+
+    const cookie = serialize("token", token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV !== "development",
+      sameSite: "strict",
+      maxAge: 86400, 
+      path: "/",
+    })
+
+    res.setHeader("Set-Cookie", cookie)
 
     return res.status(200).json({ message: "Login bem-sucedido." })
   } catch (error) {
