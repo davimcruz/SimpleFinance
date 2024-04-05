@@ -57,9 +57,9 @@ export default function LoginPage() {
   return (
     <ThemeProvider defaultTheme="dark" attribute="class">
       <div
-        className={`${inter.className} flex items-center justify-center min-h-screen`}
+        className={`${inter.className} flex items-center justify-center h-screen`}
       >
-        <div className="fixed right-4 top-4 hidden lg:block">
+        <div className="fixed right-4 top-4">
           <ModeToggle />
         </div>
         <Card className="w-[400px] flex-row transition-all duration-300 ">
