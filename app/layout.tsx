@@ -38,8 +38,8 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <SpeedInsights/>
       <head>
+        <SpeedInsights />
         <link rel="icon" href="/profile.jpg" />
         <title>SimpleFinance</title>
       </head>
