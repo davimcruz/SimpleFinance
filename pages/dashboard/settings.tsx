@@ -312,7 +312,7 @@ const DashboardPage = () => {
               </Link>
               <Link href="#">Integrações</Link>
               <Link href="#">Suporte</Link>
-              <Link href="#">Sair</Link>
+              <Link href="#" onClick={handleLogout}>Sair</Link>
             </nav>
             <div className="grid gap-6">
               <Card x-chunk="dashboard-04-chunk-1">
@@ -350,7 +350,7 @@ const DashboardPage = () => {
               </Card>
               <Card x-chunk="dashboard-04-chunk-2">
                 <CardHeader>
-                  <div className="flex gap-44">
+                  <div className="flex lg:gap-44">
                     <div className="pt-4">
                       <CardTitle>Imagem do Avatar</CardTitle>
                       <CardDescription>
@@ -358,7 +358,7 @@ const DashboardPage = () => {
                         será exibido na plataforma
                       </CardDescription>
                     </div>
-                    <Avatar className="w-20 h-20">
+                    <Avatar className="w-20 h-20 mt-4 lg:mt-0">
                       <AvatarImage src={imageUrl}></AvatarImage>
                       <AvatarFallback>SF</AvatarFallback>
                     </Avatar>
@@ -367,6 +367,7 @@ const DashboardPage = () => {
                 <CardContent>
                   <form className="flex flex-col gap-4">
                     <UploadButton
+                    className="mt-6 lg:mt-0"
                       appearance={{
                           button: {
                             background: 'white',
