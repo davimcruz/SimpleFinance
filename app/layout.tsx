@@ -1,7 +1,5 @@
 import type { Metadata } from "next"
-import { SpeedInsights } from "@vercel/speed-insights/next"
 import "./globals.css"
-
 
 export const metadata: Metadata = {
   title: "Simple Finance - Gerencie suas Finanças Facilmente",
@@ -38,14 +36,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <SpeedInsights />
       <head>
-        <SpeedInsights />
         <link rel="icon" href="/profile.jpg" />
         <title>SimpleFinance</title>
       </head>
       <body>
-        <SpeedInsights />
         {children}
       </body>
     </html>

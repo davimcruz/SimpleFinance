@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react"
 import { useRouter } from "next/router"
-import { SpeedInsights } from "@vercel/speed-insights/next"
 
 import Link from "next/link"
 import { GetServerSideProps } from "next"
@@ -81,7 +80,6 @@ const DashboardPage = () => {
 
   return (
     <ThemeProvider defaultTheme="dark" attribute="class">
-      <SpeedInsights/>
       <div className={`${inter.className} flex min-h-screen w-full flex-col`}>
         <Header />
         <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8">
