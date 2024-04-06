@@ -278,11 +278,12 @@ const DashboardPage = () => {
                   size="icon"
                   className="rounded-full"
                 >
+
                   <Avatar>
                     <AvatarImage src={userImage}></AvatarImage>
                     <AvatarFallback>SF</AvatarFallback>
                   </Avatar>
-                  <span className="sr-only">Menu do Usuário</span>
+
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
