@@ -41,6 +41,7 @@ export default function RootLayout({
       <SpeedInsights/>
       <head>
         <link rel="icon" href="/profile.jpg" />
+        <title>SimpleFinance</title>
       </head>
       <body>{children}</body>
     </html>
