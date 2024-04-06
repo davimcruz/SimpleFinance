@@ -1,18 +1,16 @@
-"use client"
-
-import Link from "next/link"
 import { useState, useEffect } from "react"
 import { useRouter } from "next/router"
+import { GetServerSideProps } from "next"
+import Link from "next/link"
+
 import { Inter } from "next/font/google"
-import "@uploadthing/react/styles.css"
+import { Menu, Package2, Search } from "lucide-react"
+
 import "../../app/globals.css"
+
 import { ThemeProvider } from "@/components/theme-provider"
 import { ModeToggle } from "@/components/toggle"
-import { verifyToken } from "../api/jwtAuth"
-
 import { UploadButton } from "@/components/uploadthing"
-
-import { CircleUser, Menu, Package2, Search, Users } from "lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import {
@@ -33,7 +31,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Input } from "@/components/ui/input"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
-import { GetServerSideProps } from "next"
+import { verifyToken } from "../api/jwtAuth"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -88,9 +86,9 @@ const DashboardPage = () => {
   }, [])
 
   const handleSave = async () => {
-     if (!newName || !newLastName) {
-       return
-     }
+    if (!newName || !newLastName) {
+      return
+    }
     try {
       setLoadingSave(true)
       const emailFromCookieEncoded = document.cookie
@@ -278,12 +276,10 @@ const DashboardPage = () => {
                   size="icon"
                   className="rounded-full"
                 >
-
                   <Avatar>
                     <AvatarImage src={userImage}></AvatarImage>
                     <AvatarFallback>SF</AvatarFallback>
                   </Avatar>
-
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
@@ -313,14 +309,17 @@ const DashboardPage = () => {
               </Link>
               <Link href="#">Integrações</Link>
               <Link href="#">Suporte</Link>
-              <Link href="#" onClick={handleLogout}>Sair</Link>
+              <Link href="#" onClick={handleLogout}>
+                Sair
+              </Link>
             </nav>
             <div className="grid gap-6">
               <Card x-chunk="dashboard-04-chunk-1">
                 <CardHeader>
                   <CardTitle>Editar Nome</CardTitle>
                   <CardDescription>
-                    Para editar seu nome na plataforma você deve preencher ambos os campos abaixo
+                    Para editar seu nome na plataforma você deve preencher ambos
+                    os campos abaixo
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -368,14 +367,14 @@ const DashboardPage = () => {
                 <CardContent>
                   <form className="flex flex-col gap-4">
                     <UploadButton
-                    className="mt-6 lg:mt-0"
+                      className="mt-6 lg:mt-0"
                       appearance={{
-                          button: {
-                            background: 'white',
-                            color: 'black',
-                            fontWeight: 500,
-                          }
-                        }}
+                        button: {
+                          background: "white",
+                          color: "black",
+                          fontWeight: 500,
+                        },
+                      }}
                       endpoint="imageUploader"
                       onClientUploadComplete={(res) => {
                         setImageUrl(res[0].url)
@@ -383,7 +382,7 @@ const DashboardPage = () => {
                       onUploadError={(error: Error) => {
                         alert(`ERROR! ${error.message}`)
                       }}
-                    /> 
+                    />
                   </form>
                 </CardContent>
                 <CardFooter className="border-t px-6 py-4">
