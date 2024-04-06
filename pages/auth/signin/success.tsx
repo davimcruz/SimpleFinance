@@ -9,10 +9,10 @@ import {
 } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
-import { ModeToggle } from "@/components/toggle"
-import { ThemeProvider } from "@/components/theme-provider"
+import { ModeToggle } from "@/components/theme/toggleTheme"
+import { ThemeProvider } from "@/components/theme/theme-provider"
 
-import { verifyToken } from "@/pages/api/jwtAuth"
+import { verifyToken } from "@/pages/api/Auth/jwtAuth"
 
 import "../../../app/globals.css"
 
@@ -58,17 +58,17 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
 
   if (!isVerified) {
     console.log("Falha na verificação do token.")
-   
+
     return {
       redirect: {
-        destination: "/auth/signin", 
+        destination: "/auth/signin",
         permanent: false,
       },
     }
   }
 
   console.log("Token verificado com sucesso.")
-  return { props: {} } 
+  return { props: {} }
 }
 
 export default SuccessLogin

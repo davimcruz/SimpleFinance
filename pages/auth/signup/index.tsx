@@ -13,8 +13,8 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Separator } from "@/components/ui/separator"
 
-import { ModeToggle } from "@/components/toggle"
-import { ThemeProvider } from "@/components/theme-provider"
+import { ModeToggle } from "@/components/theme/toggleTheme"
+import { ThemeProvider } from "@/components/theme/theme-provider"
 
 import "../../../app/globals.css"
 
@@ -39,12 +39,12 @@ export default function Register() {
     if (nome.length < 4) {
       setError("Verifique seu nome e tente novamente.")
       return
-    } 
+    }
 
     try {
       setLoading(true)
 
-      const response = await fetch("/api/register", {
+      const response = await fetch("/api/Auth/register", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

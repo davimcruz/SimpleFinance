@@ -7,7 +7,7 @@ import { Inter } from "next/font/google"
 
 import "../../app/globals.css"
 
-import { ThemeProvider } from "@/components/theme-provider"
+import { ThemeProvider } from "@/components/theme/theme-provider"
 import { UploadButton } from "@/components/uploadthing"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
@@ -20,7 +20,7 @@ import {
   CardFooter,
 } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
-import { verifyToken } from "../api/jwtAuth"
+import { verifyToken } from "../api/Auth/jwtAuth"
 import Header from "@/components/dashboard/header"
 
 const inter = Inter({ subsets: ["latin"] })
@@ -59,7 +59,9 @@ const DashboardPage = () => {
 
     const fetchUserData = async () => {
       try {
-        const response = await fetch(`/api/query?email=${emailFromCookie}`)
+        const response = await fetch(
+          `/api/Queries/query?email=${emailFromCookie}`
+        )
         if (!response.ok) {
           throw new Error("Erro ao obter dados do usuário")
         }
@@ -98,7 +100,7 @@ const DashboardPage = () => {
         sobrenome: newLastName,
       }
 
-      const response = await fetch("/api/updateName", {
+      const response = await fetch("/api/Settings/updateName", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -131,7 +133,7 @@ const DashboardPage = () => {
 
       const emailFromCookie = decodeURIComponent(emailFromCookieEncoded)
 
-      const response = await fetch("/api/saveImage", {
+      const response = await fetch("/api/Settings/saveImage", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

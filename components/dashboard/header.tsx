@@ -3,7 +3,7 @@ import Router from "next/router"
 import Link from "next/link"
 import { Menu, Package2, Search } from "lucide-react"
 import "../../app/globals.css"
-import { ModeToggle } from "@/components/toggle"
+import { ModeToggle } from "@/components/theme/toggleTheme"
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import {
@@ -34,7 +34,9 @@ const useUserImage = () => {
       }
 
       try {
-        const response = await fetch(`/api/query?email=${emailFromCookie}`)
+        const response = await fetch(
+          `/api/Queries/query?email=${emailFromCookie}`
+        )
         if (!response.ok) throw new Error("Erro ao obter dados do usuário")
         const userData = await response.json()
         setUserImage(userData.image)

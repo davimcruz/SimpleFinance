@@ -15,7 +15,7 @@ import {
 
 import "../../app/globals.css"
 
-import { ThemeProvider } from "@/components/theme-provider"
+import { ThemeProvider } from "@/components/theme/theme-provider"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -35,7 +35,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import { verifyToken } from "../api/jwtAuth"
+import { verifyToken } from "../api/Auth/jwtAuth"
 
 import Header from "@/components/dashboard/header"
 
@@ -60,7 +60,9 @@ const DashboardPage = () => {
 
     const fetchUserData = async () => {
       try {
-        const response = await fetch(`/api/query?email=${emailFromCookie}`)
+        const response = await fetch(
+          `/api/Queries/query?email=${emailFromCookie}`
+        )
         if (!response.ok) {
           throw new Error("Erro ao obter dados do usuário")
         }
@@ -82,7 +84,7 @@ const DashboardPage = () => {
         <Header />
         <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8">
           {!name || !lastName ? (
-                <Skeleton className="h-8 w-[230px]" />
+            <Skeleton className="h-8 w-[230px]" />
           ) : (
             <h1 className="ml-2 text-2xl font-bold py-2">
               Olá, {name} {lastName}

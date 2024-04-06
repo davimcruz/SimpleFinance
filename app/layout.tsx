@@ -1,4 +1,4 @@
-import { ThemeProvider } from "@/components/theme-provider"
+import { ThemeProvider } from "@/components/theme/theme-provider"
 import type { Metadata } from "next"
 import { Inter } from "next/font/google"
 import "./globals.css"
@@ -32,8 +32,6 @@ export const metadata: Metadata = {
       "Gerencie suas finanças sem esforço com o Simple Finance. Da elaboração de orçamentos ao acompanhamento de investimentos, obtenha tudo o que precisa para tomar controle da sua vida financeira.",
   },
 }
-
-
 
 export default function RootLayout({
   children,

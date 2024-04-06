@@ -11,11 +11,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 
 export function ModeToggle() {
-  const { setTheme, theme } = useTheme()
-
-  React.useEffect(() => {
-    console.log("Tema atual:", theme)
-  }, [theme])
+  const { setTheme } = useTheme()
 
   return (
     <DropdownMenu>

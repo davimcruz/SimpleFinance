@@ -9,8 +9,8 @@ import {
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 
-import { ModeToggle } from "@/components/toggle"
-import { ThemeProvider } from "@/components/theme-provider"
+import { ModeToggle } from "@/components/theme/toggleTheme"
+import { ThemeProvider } from "@/components/theme/theme-provider"
 
 import "../../../app/globals.css"
 
