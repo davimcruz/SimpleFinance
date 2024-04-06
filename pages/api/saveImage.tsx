@@ -32,11 +32,14 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
-  if (req.method !== "GET") {
+  if (req.method !== "POST") {
     return res.status(405).json({ error: "Método não permitido" })
   }
 
-  const { email } = req.query
+  const { email, imageUrl } = req.body
+  console.log("Email:", email)
+  console.log("ImageUrl:", imageUrl)
+
   const connection = mysql.createConnection(dbConfig)
 
   try {
@@ -47,17 +50,13 @@ export default async function handler(
       })
     })
 
-    const selectQuery =
-      "SELECT nome, sobrenome, image FROM usuarios WHERE email = ?"
-    const rows = await queryAsync(connection, selectQuery, [email])
+    const updateQuery = "UPDATE usuarios SET image = ? WHERE email = ?"
+    console.log("Update Query:", updateQuery)
+    console.log("Values:", [imageUrl, email])
 
-    if (rows.length === 0) {
-      return res.status(404).json({ error: "Usuário não encontrado" })
-    }
+    await queryAsync(connection, updateQuery, [imageUrl, email])
 
-    const { nome, sobrenome, image } = rows[0]
-
-    return res.status(200).json({ nome, sobrenome, image })
+    return res.status(200).json({ success: imageUrl })
   } catch (error) {
     console.error("Erro:", error)
     return res.status(500).json({ error: "Erro ao processar a requisição" })

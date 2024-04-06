@@ -1,26 +1,20 @@
+"use client"
+
 import Link from "next/link"
 import { useState, useEffect } from "react"
 import { useRouter } from "next/router"
 import { Inter } from "next/font/google"
+import "@uploadthing/react/styles.css"
 import "../../app/globals.css"
 import { ThemeProvider } from "@/components/theme-provider"
 import { ModeToggle } from "@/components/toggle"
 import { verifyToken } from "../api/jwtAuth"
-import {
-  Activity,
-  ArrowUpRight,
-  CircleUser,
-  CreditCard,
-  DollarSign,
-  Menu,
-  Package2,
-  Search,
-  Users,
-} from "lucide-react"
+
+import { UploadButton } from "@/components/uploadthing"
+
+import { CircleUser, Menu, Package2, Search, Users } from "lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Checkbox } from "@/components/ui/checkbox"
 import {
   Card,
   CardContent,
@@ -39,14 +33,6 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Input } from "@/components/ui/input"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table"
 import { GetServerSideProps } from "next"
 
 const inter = Inter({ subsets: ["latin"] })
@@ -56,7 +42,10 @@ const DashboardPage = () => {
   const [lastName, setLastName] = useState("")
   const [newName, setNewName] = useState("")
   const [newLastName, setNewLastName] = useState("")
-    const [loading, setLoading] = useState(false)
+  const [loadingSave, setLoadingSave] = useState(false)
+  const [loadingImage, setLoadingImage] = useState(false)
+  const [imageUrl, setImageUrl] = useState<string>("")
+  const [userImage, setUserImage] = useState("")
 
   const router = useRouter()
 
@@ -89,6 +78,7 @@ const DashboardPage = () => {
         const userData = await response.json()
         setName(userData.nome)
         setLastName(userData.sobrenome)
+        setUserImage(userData.image)
       } catch (error) {
         console.error(error)
       }
@@ -98,8 +88,11 @@ const DashboardPage = () => {
   }, [])
 
   const handleSave = async () => {
+     if (!newName || !newLastName) {
+       return
+     }
     try {
-      setLoading(true)
+      setLoadingSave(true)
       const emailFromCookieEncoded = document.cookie
         .split("; ")
         .find((row) => row.startsWith("email="))
@@ -133,6 +126,43 @@ const DashboardPage = () => {
       await new Promise((resolve) => setTimeout(resolve, 1000))
     } catch (error) {
       console.error("Erro durante o salvamento:", error)
+    }
+  }
+
+  const saveImage = async () => {
+    try {
+      setLoadingImage(true)
+      const emailFromCookieEncoded = document.cookie
+        .split("; ")
+        .find((row) => row.startsWith("email="))
+        ?.split("=")[1]
+
+      if (!emailFromCookieEncoded) {
+        throw new Error("Email não encontrado nos cookies")
+      }
+
+      const emailFromCookie = decodeURIComponent(emailFromCookieEncoded)
+
+      const response = await fetch("/api/saveImage", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: emailFromCookie,
+          imageUrl: imageUrl,
+        }),
+      })
+
+      if (!response.ok) {
+        throw new Error("Erro ao salvar a imagem")
+      } else {
+        router.push("/dashboard")
+        setLoadingImage(false)
+      }
+    } catch (error) {
+      setLoadingImage(false)
+      console.log(error)
     }
   }
 
@@ -248,8 +278,11 @@ const DashboardPage = () => {
                   size="icon"
                   className="rounded-full"
                 >
-                  <CircleUser className="h-5 w-5" />
-                  <span className="sr-only">Toggle user menu</span>
+                  <Avatar>
+                    <AvatarImage src={userImage}></AvatarImage>
+                    <AvatarFallback>SF</AvatarFallback>
+                  </Avatar>
+                  <span className="sr-only">Menu do Usuário</span>
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
@@ -286,8 +319,7 @@ const DashboardPage = () => {
                 <CardHeader>
                   <CardTitle>Editar Nome</CardTitle>
                   <CardDescription>
-                    Utilize esse espaço para editar seu nome cadastrado na
-                    plataforma
+                    Para editar seu nome na plataforma você deve preencher ambos os campos abaixo
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -296,48 +328,70 @@ const DashboardPage = () => {
                       className="mb-4"
                       placeholder="Nome"
                       value={newName}
+                      required
                       onChange={(e) => setNewName(e.target.value)}
                     />
                     <Input
                       placeholder="Sobrenome"
                       value={newLastName}
+                      required
                       onChange={(e) => setNewLastName(e.target.value)}
                     />
                   </form>
                 </CardContent>
                 <CardFooter className="border-t px-6 py-4">
-                  <Button onClick={handleSave} disabled={loading}>
-                    {loading ? "Salvando..." : "Salvar"}
+                  <Button
+                    onClick={handleSave}
+                    disabled={loadingSave || !newName || !newLastName}
+                  >
+                    {loadingSave ? "Salvando..." : "Salvar"}
                   </Button>
                 </CardFooter>
               </Card>
               <Card x-chunk="dashboard-04-chunk-2">
                 <CardHeader>
-                  <CardTitle>Plugins Directory</CardTitle>
-                  <CardDescription>
-                    The directory within your project, in which your plugins are
-                    located.
-                  </CardDescription>
+                  <div className="flex gap-44">
+                    <div className="pt-4">
+                      <CardTitle>Imagem do Avatar</CardTitle>
+                      <CardDescription>
+                        Utilize esse espaço para fazer upload do seu avatar que
+                        será exibido na plataforma
+                      </CardDescription>
+                    </div>
+                    <Avatar className="w-20 h-20">
+                      <AvatarImage src={imageUrl}></AvatarImage>
+                      <AvatarFallback>SF</AvatarFallback>
+                    </Avatar>
+                  </div>
                 </CardHeader>
                 <CardContent>
                   <form className="flex flex-col gap-4">
-                    <Input
-                      placeholder="Project Name"
-                      defaultValue="/content/plugins"
-                    />
-                    <div className="flex items-center space-x-2">
-                      <Checkbox id="include" defaultChecked />
-                      <label
-                        htmlFor="include"
-                        className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                      >
-                        Allow administrators to change the directory.
-                      </label>
-                    </div>
+                    <UploadButton
+                      appearance={{
+                          button: {
+                            background: 'white',
+                            color: 'black',
+                            fontWeight: 500,
+                          }
+                        }}
+                      endpoint="imageUploader"
+                      onClientUploadComplete={(res) => {
+                        setImageUrl(res[0].url)
+                      }}
+                      onUploadError={(error: Error) => {
+                        alert(`ERROR! ${error.message}`)
+                      }}
+                    /> 
                   </form>
                 </CardContent>
                 <CardFooter className="border-t px-6 py-4">
-                  <Button>Save</Button>
+                  <Button
+                    onClick={saveImage}
+                    disabled={loadingImage}
+                    id="save-image"
+                  >
+                    {loadingImage ? "Salvando..." : "Salvar"}
+                  </Button>
                 </CardFooter>
               </Card>
             </div>
