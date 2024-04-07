@@ -24,7 +24,7 @@ const Summary = () => {
           <DollarSign className="h-4 w-4 text-muted-foreground" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold">R $9.884,46</div>
+          <div className="text-2xl font-bold">R$ 9.884,46</div>
           <p className="text-xs text-muted-foreground">
             +20.1% em comparação ao mês anterior
           </p>
