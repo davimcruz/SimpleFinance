@@ -61,7 +61,7 @@ const DashboardPage = () => {
             )}
           </div>
           <Summary />
-          <div className="grid lg:max-h-96 gap-4 md:gap-8 lg:grid-cols-2 xl:grid-cols-2">
+          <div className="grid lg:max-h-96 gap-4 md:gap-8 xl:grid-cols-3">
             <TransactionsTable />
             <FinancesGraph />
           </div>
