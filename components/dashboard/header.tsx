@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react"
 import Router from "next/router"
 import Link from "next/link"
-import { Menu, Package2, Search } from "lucide-react"
+import { Menu, Wallet, Search } from "lucide-react"
 import "../../app/globals.css"
 import { ModeToggle } from "@/components/theme/toggleTheme"
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
@@ -73,7 +73,7 @@ const Header = () => {
           href="/dashboard"
           className="flex items-center gap-2 text-lg font-semibold md:text-base"
         >
-          <Package2 className="h-6 w-6" />
+          <Wallet className="h-6 w-6" />
           <span className="sr-only">Simple Finance</span>
         </Link>
         <Link
@@ -86,25 +86,13 @@ const Header = () => {
           href="#"
           className="text-muted-foreground transition-colors hover:text-foreground"
         >
-          Orders
+          Transações
         </Link>
         <Link
           href="#"
           className="text-muted-foreground transition-colors hover:text-foreground"
         >
-          Products
-        </Link>
-        <Link
-          href="#"
-          className="text-muted-foreground transition-colors hover:text-foreground"
-        >
-          Customers
-        </Link>
-        <Link
-          href="#"
-          className="text-muted-foreground transition-colors hover:text-foreground"
-        >
-          Analytics
+          Planos
         </Link>
       </nav>
       <Sheet>
@@ -124,7 +112,7 @@ const Header = () => {
               href="/dashboard"
               className="flex items-center gap-2 text-lg font-semibold"
             >
-              <Package2 className="h-6 w-6" />
+              <Wallet className="h-6 w-6" />
               <span className="sr-only">Simple Finance</span>
             </Link>
             <Link href="/dashboard" className="hover:text-foreground">
@@ -134,25 +122,13 @@ const Header = () => {
               href="#"
               className="text-muted-foreground hover:text-foreground"
             >
-              Orders
+              Transações
             </Link>
             <Link
               href="#"
               className="text-muted-foreground hover:text-foreground"
             >
-              Products
-            </Link>
-            <Link
-              href="#"
-              className="text-muted-foreground hover:text-foreground"
-            >
-              Customers
-            </Link>
-            <Link
-              href="#"
-              className="text-muted-foreground hover:text-foreground"
-            >
-              Analytics
+              Planos
             </Link>
           </nav>
         </SheetContent>
@@ -163,7 +139,7 @@ const Header = () => {
             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input
               type="search"
-              placeholder="Search products..."
+              placeholder="Procurar Transações..."
               className="pl-8 sm:w-[300px] md:w-[200px] lg:w-[300px]"
             />
           </div>

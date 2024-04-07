@@ -286,6 +286,3 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
 }
 
 export default DashboardPage
-function jwt_decode(tokenString: string): any {
-  throw new Error("Function not implemented.")
-}

@@ -48,16 +48,16 @@ export default async function handler(
     })
 
     const selectQuery =
-      "SELECT nome, sobrenome, image FROM usuarios WHERE email = ?"
+      "SELECT id, nome, sobrenome, image FROM usuarios WHERE email = ?"
     const rows = await queryAsync(connection, selectQuery, [email])
 
     if (rows.length === 0) {
       return res.status(404).json({ error: "Usuário não encontrado" })
     }
 
-    const { nome, sobrenome, image } = rows[0]
+    const { id, nome, sobrenome, image } = rows[0]
 
-    return res.status(200).json({ nome, sobrenome, image })
+    return res.status(200).json({ id, nome, sobrenome, image })
   } catch (error) {
     console.error("Erro:", error)
     return res.status(500).json({ error: "Erro ao processar a requisição" })
