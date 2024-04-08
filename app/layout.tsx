@@ -37,7 +37,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
-        <link rel="icon" href="/profile.jpg" />
+        <link rel="icon" href="/favicon.svg" />
         <title>SimpleFinance</title>
       </head>
       <body>
