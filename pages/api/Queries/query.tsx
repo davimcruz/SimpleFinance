@@ -62,6 +62,7 @@ export default async function handler(
     console.error("Erro:", error)
     return res.status(500).json({ error: "Erro ao processar a requisição" })
   } finally {
+    
     connection.end()
   }
 }

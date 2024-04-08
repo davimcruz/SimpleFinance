@@ -57,15 +57,35 @@ const CreateTransaction = () => {
     setFonteTransacao(value)
   }
 
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault()
-    console.log("Nome:", nome)
-    console.log("Tipo de Transação:", tipoTransacao)
-    console.log("Fonte da Transação:", fonteTransacao)
-    console.log("Detalhes da Fonte:", detalhesFonte)
-    console.log("Valor da Transação:", valorTransacao)
-    console.log("Data da Transação:", dataTransacao)
+const handleSubmit = async (event: { preventDefault: () => void }) => {
+  event.preventDefault()
+
+  const transactionData = {
+    nome,
+    tipo: tipoTransacao,
+    fonte: fonteTransacao,
+    detalhesFonte,
+    data: dataTransacao,
+    valor: valorTransacao,
   }
+
+  try {
+    const response = await fetch("/api/Transactions/saveTransactions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(transactionData),
+    })
+
+    if (!response.ok) {
+      throw new Error("Erro ao salvar a transação")
+    }
+
+  } catch (error) {
+    console.error("Erro:", error)
+  }
+}
 
   return (
     <AlertDialog>
