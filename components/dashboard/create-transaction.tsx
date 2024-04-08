@@ -1,4 +1,5 @@
 import React, { useState } from "react"
+import Router, { useRouter } from "next/router"
 import { format } from "date-fns"
 import { cn } from "@/lib/utils"
 import { ptBR } from "date-fns/locale"
@@ -27,6 +28,9 @@ import {
 } from "@/components/ui/popover"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { useToast } from "@/components/ui/use-toast"
+import { ToastAction } from "../ui/toast"
+
 import { Label } from "@/components/ui/label"
 import { Plus } from "lucide-react"
 import { Calendar as CalendarIcon } from "lucide-react"
@@ -34,6 +38,7 @@ import { Calendar as CalendarIcon } from "lucide-react"
 import formatadorValor from "@/utils/valueFormatter"
 
 const CreateTransaction = () => {
+  const { toast } = useToast()
   const [date, setDate] = React.useState<Date>()
   const [valorEditado, setValor] = useState("")
   const [erro, setErro] = useState(false)
@@ -57,35 +62,58 @@ const CreateTransaction = () => {
     setFonteTransacao(value)
   }
 
-const handleSubmit = async (event: { preventDefault: () => void }) => {
-  event.preventDefault()
-
-  const transactionData = {
-    nome,
-    tipo: tipoTransacao,
-    fonte: fonteTransacao,
-    detalhesFonte,
-    data: dataTransacao,
-    valor: valorTransacao,
+  const handleGoTransactions = () => {
+    Router.push("/dashboard/transactions")
   }
 
-  try {
-    const response = await fetch("/api/Transactions/saveTransactions", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(transactionData),
-    })
+  const handleSubmit = async (event: { preventDefault: () => void }) => {
 
-    if (!response.ok) {
-      throw new Error("Erro ao salvar a transação")
+      //fazer toast continuar aparecendo criando um novo dialog de sucesso
+
+       toast({
+         title: "Transação Criada com Sucesso",
+         description: "Você pode verificar seu histórico aqui:",
+         action: <ToastAction altText="Transações" onClick={handleGoTransactions}>Transações</ToastAction>,
+       })
+
+    let emailFromCookie = document.cookie
+      .split("; ")
+      .find((row) => row.startsWith("email="))
+      ?.split("=")[1]
+
+    if (!emailFromCookie) {
+      console.error("Email não encontrado nos cookies")
+      return
     }
 
-  } catch (error) {
-    console.error("Erro:", error)
+    emailFromCookie = decodeURIComponent(emailFromCookie)
+
+    const transactionData = {
+      email: emailFromCookie,
+      nome,
+      tipo: tipoTransacao,
+      fonte: fonteTransacao,
+      detalhesFonte,
+      data: dataTransacao,
+      valor: valorTransacao,
+    }
+
+    try {
+      const response = await fetch("/api/Transactions/saveTransactions", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(transactionData),
+      })
+
+      if (!response.ok) {
+        throw new Error("Erro ao salvar a transação")
+      }
+    } catch (error) {
+      console.error("Erro:", error)
+    }
   }
-}
 
   return (
     <AlertDialog>
@@ -213,7 +241,7 @@ const handleSubmit = async (event: { preventDefault: () => void }) => {
                           selected={date}
                           onSelect={(selectedDate) => {
                             setDate(selectedDate)
-                            setDataTransacao(selectedDate) 
+                            setDataTransacao(selectedDate)
                           }}
                           initialFocus
                           required
@@ -245,7 +273,11 @@ const handleSubmit = async (event: { preventDefault: () => void }) => {
               )}
               <AlertDialogFooter className="lg:flex lg:justify-end lg:items-end">
                 <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                <Button type="submit">Criar Transação</Button>
+                <Button
+                  type="submit"
+                >
+                  Criar Transação
+                </Button>
               </AlertDialogFooter>
             </form>
           </div>

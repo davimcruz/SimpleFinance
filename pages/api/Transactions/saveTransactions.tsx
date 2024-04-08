@@ -1,7 +1,6 @@
 import { NextApiRequest, NextApiResponse } from "next"
 import mysql from "mysql"
 
-// Configuração do banco de dados
 const dbConfig = {
   host: "mysql.freehostia.com",
   user: "davmac53_simplefinance",
@@ -10,13 +9,10 @@ const dbConfig = {
 }
 
 const queryAsync = (query: string, values: any[] = []): Promise<any> => {
-  console.log("Conectando ao banco de dados...")
   const connection = mysql.createConnection(dbConfig)
   return new Promise((resolve, reject) => {
-    console.log("Executando query:", query, values)
     connection.query(query, values, (err, results) => {
-      console.log("Query executada.")
-      connection.end() // Encerra a conexão após a execução da query
+      connection.end() 
       if (err) {
         console.log("Erro na query:", err)
         reject(err)
@@ -53,8 +49,6 @@ export default async function handler(
 
     const userId = userResults[0].id
     console.log("ID do usuário encontrado:", userId)
-
-    // Aqui você pode prosseguir com a lógica para inserir a transação usando o ID obtido
 
     res.status(200).json({ userId })
   } catch (error) {
