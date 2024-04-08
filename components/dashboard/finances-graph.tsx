@@ -1,6 +1,6 @@
 import "../../app/globals.css"
 
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 
 //LIMITE DE CARTA, QUANTO GASTOU NO PIX, QUANTO NO DINHEIRO, PROXIMAS FATURAS
@@ -15,66 +15,65 @@ const FinancesGraph = () => {
       <CardContent className="grid gap-8">
         <div className="flex items-center gap-4">
           <Avatar className="hidden h-9 w-9 sm:flex">
-            <AvatarImage src="/avatars/01.png" alt="Avatar" />
-            <AvatarFallback>OM</AvatarFallback>
+            <AvatarFallback>PX</AvatarFallback>
           </Avatar>
           <div className="grid gap-1">
-            <p className="text-sm font-medium leading-none">Olivia Martin</p>
+            <p className="text-sm font-medium leading-none">
+              Transferências PIX
+            </p>
             <p className="text-sm text-muted-foreground">
-              olivia.martin@email.com
+              Conta Pessoa Física Inter
             </p>
           </div>
-          <div className="ml-auto font-medium">+R$ 1.900,00</div>
+          <div className="ml-auto flex-col text-right">
+            <div className="ml-auto text-sm">Entradas: R$ 1.900,00</div>
+            <div className="ml-auto text-sm">Saídas: R$ 900,00</div>
+          </div>
         </div>
         <div className="flex items-center gap-4">
           <Avatar className="hidden h-9 w-9 sm:flex">
-            <AvatarImage src="/avatars/02.png" alt="Avatar" />
-            <AvatarFallback>JL</AvatarFallback>
+            <AvatarFallback>CC</AvatarFallback>
           </Avatar>
           <div className="grid gap-1">
-            <p className="text-sm font-medium leading-none">Jackson Lee</p>
+            <p className="text-sm font-medium leading-none">
+              Cartão de Crédito
+            </p>
             <p className="text-sm text-muted-foreground">
-              jackson.lee@email.com
+              Mastercard Inter Black
             </p>
           </div>
-          <div className="ml-auto font-medium">+R$ 39,00</div>
+          <div className="ml-auto flex-col text-right">
+            <div className="ml-auto text-sm">Gastos: R$ 3.400,00</div>
+            <div className="ml-auto text-sm">Limite: R$ 6.000,00</div>
+          </div>
         </div>
         <div className="flex items-center gap-4">
           <Avatar className="hidden h-9 w-9 sm:flex">
-            <AvatarImage src="/avatars/03.png" alt="Avatar" />
-            <AvatarFallback>IN</AvatarFallback>
+            <AvatarFallback>XP</AvatarFallback>
           </Avatar>
           <div className="grid gap-1">
-            <p className="text-sm font-medium leading-none">Isabella Nguyen</p>
-            <p className="text-sm text-muted-foreground">
-              isabella.nguyen@email.com
-            </p>
+            <p className="text-sm font-medium leading-none">Investimentos</p>
+            <p className="text-sm text-muted-foreground">XP Investimentos</p>
           </div>
-          <div className="ml-auto font-medium">+R$ 299,00</div>
+          <div className="ml-auto flex-col text-right">
+            <div className="ml-auto text-sm">Rendimentos: R$ 53,42</div>
+            <div className="ml-auto text-sm">Investidos: R$ 5.430,00</div>
+          </div>
         </div>
         <div className="flex items-center gap-4">
           <Avatar className="hidden h-9 w-9 sm:flex">
-            <AvatarImage src="/avatars/04.png" alt="Avatar" />
-            <AvatarFallback>WK</AvatarFallback>
+            <AvatarFallback>BO</AvatarFallback>
           </Avatar>
           <div className="grid gap-1">
-            <p className="text-sm font-medium leading-none">William Kim</p>
-            <p className="text-sm text-muted-foreground">will@email.com</p>
-          </div>
-          <div className="ml-auto font-medium">+R$ 99,00</div>
-        </div>
-        <div className="flex items-center gap-4">
-          <Avatar className="hidden h-9 w-9 sm:flex">
-            <AvatarImage src="/avatars/05.png" alt="Avatar" />
-            <AvatarFallback>SD</AvatarFallback>
-          </Avatar>
-          <div className="grid gap-1">
-            <p className="text-sm font-medium leading-none">Sofia Davis</p>
+            <p className="text-sm font-medium leading-none">Boleto Bancário</p>
             <p className="text-sm text-muted-foreground">
-              sofia.davis@email.com
+              Conta Pessoa Física Inter
             </p>
           </div>
-          <div className="ml-auto font-medium">+R$ 39,00</div>
+          <div className="ml-auto flex-col text-right">
+            <div className="ml-auto text-sm">Saídas: R$ 370,00</div>
+            <div className="ml-auto text-sm">Entradas: R$ 0,00</div>
+          </div>
         </div>
       </CardContent>
     </Card>

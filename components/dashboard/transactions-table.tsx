@@ -21,6 +21,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
+import CreateTransaction from "./create-transaction"
 
 const TransactionsTable = () => {
   return (
@@ -45,12 +46,7 @@ const TransactionsTable = () => {
             <ArrowUpRight className="h-4 w-4" />
           </Link>
         </Button>
-        <Button asChild size="sm" className="ml-auto lg:ml-4 gap-1">
-          <Link href="#">
-            Adicionar
-            <Plus className="h-4 w-4" />
-          </Link>
-        </Button>
+        <CreateTransaction />
       </CardHeader>
       <CardContent>
         <Table>
