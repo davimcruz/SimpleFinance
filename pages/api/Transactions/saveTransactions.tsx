@@ -2,18 +2,27 @@ import { NextApiRequest, NextApiResponse } from "next"
 import mysql from "mysql"
 import { dbConfig } from "@/config/dbConfig"
 
+const pool = mysql.createPool(dbConfig)
+
 const queryAsync = (query: string, values: any[] = []): Promise<any> => {
-  const connection = mysql.createConnection(dbConfig)
   return new Promise((resolve, reject) => {
-    connection.query(query, values, (err, results) => {
-      connection.end() 
+    pool.getConnection((err, connection) => {
       if (err) {
-        console.log("Erro na query:", err)
-        reject(err)
-      } else {
+        console.error("Erro ao obter conexão do pool:", err)
+        return reject(err)
+      }
+
+      connection.query(query, values, (err, results) => {
+        connection.release()
+
+        if (err) {
+          console.error("Erro na query:", err)
+          return reject(err)
+        }
+
         console.log("Resultados da query:", results)
         resolve(results)
-      }
+      })
     })
   })
 }
@@ -27,7 +36,7 @@ export default async function handler(
     return res.status(405).json({ error: "Método não permitido" })
   }
 
-  const email = req.body.email
+  const { email, nome, tipo, fonte, detalhesFonte, data, valor } = req.body
   console.log("Email recebido:", email)
 
   try {
@@ -44,7 +53,19 @@ export default async function handler(
     const userId = userResults[0].id
     console.log("ID do usuário encontrado:", userId)
 
-    res.status(200).json({ userId })
+    const extractedDate = data.substring(0, 10)
+
+    const formattedDate = extractedDate.split("-").reverse().join("-")
+
+    const formattedValue = valor.replace("R$", "").trim()
+
+    console.log("Salvando transação no banco de dados...")
+    await queryAsync(
+      "INSERT INTO transacoes (userId, nome, tipo, fonte, detalhesFonte, data, valor) VALUES (?, ?, ?, ?, ?, ?, ?)",
+      [userId, nome, tipo, fonte, detalhesFonte, formattedDate, formattedValue]
+    )
+
+    res.status(200).json({ success: true })
   } catch (error) {
     console.error("Erro ao processar a requisição:", error)
     res.status(500).json({ error: "Erro ao processar a requisição" })

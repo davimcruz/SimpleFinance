@@ -1,18 +1,17 @@
 import React, { useState } from "react"
-import Router, { useRouter } from "next/router"
 import { format } from "date-fns"
 import { cn } from "@/lib/utils"
 import { ptBR } from "date-fns/locale"
+
 import {
-  AlertDialog,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog"
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
 import {
   Select,
   SelectContent,
@@ -28,20 +27,17 @@ import {
 } from "@/components/ui/popover"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { useToast } from "@/components/ui/use-toast"
-import { ToastAction } from "../ui/toast"
-
 import { Label } from "@/components/ui/label"
 import { Plus } from "lucide-react"
 import { Calendar as CalendarIcon } from "lucide-react"
 
 import formatadorValor from "@/utils/valueFormatter"
+import { DialogClose } from "@radix-ui/react-dialog"
 
 const CreateTransaction = () => {
-  const { toast } = useToast()
   const [date, setDate] = React.useState<Date>()
   const [valorEditado, setValor] = useState("")
-  const [erro, setErro] = useState(false)
+  const [erro] = useState(false)
   const [nome, setNome] = useState("")
   const [tipoTransacao, setTipoTransacao] = useState("")
   const [fonteTransacao, setFonteTransacao] = useState("")
@@ -56,26 +52,10 @@ const CreateTransaction = () => {
 
   const handleTipoTransacaoChange = (value: string) => {
     setTipoTransacao(value)
-  }
-
-  const handleFonteTransacaoChange = (value: string) => {
-    setFonteTransacao(value)
-  }
-
-  const handleGoTransactions = () => {
-    Router.push("/dashboard/transactions")
+    setFonteTransacao("")
   }
 
   const handleSubmit = async (event: { preventDefault: () => void }) => {
-
-      //fazer toast continuar aparecendo criando um novo dialog de sucesso
-
-       toast({
-         title: "Transação Criada com Sucesso",
-         description: "Você pode verificar seu histórico aqui:",
-         action: <ToastAction altText="Transações" onClick={handleGoTransactions}>Transações</ToastAction>,
-       })
-
     let emailFromCookie = document.cookie
       .split("; ")
       .find((row) => row.startsWith("email="))
@@ -116,20 +96,20 @@ const CreateTransaction = () => {
   }
 
   return (
-    <AlertDialog>
-      <AlertDialogTrigger asChild>
+    <Dialog>
+      <DialogTrigger asChild>
         <Button size="sm" className="ml-auto lg:ml-4 gap-1">
           Adicionar
           <Plus className="h-4 w-4" />
         </Button>
-      </AlertDialogTrigger>
-      <AlertDialogContent>
-        <AlertDialogHeader>
-          <AlertDialogTitle>Criação de Nova Transação</AlertDialogTitle>
-          <AlertDialogDescription>
+      </DialogTrigger>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Criação de Nova Transação</DialogTitle>
+          <DialogDescription>
             Aqui você poderá criar uma nova transação baseada em suas
             movimentações financeiras.
-          </AlertDialogDescription>
+          </DialogDescription>
           <div className="pt-8 pb-4">
             <form onSubmit={handleSubmit}>
               <div className="grid gap-4 mb-12">
@@ -173,21 +153,23 @@ const CreateTransaction = () => {
                       Fonte da Transação
                     </Label>
                     <Select
-                      onValueChange={(value) =>
-                        handleFonteTransacaoChange(value)
-                      }
+                      onValueChange={(value) => setFonteTransacao(value)}
                       required
                     >
                       <SelectTrigger className="w-[180px] text-muted-foreground focus:text-foreground">
                         <SelectValue placeholder="Onde saiu ou entrou?"></SelectValue>
                       </SelectTrigger>
                       <SelectContent id="select-fonte">
-                        <SelectItem value="cartao-credito">
-                          Cartão de Crédito
-                        </SelectItem>
-                        <SelectItem value="cartao-debito">
-                          Cartão de Débito
-                        </SelectItem>
+                        {tipoTransacao === "despesa" && (
+                          <>
+                            <SelectItem value="cartao-credito">
+                              Cartão de Crédito
+                            </SelectItem>
+                            <SelectItem value="cartao-debito">
+                              Cartão de Débito
+                            </SelectItem>
+                          </>
+                        )}
                         <SelectItem value="investimentos">
                           Investimentos
                         </SelectItem>
@@ -271,19 +253,17 @@ const CreateTransaction = () => {
                   Por favor, preencha todos os campos!
                 </div>
               )}
-              <AlertDialogFooter className="lg:flex lg:justify-end lg:items-end">
-                <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                <Button
-                  type="submit"
-                >
-                  Criar Transação
-                </Button>
-              </AlertDialogFooter>
+              <DialogFooter className="lg:flex lg:justify-end lg:items-end">
+                <DialogClose asChild>
+                  <Button variant="outline">Cancelar</Button>
+                </DialogClose>
+                <Button type="submit">Criar Transação</Button>
+              </DialogFooter>
             </form>
           </div>
-        </AlertDialogHeader>
-      </AlertDialogContent>
-    </AlertDialog>
+        </DialogHeader>
+      </DialogContent>
+    </Dialog>
   )
 }
 

@@ -25,9 +25,9 @@ export default async function handler(
           .json({ error: "Erro ao processar a requisição." })
       }
 
-      const query = "SELECT email, senha FROM usuarios WHERE email = ?"
+      const query = "SELECT id, email, senha FROM usuarios WHERE email = ?"
       connection.query(query, [email], (error, results) => {
-        connection.release() // Liberar conexão para o pool
+        connection.release()
 
         if (error) {
           console.error("Erro ao executar consulta:", error)
@@ -53,7 +53,7 @@ export default async function handler(
           }
         )
 
-        const cookie = serialize("token", token, {
+        const cookieToken = serialize("token", token, {
           httpOnly: true,
           secure: process.env.NODE_ENV !== "development",
           sameSite: "strict",
@@ -61,7 +61,7 @@ export default async function handler(
           path: "/",
         })
 
-        const emailCookie = serialize("email", user.email, {
+        const cookieEmail = serialize("email", user.email, {
           httpOnly: false,
           secure: process.env.NODE_ENV !== "development",
           sameSite: "strict",
@@ -69,7 +69,15 @@ export default async function handler(
           path: "/",
         })
 
-        res.setHeader("Set-Cookie", [cookie, emailCookie])
+        const cookieUserId = serialize("userId", user.id, {
+          httpOnly: false,
+          secure: process.env.NODE_ENV !== "development",
+          sameSite: "strict",
+          maxAge: 86400,
+          path: "/",
+        })
+
+        res.setHeader("Set-Cookie", [cookieToken, cookieEmail, cookieUserId])
 
         return res.status(200).json({ message: "Login bem-sucedido." })
       })

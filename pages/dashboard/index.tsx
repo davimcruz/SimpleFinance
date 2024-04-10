@@ -15,8 +15,6 @@ import Summary from "@/components/dashboard/finances-summary"
 import TransactionsTable from "@/components/dashboard/transactions-table"
 import FinancesGraph from "@/components/dashboard/finances-graph"
 
-import { Toaster } from "@/components/ui/toaster"
-
 const inter = Inter({ subsets: ["latin"] })
 
 const DashboardPage = () => {
@@ -68,7 +66,6 @@ const DashboardPage = () => {
             <FinancesGraph />
           </div>
         </main>
-        <Toaster />
       </div>
     </ThemeProvider>
   )
