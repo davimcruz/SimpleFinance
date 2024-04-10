@@ -1,6 +1,7 @@
 import { NextApiRequest, NextApiResponse } from "next"
-import mysql, { Connection, MysqlError } from "mysql"
+import mysql, { MysqlError } from "mysql"
 import { v4 as uuidv4 } from "uuid"
+import { dbConfig } from "@/config/dbConfig"
 
 interface Usuario {
   id: string
@@ -10,15 +11,8 @@ interface Usuario {
   sobrenome: string
 }
 
-const dbConfig = {
-  host: "mysql.freehostia.com",
-  user: "davmac53_simplefinance",
-  password: "admin123",
-  database: "davmac53_simplefinance",
-}
-
 const queryAsync = (
-  connection: Connection,
+  connection: any,
   query: string,
   values: any[]
 ): Promise<any> => {

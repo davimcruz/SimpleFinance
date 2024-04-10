@@ -1,12 +1,6 @@
 import { NextApiRequest, NextApiResponse } from "next"
 import mysql from "mysql"
-
-const dbConfig = {
-  host: "mysql.freehostia.com",
-  user: "davmac53_simplefinance",
-  password: "admin123",
-  database: "davmac53_simplefinance",
-}
+import { dbConfig } from "@/config/dbConfig"
 
 const queryAsync = (query: string, values: any[] = []): Promise<any> => {
   const connection = mysql.createConnection(dbConfig)
