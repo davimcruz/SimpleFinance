@@ -56,8 +56,7 @@ export default async function handler(
     const extractedDate = data.substring(0, 10)
 
     const formattedDate = extractedDate.split("-").reverse().join("-")
-
-    const formattedValue = valor.replace("R$", "").trim()
+    const formattedValue = valor.replace("R$", "").trim().replace(/\./g, "")
 
     console.log("Salvando transação no banco de dados...")
     await queryAsync(

@@ -43,7 +43,7 @@ type FonteKey =
   | "ted-doc"
   | "cedulas"
 
-const TransactionsTable = () => {
+const TransactionsFull = () => {
   const [transactions, setTransactions] = useState<Transaction[]>([])
   const [loading, setLoading] = useState(true) // Adicionado estado de loading
 
@@ -65,8 +65,8 @@ const TransactionsTable = () => {
         }
       )
 
-      setTransactions(sortedTransactions.slice(0, 5))
-      setLoading(false) 
+      setTransactions(sortedTransactions)
+      setLoading(false)
     }
 
     fetchTransactions()
@@ -106,28 +106,17 @@ const TransactionsTable = () => {
   }
 
   return (
-    <Card className="lg:col-span-2" x-chunk="dashboard-01-chunk-4">
+    <Card className="m-12">
       <CardHeader className="flex flex-row items-center">
         <div className="grid gap-2">
           <CardTitle>Transações</CardTitle>
           <CardDescription>Transações mais Recentes:</CardDescription>
         </div>
-        <Button
-          variant="outline"
-          asChild
-          size="sm"
-          className="ml-auto gap-1 hidden lg:flex"
-        >
-          <Link href="/dashboard/transactions">
-            Ver Todas
-            <ArrowUpRight className="h-4 w-4" />
-          </Link>
-        </Button>
         <CreateTransaction />
       </CardHeader>
       <CardContent>
         {loading ? (
-            <Skeleton className="h-[250px]" />
+          <Skeleton className="h-[250px]" />
         ) : transactions.length === 0 ? (
           <div className="text-center justify-center items-center pt-20">
             <p>Você não possui Transações</p>
@@ -180,20 +169,10 @@ const TransactionsTable = () => {
         )}
       </CardContent>
       <div className="flex justify-center items-center pb-6 px-6">
-        <Button
-          variant="outline"
-          asChild
-          size="sm"
-          className="lg:hidden w-full"
-        >
-          <Link href="/dashboard/transactions">
-            Ver Todas Transações
-            <ArrowUpRight className="ml-2 h-4 w-4" />
-          </Link>
-        </Button>
+
       </div>
     </Card>
   )
 }
 
-export default TransactionsTable
+export default TransactionsFull
