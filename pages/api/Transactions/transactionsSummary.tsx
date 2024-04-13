@@ -8,8 +8,6 @@ export default async function transactionsSummary(
   try {
     const currentMonth = (new Date().getMonth() + 1).toString().padStart(2, "0")
 
-    console.log("Mês atual:", currentMonth)
-
     const transactions = await queryTransactions(req, res)
 
     const transactionsThisMonth = transactions.filter((transaction: any) => {
