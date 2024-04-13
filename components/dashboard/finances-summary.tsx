@@ -38,9 +38,22 @@ const Summary = () => {
         setTotalExpenseThisMonth(totalExpenseThisMonthString)
         setTotalBalance(totalBalanceString)
 
-        setBalanceDifference(data.balanceDifferenceString)
-        setIncomeDifference(data.incomeDifferenceString)
-        setExpenseDifference(data.expenseDifferenceString)
+        const balanceDifferenceString =
+          data.balanceDifferenceString === "+Infinity%"
+            ? "0%"
+            : data.balanceDifferenceString
+        const incomeDifferenceString =
+          data.incomeDifferenceString === "+Infinity%"
+            ? "0%"
+            : data.incomeDifferenceString
+        const expenseDifferenceString =
+          data.expenseDifferenceString === "+Infinity%"
+            ? "0%"
+            : data.expenseDifferenceString
+
+        setBalanceDifference(balanceDifferenceString)
+        setIncomeDifference(incomeDifferenceString)
+        setExpenseDifference(expenseDifferenceString)
 
         setLoading(false)
       } catch (error) {
