@@ -49,28 +49,6 @@ const TransactionsTable = () => {
   const [transactions, setTransactions] = useState<Transaction[]>([])
   const [loading, setLoading] = useState(true) 
 
-  const handleEditTransaction = async (transactionId: string) => {
-    try {
-      const response = await fetch("/api/Transactions/viewTransactions", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ transactionId }),
-      })
-
-      if (!response.ok) {
-        throw new Error("Erro ao editar a transação")
-      }
-
-      const result = await response.json()
-      console.log(result) 
-    } catch (error) {
-      console.error("Erro ao enviar requisição:", error)
-    }
-  }
-
-
   useEffect(() => {
     const fetchTransactions = async () => {
       setLoading(true) 
@@ -167,7 +145,8 @@ const TransactionsTable = () => {
                 </TableHead>
                 <TableHead className="hidden lg:table-cell">Fonte</TableHead>
                 <TableHead className="hidden lg:table-cell">Data</TableHead>
-                <TableHead className="ml-auto">Valor</TableHead>
+                <TableHead className="hidden lg:table-cell">Valor</TableHead>
+                <TableHead className="ml-auto">Visualização</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -197,7 +176,7 @@ const TransactionsTable = () => {
                   <TableCell className="hidden lg:table-cell">
                     R$ {formatValor(transaction.valor)}
                   </TableCell>
-                  <TableCell className="lg:hidden">
+                  <TableCell className="">
                     <TransactionsDetails
                       transactionId={transaction.transactionId}
                     />

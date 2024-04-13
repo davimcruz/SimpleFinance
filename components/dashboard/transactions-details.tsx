@@ -150,7 +150,7 @@ const TransactionsDetails = ({ transactionId }: TransactionsDetailsProps) => {
           size="sm"
           className="ml-auto lg:ml-4 gap-1"
         >
-          Editar
+          Detalhes
         </Button>
       </DialogTrigger>
       <DialogContent>

@@ -1,12 +1,8 @@
-import Link from "next/link"
 import { useEffect, useState } from "react"
-
-import { ArrowUpRight, Plus } from "lucide-react"
 
 import "../../app/globals.css"
 
 import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
 import {
   Card,
   CardContent,
@@ -24,8 +20,10 @@ import {
 } from "@/components/ui/table"
 import { Skeleton } from "../ui/skeleton"
 import CreateTransaction from "./create-transaction"
+import TransactionsDetails from "../dashboard/transactions-details"
 
 interface Transaction {
+  transactionId: string
   nome: string
   tipo: string
   fonte: string
@@ -45,11 +43,11 @@ type FonteKey =
 
 const TransactionsFull = () => {
   const [transactions, setTransactions] = useState<Transaction[]>([])
-  const [loading, setLoading] = useState(true) // Adicionado estado de loading
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     const fetchTransactions = async () => {
-      setLoading(true) // Ativa o loading ao iniciar a busca
+      setLoading(true)
       const response = await fetch("/api/Transactions/transactionsTable")
       const data = await response.json()
 
@@ -65,7 +63,7 @@ const TransactionsFull = () => {
         }
       )
 
-      setTransactions(sortedTransactions)
+      setTransactions(sortedTransactions.slice(0, 5))
       setLoading(false)
     }
 
@@ -132,7 +130,8 @@ const TransactionsFull = () => {
                 </TableHead>
                 <TableHead className="hidden lg:table-cell">Fonte</TableHead>
                 <TableHead className="hidden lg:table-cell">Data</TableHead>
-                <TableHead className="ml-auto">Valor</TableHead>
+                <TableHead className="hidden lg:table-cell">Valor</TableHead>
+                <TableHead className="ml-auto">Visualização</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -159,8 +158,13 @@ const TransactionsFull = () => {
                   <TableCell className="hidden lg:table-cell">
                     {transaction.data.replace(/-/g, "/")}
                   </TableCell>
-                  <TableCell className="sm:whitespace-nowrap sm:text-sm md:text-base">
+                  <TableCell className="hidden lg:table-cell">
                     R$ {formatValor(transaction.valor)}
+                  </TableCell>
+                  <TableCell className="">
+                    <TransactionsDetails
+                      transactionId={transaction.transactionId}
+                    />
                   </TableCell>
                 </TableRow>
               ))}
@@ -168,9 +172,7 @@ const TransactionsFull = () => {
           </Table>
         )}
       </CardContent>
-      <div className="flex justify-center items-center pb-6 px-6">
-
-      </div>
+      <div className="flex justify-center items-center pb-6 px-6"></div>
     </Card>
   )
 }
