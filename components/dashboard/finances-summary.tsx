@@ -116,7 +116,6 @@ const Summary = () => {
   )
 }
 
-// Componente Skeleton para o Card
 const SkeletonCard = () => (
   <Skeleton className="rounded-lg shadow-md p-4 h-[125px]"></Skeleton>
 )

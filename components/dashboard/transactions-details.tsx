@@ -288,10 +288,10 @@ const TransactionsDetails = ({ transactionId }: TransactionsDetailsProps) => {
                     <Input
                       id="valor"
                       placeholder="Exemplo: 199,90"
-                      value={valorEditado} // Usa o estado valorEditado que agora contém o valor formatado
+                      value={valorEditado}
                       onChange={(e) => {
                         handleChange(e)
-                        setValorTransacao(e.target.value) // Mantém o valor original para processamento
+                        setValorTransacao(e.target.value) 
                       }}
                       required
                     />
