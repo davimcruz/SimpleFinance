@@ -63,7 +63,7 @@ const TransactionsFull = () => {
         }
       )
 
-      setTransactions(sortedTransactions.slice(0, 5))
+      setTransactions(sortedTransactions)
       setLoading(false)
     }
 

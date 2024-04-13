@@ -6,9 +6,13 @@ import { Skeleton } from "@/components/ui/skeleton"
 
 const Summary = () => {
   const [totalBalance, setTotalBalance] = useState<string>("")
-  const [totalAvailable, setTotalAvailable] = useState<string>("")
-  const [totalIncome, setTotalIncome] = useState<string>("")
-  const [totalExpense, setTotalExpense] = useState<string>("")
+  const [totalAvailableThisMonth, setTotalAvailableThisMonth] =
+    useState<string>("")
+  const [totalIncomeThisMonth, setTotalIncomeThisMonth] = useState<string>("")
+  const [totalExpenseThisMonth, setTotalExpenseThisMonth] = useState<string>("")
+  const [balanceDifference, setBalanceDifference] = useState<string>("")
+  const [incomeDifference, setIncomeDifference] = useState<string>("")
+  const [expenseDifference, setExpenseDifference] = useState<string>("")
   const [loading, setLoading] = useState<boolean>(true)
 
   useEffect(() => {
@@ -20,19 +24,24 @@ const Summary = () => {
         const totalBalanceString = addThousandSeparator(
           data.totalBalance.toFixed(2).toString()
         )
-        const totalAvailableString = addThousandSeparator(
-          data.totalAvailable.toFixed(2).toString()
+        const totalAvailableThisMonthString = addThousandSeparator(
+          data.totalAvailableThisMonth.toFixed(2).toString()
         )
-        const totalIncomeString = addThousandSeparator(
-          data.totalIncome.toFixed(2).toString()
+        const totalIncomeThisMonthString = addThousandSeparator(
+          data.totalIncomeThisMonth.toFixed(2).toString()
         )
-        const totalExpenseString = addThousandSeparator(
-          data.totalExpense.toFixed(2).toString()
+        const totalExpenseThisMonthString = addThousandSeparator(
+          data.totalExpenseThisMonth.toFixed(2).toString()
         )
-        setTotalAvailable(totalAvailableString)
-        setTotalIncome(totalIncomeString)
-        setTotalExpense(totalExpenseString)
+        setTotalAvailableThisMonth(totalAvailableThisMonthString)
+        setTotalIncomeThisMonth(totalIncomeThisMonthString)
+        setTotalExpenseThisMonth(totalExpenseThisMonthString)
         setTotalBalance(totalBalanceString)
+
+        setBalanceDifference(data.balanceDifferenceString)
+        setIncomeDifference(data.incomeDifferenceString)
+        setExpenseDifference(data.expenseDifferenceString)
+
         setLoading(false)
       } catch (error) {
         console.error("Erro ao buscar o total balance:", error)
@@ -66,9 +75,9 @@ const Summary = () => {
               <DollarSign className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{`R$ ${totalAvailable}`}</div>
+              <div className="text-2xl font-bold">{`R$ ${totalAvailableThisMonth}`}</div>
               <p className="text-xs text-muted-foreground">
-                +20.1% em comparação ao mês anterior
+                {balanceDifference} em comparação ao mês anterior
               </p>
             </CardContent>
           </Card>
@@ -78,9 +87,9 @@ const Summary = () => {
               <MoveUpRight className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{`R$ ${totalIncome}`}</div>
+              <div className="text-2xl font-bold">{`R$ ${totalIncomeThisMonth}`}</div>
               <p className="text-xs text-muted-foreground">
-                +180.1% em comparação ao mês anterior
+                {incomeDifference} em comparação ao mês anterior
               </p>
             </CardContent>
           </Card>
@@ -90,9 +99,9 @@ const Summary = () => {
               <MoveDownRight className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{`R$ ${totalExpense}`}</div>
+              <div className="text-2xl font-bold">{`R$ ${totalExpenseThisMonth}`}</div>
               <p className="text-xs text-muted-foreground">
-                +19% em comparação ao mês anterior
+                {expenseDifference} em comparação ao mês anterior
               </p>
             </CardContent>
           </Card>
@@ -106,7 +115,7 @@ const Summary = () => {
             <CardContent>
               <div className="text-2xl font-bold">{`R$ ${totalBalance}`}</div>
               <p className="text-xs text-muted-foreground">
-                +43% em comparação ao mês anterior
+                Total transacionado em todos os meses
               </p>
             </CardContent>
           </Card>

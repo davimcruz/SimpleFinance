@@ -253,7 +253,7 @@ const CreateTransaction = () => {
                   Por favor, preencha todos os campos!
                 </div>
               )}
-              <DialogFooter className="lg:flex lg:justify-end lg:items-end">
+              <DialogFooter className="lg:flex lg:justify-end lg:items-end flex-col gap-4">
                 <DialogClose asChild>
                   <Button variant="outline">Cancelar</Button>
                 </DialogClose>
