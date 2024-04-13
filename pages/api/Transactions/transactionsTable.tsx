@@ -9,6 +9,7 @@ export default async function transactionsTable(
     const transactions = await queryTransactions(req, res)
 
     const table: any[] = transactions.map((transaction: any) => ({
+      transactionId: transaction.transactionId,
       nome: transaction.nome,
       tipo: transaction.tipo,
       fonte: transaction.fonte,

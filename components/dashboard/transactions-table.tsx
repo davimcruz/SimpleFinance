@@ -1,7 +1,7 @@
 import Link from "next/link"
 import { useEffect, useState } from "react"
 
-import { ArrowUpRight, Plus } from "lucide-react"
+import { ArrowUpRight } from "lucide-react"
 
 import "../../app/globals.css"
 
@@ -24,8 +24,10 @@ import {
 } from "@/components/ui/table"
 import { Skeleton } from "../ui/skeleton"
 import CreateTransaction from "./create-transaction"
+import TransactionsDetails from "./transactions-details"
 
 interface Transaction {
+  transactionId: string
   nome: string
   tipo: string
   fonte: string
@@ -45,11 +47,33 @@ type FonteKey =
 
 const TransactionsTable = () => {
   const [transactions, setTransactions] = useState<Transaction[]>([])
-  const [loading, setLoading] = useState(true) // Adicionado estado de loading
+  const [loading, setLoading] = useState(true) 
+
+  const handleEditTransaction = async (transactionId: string) => {
+    try {
+      const response = await fetch("/api/Transactions/viewTransactions", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ transactionId }),
+      })
+
+      if (!response.ok) {
+        throw new Error("Erro ao editar a transação")
+      }
+
+      const result = await response.json()
+      console.log(result) 
+    } catch (error) {
+      console.error("Erro ao enviar requisição:", error)
+    }
+  }
+
 
   useEffect(() => {
     const fetchTransactions = async () => {
-      setLoading(true) // Ativa o loading ao iniciar a busca
+      setLoading(true) 
       const response = await fetch("/api/Transactions/transactionsTable")
       const data = await response.json()
 
@@ -127,7 +151,7 @@ const TransactionsTable = () => {
       </CardHeader>
       <CardContent>
         {loading ? (
-            <Skeleton className="h-[250px]" />
+          <Skeleton className="h-[250px]" />
         ) : transactions.length === 0 ? (
           <div className="text-center justify-center items-center pt-20">
             <p>Você não possui Transações</p>
@@ -170,8 +194,13 @@ const TransactionsTable = () => {
                   <TableCell className="hidden lg:table-cell">
                     {transaction.data.replace(/-/g, "/")}
                   </TableCell>
-                  <TableCell className="sm:whitespace-nowrap sm:text-sm md:text-base">
+                  <TableCell className="hidden lg:table-cell">
                     R$ {formatValor(transaction.valor)}
+                  </TableCell>
+                  <TableCell className="lg:hidden">
+                    <TransactionsDetails
+                      transactionId={transaction.transactionId}
+                    />
                   </TableCell>
                 </TableRow>
               ))}

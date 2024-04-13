@@ -1,7 +1,6 @@
 import { NextApiRequest, NextApiResponse } from "next"
 import mysql from "mysql"
 import { dbConfig } from "@/config/dbConfig"
-import { v4 as uuidv4 } from "uuid" 
 
 const pool = mysql.createPool(dbConfig)
 
@@ -37,41 +36,25 @@ export default async function handler(
     return res.status(405).json({ error: "Método não permitido" })
   }
 
-  const { email, nome, tipo, fonte, detalhesFonte, data, valor } = req.body
-  console.log("Email recebido:", email)
+  const { nome, tipo, fonte, detalhesFonte, data, valor, transactionId } =
+    req.body
+  console.log("Transaction ID recebido:", transactionId)
 
   try {
-    console.log("Buscando ID do usuário no banco...")
-    const userResults = await queryAsync(
-      "SELECT id FROM usuarios WHERE email = ?",
-      [email]
-    )
-    if (userResults.length === 0) {
-      console.log("Usuário não encontrado")
-      throw new Error("Usuário não encontrado")
-    }
-
-    const userId = userResults[0].id
-    console.log("ID do usuário encontrado:", userId)
-
-    const transactionId = uuidv4()
-
     const extractedDate = data.substring(0, 10)
     const formattedDate = extractedDate.split("-").reverse().join("-")
     const formattedValue = valor.replace("R$", "").trim().replace(/\./g, "")
 
-    console.log("Salvando transação no banco de dados...")
     await queryAsync(
-      "INSERT INTO transacoes (transactionId, userId, nome, tipo, fonte, detalhesFonte, data, valor) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+      "UPDATE transacoes SET nome = ?, tipo = ?, fonte = ?, detalhesFonte = ?, data = ?, valor = ? WHERE transactionId = ?",
       [
-        transactionId,
-        userId,
         nome,
         tipo,
         fonte,
         detalhesFonte,
         formattedDate,
         formattedValue,
+        transactionId,
       ]
     )
 

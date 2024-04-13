@@ -42,6 +42,7 @@ export default async function queryTransactions(
       connection.query(query, [userId], (error, results) => {
         connection.release()
 
+
         if (error) {
           console.error("Erro na query:", error)
           return res.status(500).json({ error: "Erro ao executar consulta" })
