@@ -207,6 +207,7 @@ const DashboardPage = () => {
                 <CardFooter className="border-t px-6 py-4">
                   <Button
                     onClick={handleSave}
+                    variant="outline"
                     disabled={loadingSave || !newName || !newLastName}
                   >
                     {loadingSave ? "Salvando..." : "Salvar"}
@@ -233,11 +234,12 @@ const DashboardPage = () => {
                   <form className="flex flex-col gap-4">
                     <UploadButton
                       className="mt-6 lg:mt-0 
-                      ut-button:bg-white
-                      ut-button:after:bg-zinc-300
-                      ut-button:text-black
+                      ut-button:bg-zinc-800
+                      ut-button:after:bg-zinc-600
+                      ut-button:text-white
                       ut-allowed-content:hidden
-                        ut-button:font-medium
+                      ut-button:font-normal
+                      ut-button: text-sm
                        "
                       endpoint="imageUploader"
                       onClientUploadComplete={(res) => {
@@ -252,7 +254,9 @@ const DashboardPage = () => {
                 <CardFooter className="border-t px-6 py-4">
                   <Button
                     onClick={saveImage}
+                    className="font-semibold"
                     disabled={loadingImage}
+                    variant="outline"
                     id="save-image"
                   >
                     {loadingImage ? "Salvando..." : "Salvar"}
