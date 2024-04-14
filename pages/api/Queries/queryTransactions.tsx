@@ -8,7 +8,7 @@ export default async function queryTransactions(
   req: NextApiRequest,
   res: NextApiResponse
 ): Promise<any[]> {
-  return new Promise((resolve, reject) => {
+  return new Promise<any[]>((resolve, reject) => {
     let userId: number | undefined
     try {
       const cookies = req.headers.cookie
@@ -27,27 +27,31 @@ export default async function queryTransactions(
       }
     } catch (error) {
       console.error("Erro ao obter userId dos cookies:", error)
-      return res.status(500).json({ error: "Erro ao obter userId dos cookies" })
+      res.status(500).json({ error: "Erro ao obter userId dos cookies" })
+      reject(error)
+      return
     }
 
     pool.getConnection((err: MysqlError, connection) => {
       if (err) {
         console.error("Erro ao obter conexão do pool:", err)
-        return res
-          .status(500)
-          .json({ error: "Erro ao conectar ao banco de dados" })
+        connection.release()
+        res.status(500).json({ error: "Erro ao conectar ao banco de dados" })
+        reject(err) // Rejeitar a promessa em caso de erro
+        return // Encerrar a execução da função
       }
 
       const query = "SELECT * FROM transacoes WHERE userId = ?"
       connection.query(query, [userId], (error, results) => {
         connection.release()
 
-
         if (error) {
           console.error("Erro na query:", error)
-          return res.status(500).json({ error: "Erro ao executar consulta" })
+          res.status(500).json({ error: "Erro ao executar consulta" })
+          reject(error) // Rejeitar a promessa em caso de erro
+          return // Encerrar a execução da função
         }
-        resolve(results)
+        resolve(results) 
       })
     })
   })

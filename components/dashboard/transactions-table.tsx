@@ -131,7 +131,7 @@ const TransactionsTable = () => {
         {loading ? (
           <Skeleton className="h-[250px]" />
         ) : transactions.length === 0 ? (
-          <div className="text-center justify-center items-center pt-20">
+          <div className="text-center justify-center items-center pt-6">
             <p>Você não possui Transações</p>
           </div>
         ) : (
