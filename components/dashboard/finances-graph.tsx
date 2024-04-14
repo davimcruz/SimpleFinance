@@ -1,4 +1,4 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import BarChart from "./charts/bar-chart"
 import PieChart from "./charts/pie-chart"
@@ -10,7 +10,7 @@ const FinancesGraph = () => {
       <CardHeader>
         <CardTitle>Resumos Gráficos</CardTitle>
       </CardHeader>
-      <CardContent className="flex flex-col justify-center items-center">
+      <CardContent className="flex flex-col justify-center items-center max-w-[22rem] md:max-w-none">
         <div className="hidden sm:hidden md:flex lg:flex xl:flex">
           <Tabs
             defaultValue="bar"
@@ -25,17 +25,17 @@ const FinancesGraph = () => {
             </TabsContent>
             <TabsContent
               value="pie"
-              className="w-full lg:h-80 lg:w-80 mt-8 ml-auto"
+              className="w-full lg:h-80 lg:w-80 mt-16 ml-auto"
             >
               <PieChart />
             </TabsContent>
           </Tabs>
         </div>
-        <div className="flex flex-col md:hidden">
-          <div className="w-full h-64 mt-8">
+        <div className="flex flex-col text-center justify-center items-center ml-auto md:hidden">
+          <div className="w-full h-auto mt-8">
             <BarChart />
           </div>
-          <Separator className="w-96 mt-8" />
+          <Separator className="w-full mt-8" />
           <div className="w-full h-64 mt-8">
             <PieChart />
           </div>
