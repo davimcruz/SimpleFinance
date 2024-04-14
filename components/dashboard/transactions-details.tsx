@@ -109,7 +109,6 @@ const TransactionsDetails = ({ transactionId }: TransactionsDetailsProps) => {
   }
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault()
 
     if (
       nome &&
