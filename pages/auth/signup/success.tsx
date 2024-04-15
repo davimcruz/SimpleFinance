@@ -24,12 +24,12 @@ export default function SuccessRegister() {
   return (
     <ThemeProvider defaultTheme="dark" attribute="class">
       <div
-        className={`${inter.className} flex items-center justify-center h-screen`}
+        className={`${inter.className} flex items-center justify-center max-h-[90vh] min-h-[90vh]`}
       >
         <div className="fixed right-4 top-4 lg:block hidden">
           <ModeToggle />
         </div>
-        <Card className="w-[400px] flex-row transition-all duration-300 ">
+        <Card className="w-[90vw] lg:w-[400px] flex-row transition-all duration-300 ">
           <CardTitle className="flex text-4xl pt-10 items-center justify-center">
             SimpleFinance
           </CardTitle>
