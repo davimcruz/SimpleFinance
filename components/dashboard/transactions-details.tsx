@@ -193,7 +193,7 @@ const TransactionsDetails = ({ transactionId }: TransactionsDetailsProps) => {
             Detalhes
           </Button>
         </DialogTrigger>
-        <DialogContent>
+        <DialogContent className="w-[90vw] max-h-[90vh] overflow-auto rounded-xl">
           <DialogHeader>
             <DialogTitle>Detalhes da Transação</DialogTitle>
             <DialogDescription>
