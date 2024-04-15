@@ -5,6 +5,7 @@ import { Menu, Wallet, Search } from "lucide-react"
 import "../../app/globals.css"
 import { ModeToggle } from "@/components/theme/toggleTheme"
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
+import { Progress } from "@/components/ui/progress"
 import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
@@ -20,6 +21,12 @@ import { Skeleton } from "../ui/skeleton"
 
 const useUserImage = () => {
   const [userImage, setUserImage] = useState("")
+  const [progress, setProgress] = useState(13)
+
+   useEffect(() => {
+     const timer = setTimeout(() => setProgress(66), 500)
+     return () => clearTimeout(timer)
+   }, [])
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -155,16 +162,11 @@ const Header = () => {
         </SheetContent>
       </Sheet>
       <div className="flex w-full items-center gap-4 md:ml-auto md:gap-2 lg:gap-4">
-        <form className="ml-auto flex-1 sm:flex-initial">
-          <div className="relative">
-            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-            <Input
-              type="search"
-              placeholder="Procurar Transações..."
-              className="pl-8 sm:w-[300px] md:w-[200px] lg:w-[300px]"
-            />
+        <div className="ml-auto flex-1 sm:flex-initial">
+          <div className="relative mr-4">
+            <Progress value={33} className="lg:w-[15vw] md:w-[35  vw] w-auto h-[10px] ml-4"/>
           </div>
-        </form>
+        </div>
         <ModeToggle />
         <DropdownMenu>
           <DropdownMenuTrigger asChild>

@@ -104,76 +104,77 @@ const TransactionsFull = () => {
   }
 
   return (
-    <Card className="m-12">
-      <CardHeader className="flex flex-row items-center">
-        <div className="grid gap-2">
-          <CardTitle>Transações</CardTitle>
-          <CardDescription>Transações mais Recentes:</CardDescription>
-        </div>
-        <CreateTransaction />
-      </CardHeader>
-      <CardContent>
-        {loading ? (
-          <Skeleton className="h-[250px]" />
-        ) : transactions.length === 0 ? (
-          <div className="text-center justify-center items-center pt-20">
-            <p>Você não possui Transações</p>
+    <div className="flex justify-center items-center">
+      <Card className="m-12 w-[90vw]">
+        <CardHeader className="flex flex-row items-center">
+          <div className="grid gap-2">
+            <CardTitle>Transações</CardTitle>
+            <CardDescription>Transações mais Recentes:</CardDescription>
           </div>
-        ) : (
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="table-cell">Transação</TableHead>
-                <TableHead className="sm:opacity-0 md:hidden lg:hidden"></TableHead>
-                <TableHead className="hidden lg:table-cell md:table-cell">
-                  Tipo
-                </TableHead>
-                <TableHead className="hidden lg:table-cell">Fonte</TableHead>
-                <TableHead className="hidden lg:table-cell">Data</TableHead>
-                <TableHead className="hidden lg:table-cell">Valor</TableHead>
-                <TableHead className="ml-auto">Visualização</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {transactions.map((transaction, index) => (
-                <TableRow key={index}>
-                  <TableCell>
-                    <div className="font-medium">{transaction.nome}</div>
-                  </TableCell>
-                  <TableCell>
-                    <Badge
-                      className="hidden lg:inline-flex md:inline-flex text-xs"
-                      variant="outline"
-                    >
-                      {capitalizeFirstLetter(transaction.tipo)}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="hidden lg:table-cell">
-                    {formatFonte(transaction.fonte)}
-                    <br />
-                    <div className="hidden text-sm text-muted-foreground md:inline">
-                      {transaction.detalhesFonte}
-                    </div>
-                  </TableCell>
-                  <TableCell className="hidden lg:table-cell">
-                    {transaction.data.replace(/-/g, "/")}
-                  </TableCell>
-                  <TableCell className="hidden lg:table-cell">
-                    R$ {formatValor(transaction.valor)}
-                  </TableCell>
-                  <TableCell className="">
-                    <TransactionsDetails
-                      transactionId={transaction.transactionId}
-                    />
-                  </TableCell>
+          <CreateTransaction />
+        </CardHeader>
+        <CardContent>
+          {loading ? (
+            <Skeleton className="h-[250px]" />
+          ) : transactions.length === 0 ? (
+            <div className="text-center justify-center items-center pt-20">
+              <p>Você não possui Transações</p>
+            </div>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="table-cell">Transação</TableHead>
+                  <TableHead className="sm:opacity-0 md:hidden lg:hidden"></TableHead>
+                  <TableHead className="hidden lg:table-cell md:table-cell">
+                    Tipo
+                  </TableHead>
+                  <TableHead className="hidden lg:table-cell">Fonte</TableHead>
+                  <TableHead className="hidden lg:table-cell">Data</TableHead>
+                  <TableHead className="hidden lg:table-cell">Valor</TableHead>
+                  <TableHead className="ml-auto">Visualização</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        )}
-      </CardContent>
-      <div className="flex justify-center items-center pb-6 px-6"></div>
-    </Card>
+              </TableHeader>
+              <TableBody>
+                {transactions.map((transaction, index) => (
+                  <TableRow key={index}>
+                    <TableCell>
+                      <div className="font-medium">{transaction.nome}</div>
+                    </TableCell>
+                    <TableCell>
+                      <Badge
+                        className="hidden lg:inline-flex md:inline-flex text-xs"
+                        variant="outline"
+                      >
+                        {capitalizeFirstLetter(transaction.tipo)}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="hidden lg:table-cell">
+                      {formatFonte(transaction.fonte)}
+                      <br />
+                      <div className="hidden text-sm text-muted-foreground md:inline">
+                        {transaction.detalhesFonte}
+                      </div>
+                    </TableCell>
+                    <TableCell className="hidden lg:table-cell">
+                      {transaction.data.replace(/-/g, "/")}
+                    </TableCell>
+                    <TableCell className="hidden lg:table-cell">
+                      R$ {formatValor(transaction.valor)}
+                    </TableCell>
+                    <TableCell className="">
+                      <TransactionsDetails
+                        transactionId={transaction.transactionId}
+                      />
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
+        </CardContent>
+      </Card>
+    </div>
   )
 }
 
