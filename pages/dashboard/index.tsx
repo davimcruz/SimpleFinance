@@ -30,7 +30,7 @@ const DashboardPage = () => {
     const fetchUserData = async () => {
       try {
         const response = await fetch(
-          `/api/Queries/query?email=davimachadocruz@gmail.com`
+          `/api/Queries/query?email=${emailFromCookie}`
         )
         if (!response.ok) {
           throw new Error("Erro ao obter dados do usuário")
