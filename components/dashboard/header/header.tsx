@@ -5,7 +5,6 @@ import { Menu, Wallet } from "lucide-react"
 import "../../../app/globals.css"
 import { ModeToggle } from "@/components/theme/toggleTheme"
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
-import { Progress } from "@/components/ui/progress"
 import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
@@ -15,9 +14,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { Input } from "@/components/ui/input"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
-import { Skeleton } from "../../ui/skeleton"
 import ProgressBar from "./progress"
 
 const useUserImage = () => {
