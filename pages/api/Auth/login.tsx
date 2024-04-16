@@ -63,7 +63,6 @@ export default async function handler(
 
         const cookieEmail = serialize("email", user.email, {
           httpOnly: false,
-          secure: process.env.NODE_ENV !== "development",
           sameSite: "strict",
           maxAge: 86400,
           path: "/",
@@ -71,7 +70,6 @@ export default async function handler(
 
         const cookieUserId = serialize("userId", user.id, {
           httpOnly: false,
-          secure: process.env.NODE_ENV !== "development",
           sameSite: "strict",
           maxAge: 86400,
           path: "/",
