@@ -98,7 +98,7 @@ const CreateTransaction = () => {
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button size="sm" className="ml-auto">
+        <Button variant="secondary" size="sm" className="ml-auto border-2">
           Adicionar
           <Plus className="h-4 w-4 ml-2" />
         </Button>
