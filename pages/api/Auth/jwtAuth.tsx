@@ -7,10 +7,7 @@ export async function verifyToken(ctx: GetServerSidePropsContext) {
   if (!token) return false
 
   try {
-    await jwt.verify(
-      token,
-      "xZrqJqLg2l1+2KoMcRlUHgVgPvP4XmUqxCm4UF8X9IAn1xH8xS7HcU5Y+bey7FZy4/+nNg02wOT0cGtLQ+ZzRg==" as string
-    ) 
+    await jwt.verify(token, process.env.JWT_SECRET as string) 
     return true
   } catch (error) {
     return false

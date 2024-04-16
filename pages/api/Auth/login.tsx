@@ -47,7 +47,7 @@ export default async function handler(
 
         const token = jwt.sign(
           { email: user.email },
-          "xZrqJqLg2l1+2KoMcRlUHgVgPvP4XmUqxCm4UF8X9IAn1xH8xS7HcU5Y+bey7FZy4/+nNg02wOT0cGtLQ+ZzRg==" as Secret,
+          process.env.JWT_SECRET as Secret,
           {
             expiresIn: "24h",
           }
