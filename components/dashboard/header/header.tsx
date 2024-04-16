@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react"
 import Router, { useRouter } from "next/router"
 import Link from "next/link"
-import { Menu, Wallet, Search } from "lucide-react"
-import "../../app/globals.css"
+import { Menu, Wallet } from "lucide-react"
+import "../../../app/globals.css"
 import { ModeToggle } from "@/components/theme/toggleTheme"
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
 import { Progress } from "@/components/ui/progress"
@@ -17,16 +17,11 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Input } from "@/components/ui/input"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
-import { Skeleton } from "../ui/skeleton"
+import { Skeleton } from "../../ui/skeleton"
+import ProgressBar from "./progress"
 
 const useUserImage = () => {
   const [userImage, setUserImage] = useState("")
-  const [progress, setProgress] = useState(13)
-
-   useEffect(() => {
-     const timer = setTimeout(() => setProgress(66), 500)
-     return () => clearTimeout(timer)
-   }, [])
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -161,11 +156,10 @@ const Header = () => {
           </nav>
         </SheetContent>
       </Sheet>
+
       <div className="flex w-full items-center gap-4 md:ml-auto md:gap-2 lg:gap-4">
         <div className="ml-auto flex-1 sm:flex-initial">
-          <div className="relative mr-4">
-            <Progress value={33} className="lg:w-[15vw] md:w-[35  vw] w-auto h-[10px] ml-4"/>
-          </div>
+         <ProgressBar />
         </div>
         <ModeToggle />
         <DropdownMenu>

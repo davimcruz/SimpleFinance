@@ -37,8 +37,8 @@ export default async function queryTransactions(
         console.error("Erro ao obter conexão do pool:", err)
         connection.release()
         res.status(500).json({ error: "Erro ao conectar ao banco de dados" })
-        reject(err) // Rejeitar a promessa em caso de erro
-        return // Encerrar a execução da função
+        reject(err) 
+        return 
       }
 
       const query = "SELECT * FROM transacoes WHERE userId = ?"
@@ -48,8 +48,8 @@ export default async function queryTransactions(
         if (error) {
           console.error("Erro na query:", error)
           res.status(500).json({ error: "Erro ao executar consulta" })
-          reject(error) // Rejeitar a promessa em caso de erro
-          return // Encerrar a execução da função
+          reject(error) 
+          return 
         }
         resolve(results) 
       })

@@ -66,7 +66,7 @@ const PieChart = () => {
             labels: paymentMethodsData.labels.map(translateLabel),
             datasets: [
               {
-                label: "Principais Fontes de Despesas",
+                label: "Vezes Utilizada",
                 data: paymentMethodsData.data,
                 backgroundColor: [
                   "rgba(255, 99, 132, 0.2)",

@@ -20,7 +20,7 @@ import {
 } from "@/components/ui/table"
 import { Skeleton } from "../ui/skeleton"
 import CreateTransaction from "./create-transaction"
-import TransactionsDetails from "../dashboard/transactions-details"
+import TransactionsDetails from "../dashboard/table/transactions-details"
 
 interface Transaction {
   transactionId: string

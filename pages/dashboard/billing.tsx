@@ -7,7 +7,7 @@ import "../../app/globals.css"
 import { ThemeProvider } from "@/components/theme/theme-provider"
 import { verifyToken } from "../api/Auth/jwtAuth"
 
-import Header from "@/components/dashboard/header"
+import Header from "@/components/dashboard/header/header"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -16,7 +16,9 @@ const Billing = () => {
     <ThemeProvider defaultTheme="dark" attribute="class">
       <div className={`${inter.className} flex min-h-screen w-full flex-col`}>
         <Header />
-        <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8"></main>
+        <main className="flex items-center justify-center w-full h-[90vh]">
+          <p className="text-center">Em desenvolvimento...</p>
+        </main>
       </div>
     </ThemeProvider>
   )

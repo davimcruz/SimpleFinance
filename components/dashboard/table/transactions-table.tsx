@@ -3,7 +3,7 @@ import { useEffect, useState } from "react"
 
 import { ArrowUpRight } from "lucide-react"
 
-import "../../app/globals.css"
+import "../../../app/globals.css"
 
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -22,7 +22,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import { Skeleton } from "../ui/skeleton"
+import { Skeleton } from "../../ui/skeleton"
 import CreateTransaction from "./create-transaction"
 import TransactionsDetails from "./transactions-details"
 
@@ -47,11 +47,11 @@ type FonteKey =
 
 const TransactionsTable = () => {
   const [transactions, setTransactions] = useState<Transaction[]>([])
-  const [loading, setLoading] = useState(true) 
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     const fetchTransactions = async () => {
-      setLoading(true) 
+      setLoading(true)
       const response = await fetch("/api/Transactions/transactionsTable")
       const data = await response.json()
 
@@ -68,7 +68,7 @@ const TransactionsTable = () => {
       )
 
       setTransactions(sortedTransactions.slice(0, 5))
-      setLoading(false) 
+      setLoading(false)
     }
 
     fetchTransactions()

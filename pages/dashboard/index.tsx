@@ -10,9 +10,9 @@ import { ThemeProvider } from "@/components/theme/theme-provider"
 import { Skeleton } from "@/components/ui/skeleton"
 import { verifyToken } from "../api/Auth/jwtAuth"
 
-import Header from "@/components/dashboard/header"
+import Header from "@/components/dashboard/header/header"
 import Summary from "@/components/dashboard/finances-summary"
-import TransactionsTable from "@/components/dashboard/transactions-table"
+import TransactionsTable from "@/components/dashboard/table/transactions-table"
 import FinancesGraph from "@/components/dashboard/finances-graph"
 
 const inter = Inter({ subsets: ["latin"] })

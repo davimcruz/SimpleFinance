@@ -7,7 +7,7 @@ import "../../app/globals.css"
 import { ThemeProvider } from "@/components/theme/theme-provider"
 import { verifyToken } from "../api/Auth/jwtAuth"
 
-import Header from "@/components/dashboard/header"
+import Header from "@/components/dashboard/header/header"
 import TransactionsFull from "@/components/transactions/transactions-full"
 
 const inter = Inter({ subsets: ["latin"] })
@@ -17,7 +17,7 @@ const Transactions = () => {
     <ThemeProvider defaultTheme="dark" attribute="class">
       <div className={`${inter.className} flex min-h-screen w-full flex-col`}>
         <Header />
-        <TransactionsFull/>
+        <TransactionsFull />
       </div>
     </ThemeProvider>
   )
