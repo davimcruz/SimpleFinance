@@ -165,7 +165,7 @@ const Header = () => {
               <Avatar>
                 <AvatarFallback>SF</AvatarFallback>
                 {!userImage ? (
-                  <AvatarImage src="https://www.simplefinance.cloud/profile.png" />
+                  <AvatarImage src="" />
                 ) : (
                   <>
                     <AvatarImage src={userImage} />
