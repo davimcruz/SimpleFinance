@@ -1,4 +1,5 @@
 import type { Metadata } from "next"
+import Head from "next/head"
 import "./globals.css"
 
 export const metadata: Metadata = {
@@ -36,13 +37,20 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <head>
+      <Head>
         <link rel="icon" href="/favicon.ico" />
         <title>SimpleFinance</title>
-      </head>
-      <body>
-        {children}
-      </body>
+        <meta
+          name="description"
+          content="Descubra o Simple Finance, o principal software de finanças pessoais projetado para ajudá-lo a gerenciar orçamentos, despesas e investimentos em um só lugar. Comece a controlar seu futuro financeiro hoje."
+        />
+        <meta
+          name="keywords"
+          content="software de finanças pessoais, gerenciamento de orçamento, acompanhamento de despesas, portfólio de investimentos, planejamento financeiro, Simple Finance, gestão de dinheiro"
+        />
+        <meta name="robots" content="index, follow" />
+      </Head>
+      <body>{children}</body>
     </html>
   )
 }
