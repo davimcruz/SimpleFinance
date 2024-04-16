@@ -159,19 +159,19 @@ const Header = () => {
 
       <div className="flex w-full items-center gap-4 md:ml-auto md:gap-2 lg:gap-4">
         <div className="ml-auto flex-1 sm:flex-initial">
-         <ProgressBar />
+          <ProgressBar />
         </div>
         <ModeToggle />
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="secondary" size="icon" className="rounded-full">
               <Avatar>
+                <AvatarFallback>SF</AvatarFallback>
                 {!userImage ? (
-                  <Skeleton className="h-4 w-4 rounded-full" />
+                  <AvatarImage src="./profile.png" />
                 ) : (
                   <>
                     <AvatarImage src={userImage} />
-                    <AvatarFallback>SF</AvatarFallback>
                   </>
                 )}
               </Avatar>
