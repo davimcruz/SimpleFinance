@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react"
-import { Activity, DollarSign, MoveDownRight, MoveUpRight } from "lucide-react"
+import { ArrowDownUp, MoveDownRight, MoveUpRight, WalletMinimal } from "lucide-react"
 import "../../app/globals.css"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
@@ -39,15 +39,18 @@ const Summary = () => {
         setTotalBalance(totalBalanceString)
 
         const balanceDifferenceString =
-          data.balanceDifferenceString === "+Infinity%"
+          data.balanceDifferenceString === "+Infinity%" ||
+          data.balanceDifferenceString === "NaN%"
             ? "0%"
             : data.balanceDifferenceString
         const incomeDifferenceString =
-          data.incomeDifferenceString === "+Infinity%"
+          data.incomeDifferenceString === "+Infinity%" ||
+          data.incomeDifferenceString === "NaN%"
             ? "0%"
             : data.incomeDifferenceString
         const expenseDifferenceString =
-          data.expenseDifferenceString === "+Infinity%"
+          data.expenseDifferenceString === "+Infinity%" ||
+          data.expenseDifferenceString === "NaN%"
             ? "0%"
             : data.expenseDifferenceString
 
@@ -85,7 +88,7 @@ const Summary = () => {
               <CardTitle className="text-sm font-medium">
                 Total Disponível
               </CardTitle>
-              <DollarSign className="h-4 w-4 text-muted-foreground" />
+              <WalletMinimal className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{`R$ ${totalAvailableThisMonth}`}</div>
@@ -123,7 +126,7 @@ const Summary = () => {
               <CardTitle className="text-sm font-medium">
                 Volume Transacionado
               </CardTitle>
-              <Activity className="h-4 w-4 text-muted-foreground" />
+              <ArrowDownUp className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{`R$ ${totalBalance}`}</div>

@@ -174,8 +174,8 @@ const DashboardPage = () => {
               <Link href="#" className="font-semibold text-primary">
                 Geral
               </Link>
-              <Link href="#">Integrações</Link>
-              <Link href="#">Suporte</Link>
+              {/* <Link href="#">Integrações</Link>
+              <Link href="#">Suporte</Link> */}
               <Link href="#" onClick={handleLogout}>
                 Sair
               </Link>
@@ -248,7 +248,7 @@ const DashboardPage = () => {
                         setImageUrl(res[0].url)
                       }}
                       onUploadError={(error: Error) => {
-                        console.log(`ERROR! ${error.message}`)
+                        console.log(`Erro: ${error.message}`)
                       }}
                     />
                   </form>

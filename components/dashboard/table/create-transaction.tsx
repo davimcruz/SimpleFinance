@@ -28,7 +28,7 @@ import {
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Plus } from "lucide-react"
+import { ChevronRight } from "lucide-react"
 import { Calendar as CalendarIcon } from "lucide-react"
 
 import formatadorValor from "@/utils/valueFormatter"
@@ -98,9 +98,9 @@ const CreateTransaction = () => {
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button size="sm" className="ml-auto lg:ml-4 gap-1">
+        <Button variant="secondary" size="sm" className="ml-auto lg:ml-4 gap-1 border-2">
           Adicionar
-          <Plus className="h-4 w-4" />
+          <ChevronRight className="h-4 w-4" />
         </Button>
       </DialogTrigger>
       <DialogContent className="w-[90vw] max-h-[90vh] overflow-auto rounded-xl">

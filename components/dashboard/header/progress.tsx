@@ -9,7 +9,6 @@ const ProgressBar = () => {
     fetch("/api/Progress/progress-tracker")
       .then((response) => response.json())
       .then((data) => {
-        console.log("Número total de transações:", data.count)
         const progressPercentage = (data.count / 25) * 100
         setDataCount(data.count)
         setProgress(progressPercentage)
