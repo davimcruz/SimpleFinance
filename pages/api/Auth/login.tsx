@@ -59,6 +59,8 @@ export default async function handler(
           path: "/",
         })
 
+        console.log(user.email, user.id)
+
         const cookieEmail = serialize("email", user.email, {
           httpOnly: true,
           maxAge: 86400,
@@ -73,7 +75,7 @@ export default async function handler(
 
         res.setHeader("Set-Cookie", [cookieToken, cookieEmail, cookieUserId])
 
-        return res.status(200).json({ message: "Login bem-sucedido.", res })
+        return res.status(200).json({ message: "Login bem-sucedido."})
       })
     })
   } catch (error) {
