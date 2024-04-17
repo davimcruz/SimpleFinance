@@ -50,7 +50,7 @@ export default function LoginPage() {
         throw new Error(data.error)
       }
 
-      router.push("./success")
+      router.push("./signin/success")
     } catch (error: any) {
       setError(error.message)
     } finally {
