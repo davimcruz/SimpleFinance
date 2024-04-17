@@ -165,7 +165,7 @@ const Header = () => {
               <Avatar>
                 <AvatarFallback>SF</AvatarFallback>
                 {!userImage ? (
-                  <AvatarImage src="profile.png" />
+                  <AvatarImage src="./profile.png" />
                 ) : (
                   <>
                     <AvatarImage src={userImage} />
