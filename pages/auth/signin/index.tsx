@@ -1,6 +1,6 @@
 import { Inter } from "next/font/google"
 import { useState } from "react"
-import { Router, useRouter } from "next/router"
+import { useRouter } from "next/router"
 import {
   Card,
   CardContent,
@@ -32,27 +32,21 @@ export default function LoginPage() {
     setLoading(true)
 
     try {
-      const response = await fetch(
-        "https://simplefinance.cloud/api/Auth/login",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          credentials: "include",
-          body: JSON.stringify({ email, password }),
-        }
-      )
+      const response = await fetch("/api/Auth/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email, password }),
+      })
 
       const data = await response.json()
-
-      console.log(data)
 
       if (!response.ok) {
         throw new Error(data.error)
       }
 
-      router.push("./signin/success")
+      router.push("/auth/signin/success")
     } catch (error: any) {
       setError(error.message)
     } finally {
