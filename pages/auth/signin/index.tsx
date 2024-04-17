@@ -49,7 +49,7 @@ export default function LoginPage() {
         throw new Error(data.error)
       }
 
-      router.push("/auth/signin/success")
+      router.push("https://simplefinance.cloud/auth/signin/success")
     } catch (error: any) {
       setError(error.message)
     } finally {
