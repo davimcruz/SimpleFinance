@@ -55,23 +55,31 @@ export default async function handler(
 
         const cookieToken = serialize("token", token, {
           httpOnly: true,
+          secure: process.env.NODE_ENV !== "development",
+          sameSite: "strict",
           maxAge: 86400,
           path: "/",
         })
 
         const cookieEmail = serialize("email", user.email, {
           httpOnly: false,
+          secure: process.env.NODE_ENV !== "development",
+          sameSite: "strict",
           maxAge: 86400,
           path: "/",
         })
 
-        const cookieUserId = serialize("userId", user.id.toString(), {
+        const cookieUserId = serialize("userId", user.id, {
           httpOnly: false,
+          secure: process.env.NODE_ENV !== "development",
+          sameSite: "strict",
           maxAge: 86400,
           path: "/",
         })
 
         res.setHeader("Set-Cookie", [cookieToken, cookieEmail, cookieUserId])
+
+        return res.status(200).json({ message: "Login bem-sucedido." })
       })
     })
   } catch (error) {
