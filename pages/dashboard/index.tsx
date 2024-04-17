@@ -22,28 +22,33 @@ const DashboardPage = () => {
   const [lastName, setLastName] = useState("")
 
   useEffect(() => {
-    const emailFromCookie = document.cookie
+    const emailCookie = document.cookie
       .split("; ")
       .find((row) => row.startsWith("email="))
-      ?.split("=")[1]
 
-    const fetchUserData = async () => {
-      try {
-        const response = await fetch(
-          `https://simplefinance.cloud/api/Queries/query?email=${emailFromCookie}`
-        )
-        if (!response.ok) {
-          throw new Error("Erro ao obter dados do usuário")
+    if (emailCookie) {
+      const emailFromCookie = decodeURIComponent(
+        emailCookie.split("=")[1]
+      ).replace("%40", "@")
+
+      const fetchUserData = async () => {
+        try {
+          const response = await fetch(
+            `/api/Queries/query?email=${emailFromCookie}`
+          )
+          if (!response.ok) {
+            throw new Error("Erro ao obter dados do usuário")
+          }
+          const userData = await response.json()
+          setName(userData.nome)
+          setLastName(userData.sobrenome)
+        } catch (error) {
+          console.error(error)
         }
-        const userData = await response.json()
-        setName(userData.nome)
-        setLastName(userData.sobrenome)
-      } catch (error) {
-        console.error(error)
       }
-    }
 
-    fetchUserData()
+      fetchUserData()
+    }
   }, [])
 
   return (
