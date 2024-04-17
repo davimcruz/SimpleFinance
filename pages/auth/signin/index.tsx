@@ -32,13 +32,16 @@ export default function LoginPage() {
     setLoading(true)
 
     try {
-      const response = await fetch("/api/Auth/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ email, password }),
-      })
+      const response = await fetch(
+        "https://simple-finance-api.vercel.app/api/Auth/login",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ email, password }),
+        }
+      )
 
       const data = await response.json()
 

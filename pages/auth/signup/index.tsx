@@ -44,13 +44,16 @@ export default function Register() {
     try {
       setLoading(true)
 
-      const response = await fetch("/api/Auth/register", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ email, password, nome, sobrenome }),
-      })
+      const response = await fetch(
+        "https://simple-finance-api.vercel.app/api/Auth/register",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ email, password, nome, sobrenome }),
+        }
+      )
 
       if (!response.ok) {
         throw new Error("Erro ao registrar novo usuário.")
