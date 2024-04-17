@@ -73,7 +73,7 @@ export default async function handler(
 
         res.setHeader("Set-Cookie", [cookieToken, cookieEmail, cookieUserId])
 
-        return res.status(200).json({ message: "Login bem-sucedido." })
+        return res.status(200).json({ message: "Login bem-sucedido.", res })
       })
     })
   } catch (error) {
