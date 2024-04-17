@@ -45,13 +45,14 @@ export default async function handler(
           return res.status(401).json({ error: "Senha incorreta." })
         }
 
-        const token = jwt.sign(
-          { email: user.email },
-          process.env.JWT_SECRET as Secret,
-          {
-            expiresIn: "24h",
-          }
-        )
+        const tokenPayload = {
+          email: user.email,
+          userId: user.id,
+        }
+
+        const token = jwt.sign(tokenPayload, process.env.JWT_SECRET as Secret, {
+          expiresIn: "24h",
+        })
 
         const cookieToken = serialize("token", token, {
           httpOnly: true,
@@ -59,21 +60,17 @@ export default async function handler(
           path: "/",
         })
 
-        const cookieEmail = serialize("email", user.email, {
-          httpOnly: false,
-          maxAge: 86400,
-          path: "/",
-        })
+        res.setHeader("Set-Cookie", [cookieToken])
 
-        const cookieUserId = serialize("userId", user.id.toString(), {
-          httpOnly: false,
-          maxAge: 86400,
-          path: "/",
-        })
-
-        res.setHeader("Set-Cookie", [cookieToken, cookieEmail, cookieUserId])
-
-        return res.status(200).json({ message: "Login bem-sucedido." })
+        return res
+          .status(200)
+          .json({
+            message: "Login bem-sucedido.",
+            cookieToken,
+            token: token,
+            email: user.email,
+            userId: user.id,
+          })
       })
     })
   } catch (error) {
