@@ -1,6 +1,6 @@
 import { Inter } from "next/font/google"
 import { useState } from "react"
-import { useRouter } from "next/router"
+import { Router, useRouter } from "next/router"
 import {
   Card,
   CardContent,
@@ -50,7 +50,7 @@ export default function LoginPage() {
         throw new Error(data.error)
       }
 
-      console.log(data)
+      router.push("./auth/success")
     } catch (error: any) {
       setError(error.message)
     } finally {
