@@ -59,23 +59,21 @@ export default async function handler(
           path: "/",
         })
 
-        console.log(user.email, user.id)
-
         const cookieEmail = serialize("email", user.email, {
-          httpOnly: true,
+          httpOnly: false,
           maxAge: 86400,
           path: "/",
         })
 
-        const cookieUserId = serialize("userId", user.id, {
-          httpOnly: true,
+        const cookieUserId = serialize("userId", user.id.toString(), {
+          httpOnly: false,
           maxAge: 86400,
           path: "/",
         })
 
         res.setHeader("Set-Cookie", [cookieToken, cookieEmail, cookieUserId])
 
-        return res.status(200).json({ message: "Login bem-sucedido."})
+        return res.status(200).json({ message: "Login bem-sucedido." })
       })
     })
   } catch (error) {
