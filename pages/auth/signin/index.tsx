@@ -33,7 +33,7 @@ export default function LoginPage() {
 
     try {
       const response = await fetch(
-        "https://simple-finance-api.vercel.app/api/Auth/login",
+        "https://simplefinance.cloud/api/Auth/login",
         {
           method: "POST",
           headers: {
