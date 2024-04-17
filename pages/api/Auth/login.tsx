@@ -45,32 +45,29 @@ export default async function handler(
           return res.status(401).json({ error: "Senha incorreta." })
         }
 
-        const tokenPayload = {
-          email: user.email,
-          userId: user.id,
-        }
+      const tokenPayload = {
+        email: user.email,
+        userId: user.id,
+      }
 
-        const token = jwt.sign(tokenPayload, process.env.JWT_SECRET as Secret, {
-          expiresIn: "24h",
-        })
+      const token = jwt.sign(tokenPayload, process.env.JWT_SECRET as Secret, {
+        expiresIn: "24h",
+      })
 
-        const cookieToken = serialize("token", token, {
-          httpOnly: true,
-          maxAge: 86400,
-          path: "/",
-        })
+      const cookieUserId = serialize("userId", user.id.toString(), {
+        httpOnly: true,
+        maxAge: 86400,
+        path: "/",
+      })
 
-        res.setHeader("Set-Cookie", [cookieToken])
+      res.setHeader("Set-Cookie", [cookieUserId])
 
-        return res
-          .status(200)
-          .json({
-            message: "Login bem-sucedido.",
-            cookieToken,
-            token: token,
-            email: user.email,
-            userId: user.id,
-          })
+      return res.status(200).json({
+        message: "Login bem-sucedido.",
+        token: token,
+        email: user.email,
+        userId: user.id,
+      })
       })
     })
   } catch (error) {
