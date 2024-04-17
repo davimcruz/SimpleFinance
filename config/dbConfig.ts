@@ -1,6 +1,6 @@
 export const dbConfig = {
-  host: "mysql.freehostia.com",
-  user: "davmac53_simplefinance",
-  password: "admin123",
-  database: "davmac53_simplefinance",
+  host: process.env.DB_HOST,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_DATABASE,
 }
