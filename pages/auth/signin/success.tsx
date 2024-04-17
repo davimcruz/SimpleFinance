@@ -59,12 +59,12 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
   if (!isVerified) {
     console.log("Falha na verificação do token.")
 
-    // return {
-    //   redirect: {
-    //     destination: "/auth/signin",
-    //     permanent: false,
-    //   },
-    // }
+    return {
+      redirect: {
+        destination: "/auth/signin",
+        permanent: false,
+      },
+    }
   }
 
   console.log("Token verificado com sucesso.")

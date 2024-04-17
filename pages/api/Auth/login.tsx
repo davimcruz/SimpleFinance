@@ -55,21 +55,18 @@ export default async function handler(
 
         const cookieToken = serialize("token", token, {
           httpOnly: true,
-          sameSite: "strict",
           maxAge: 86400,
           path: "/",
         })
 
         const cookieEmail = serialize("email", user.email, {
-          httpOnly: false,
-          sameSite: "strict",
+          httpOnly: true,
           maxAge: 86400,
           path: "/",
         })
 
         const cookieUserId = serialize("userId", user.id, {
-          httpOnly: false,
-          sameSite: "strict",
+          httpOnly: true,
           maxAge: 86400,
           path: "/",
         })
