@@ -45,7 +45,7 @@ export default function Register() {
       setLoading(true)
 
       const response = await fetch(
-        "https://simple-finance-api.vercel.app/api/Auth/register",
+        "/api/Auth/register",
         {
           method: "POST",
           headers: {
