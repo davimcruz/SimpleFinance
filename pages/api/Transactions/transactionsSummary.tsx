@@ -1,39 +1,77 @@
 import { NextApiRequest, NextApiResponse } from "next"
-import queryTransactions from "../Queries/queryTransactions"
+import { PrismaClient } from "@prisma/client"
+
+const prisma = new PrismaClient()
 
 export default async function transactionsSummary(
   req: NextApiRequest,
   res: NextApiResponse
 ): Promise<void> {
   try {
+    const cookies = req.headers.cookie
+    if (!cookies) {
+      throw new Error("Cookies não encontrados na requisição.")
+    }
+
+    const userIdCookie = cookies
+      .split("; ")
+      .find((row) => row.startsWith("userId="))
+    if (!userIdCookie) {
+      throw new Error("Cookie userId não encontrado na requisição.")
+    }
+
+    const userId = parseInt(userIdCookie.split("=")[1])
+    if (isNaN(userId)) {
+      throw new Error("Valor do userId nos cookies não é um número.")
+    }
+
+    // Consulta transações do usuário no banco de dados
+    const transactions = await prisma.transacoes.findMany({
+      where: {
+        userId: userId,
+      },
+    })
+
+    // Define o mês atual e o mês anterior
     const currentMonth = (new Date().getMonth() + 1).toString().padStart(2, "0")
+    const lastMonth =
+      new Date().getMonth() === 0
+        ? "12" // Se janeiro, o mês anterior é dezembro (Deve haver forma mais otimizada para fazer isso)
+        : new Date().getMonth().toString().padStart(2, "0")
 
-    const transactions = await queryTransactions(req, res)
-
-    const transactionsThisMonth = transactions.filter((transaction: any) => {
-      const transactionMonth = transaction.data.split("-")[1]
+    // Filtra transações do mês atual
+    const transactionsThisMonth = transactions.filter((transaction) => {
+      const transactionMonth = transaction.data
+        ? transaction.data.split("-")[1]
+        : ""
       return transactionMonth === currentMonth
     })
 
-    const lastMonth = new Date().getMonth().toString().padStart(2, "0")
-
-    const transactionsLastMonth = transactions.filter((transaction: any) => {
-      const transactionMonth = transaction.data.split("-")[1]
+    // Filtra transações do mês anterior
+    const transactionsLastMonth = transactions.filter((transaction) => {
+      const transactionMonth = transaction.data
+        ? transaction.data.split("-")[1]
+        : ""
       return transactionMonth === lastMonth
     })
 
+    // Inicializa variáveis para cálculos
     let totalAvailableThisMonth = 0
     let totalIncomeThisMonth = 0
     let totalExpenseThisMonth = 0
 
-    transactionsThisMonth.forEach((transaction: any) => {
-      const valueWithDot = transaction.valor.replace(",", ".")
-      totalAvailableThisMonth += parseFloat(valueWithDot)
+    transactionsThisMonth.forEach((transaction) => {
+      if (transaction.valor) {
+        const valueWithDot = transaction.valor.replace(",", ".")
+        const value = parseFloat(valueWithDot)
 
-      if (transaction.tipo === "receita") {
-        totalIncomeThisMonth += parseFloat(valueWithDot)
-      } else if (transaction.tipo === "despesa") {
-        totalExpenseThisMonth += parseFloat(valueWithDot)
+        totalAvailableThisMonth += value
+
+        if (transaction.tipo === "receita") {
+          totalIncomeThisMonth += value
+        } else if (transaction.tipo === "despesa") {
+          totalExpenseThisMonth += value
+        }
       }
     })
 
@@ -41,29 +79,42 @@ export default async function transactionsSummary(
     let totalIncomeLastMonth = 0
     let totalExpenseLastMonth = 0
 
-    transactionsLastMonth.forEach((transaction: any) => {
-      const valueWithDot = transaction.valor.replace(",", ".")
-      totalAvailableLastMonth += parseFloat(valueWithDot)
+    transactionsLastMonth.forEach((transaction) => {
+      if (transaction.valor) {
+        const valueWithDot = transaction.valor.replace(",", ".")
+        const value = parseFloat(valueWithDot)
 
-      if (transaction.tipo === "receita") {
-        totalIncomeLastMonth += parseFloat(valueWithDot)
-      } else if (transaction.tipo === "despesa") {
-        totalExpenseLastMonth += parseFloat(valueWithDot)
+        totalAvailableLastMonth += value
+
+        if (transaction.tipo === "receita") {
+          totalIncomeLastMonth += value
+        } else if (transaction.tipo === "despesa") {
+          totalExpenseLastMonth += value
+        }
       }
     })
 
+    // Calcula as diferenças percentuais entre os meses
     const balanceDifferencePercentage =
-      ((totalAvailableThisMonth - totalAvailableLastMonth) /
-        totalAvailableLastMonth) *
-      100
+      totalAvailableLastMonth > 0
+        ? ((totalAvailableThisMonth - totalAvailableLastMonth) /
+            totalAvailableLastMonth) *
+          100
+        : 0
     const incomeDifferencePercentage =
-      ((totalIncomeThisMonth - totalIncomeLastMonth) / totalIncomeLastMonth) *
-      100
+      totalIncomeLastMonth > 0
+        ? ((totalIncomeThisMonth - totalIncomeLastMonth) /
+            totalIncomeLastMonth) *
+          100
+        : 0
     const expenseDifferencePercentage =
-      ((totalExpenseThisMonth - totalExpenseLastMonth) /
-        totalExpenseLastMonth) *
-      100
+      totalExpenseLastMonth > 0
+        ? ((totalExpenseThisMonth - totalExpenseLastMonth) /
+            totalExpenseLastMonth) *
+          100
+        : 0
 
+    // Formata as diferenças percentuais
     const formatPercentageDifference = (percentage: number) => {
       return percentage > 0
         ? `+${percentage.toFixed(2)}%`
@@ -80,18 +131,20 @@ export default async function transactionsSummary(
       expenseDifferencePercentage
     )
 
+    // Ajusta totais para o mês atual
     totalAvailableThisMonth = parseFloat(totalAvailableThisMonth.toFixed(2))
     totalAvailableThisMonth = totalIncomeThisMonth - totalExpenseThisMonth
     totalAvailableLastMonth = parseFloat(totalAvailableLastMonth.toFixed(2))
 
-    const totalBalance = transactions.reduce(
-      (total: number, transaction: any) => {
+    // Calcula o saldo total das transações
+    const totalBalance = transactions.reduce((total: number, transaction) => {
+      if (transaction.valor) {
         const valueWithDot = transaction.valor.replace(",", ".")
         const value = parseFloat(valueWithDot)
         return total + value
-      },
-      0
-    )
+      }
+      return total
+    }, 0)
 
     res.status(200).json({
       totalAvailableThisMonth,
@@ -107,5 +160,7 @@ export default async function transactionsSummary(
   } catch (error) {
     console.error("Erro ao buscar transações:", error)
     res.status(500).json({ error: "Erro ao buscar transações" })
+  } finally {
+    await prisma.$disconnect()
   }
 }

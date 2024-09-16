@@ -1,5 +1,7 @@
 import { NextApiRequest, NextApiResponse } from "next"
-import queryTransactions from "../Queries/queryTransactions"
+import { PrismaClient } from "@prisma/client"
+
+const prisma = new PrismaClient()
 
 export default async function editTransactions(
   req: NextApiRequest,
@@ -18,21 +20,22 @@ export default async function editTransactions(
   }
 
   try {
-    const transactions = await queryTransactions(req, res)
-
-    const transaction = transactions.find(
-      (t: any) => t.transactionId === transactionId
-    )
+    const transaction = await prisma.transacoes.findUnique({
+      where: {
+        transactionId: transactionId,
+      },
+    })
 
     if (!transaction) {
       console.log("Transação não encontrada para o ID:", transactionId)
       return res.status(404).json({ error: "Transação não encontrada" })
     }
 
-
     res.status(200).json(transaction)
   } catch (error) {
     console.error("Erro ao processar a requisição:", error)
     res.status(500).json({ error: "Erro ao processar a requisição" })
+  } finally {
+    await prisma.$disconnect()
   }
 }

@@ -1,32 +1,8 @@
 import { NextApiRequest, NextApiResponse } from "next"
-import mysql from "mysql"
-import { dbConfig } from "@/config/dbConfig"
-import { v4 as uuidv4 } from "uuid" 
+import { PrismaClient } from "@prisma/client"
+import { v4 as uuidv4 } from "uuid"
 
-const pool = mysql.createPool(dbConfig)
-
-const queryAsync = (query: string, values: any[] = []): Promise<any> => {
-  return new Promise((resolve, reject) => {
-    pool.getConnection((err, connection) => {
-      if (err) {
-        console.error("Erro ao obter conexão do pool:", err)
-        return reject(err)
-      }
-
-      connection.query(query, values, (err, results) => {
-        connection.release()
-
-        if (err) {
-          console.error("Erro na query:", err)
-          return reject(err)
-        }
-
-        console.log("Resultados da query:", results)
-        resolve(results)
-      })
-    })
-  })
-}
+const prisma = new PrismaClient()
 
 export default async function handler(
   req: NextApiRequest,
@@ -42,16 +18,16 @@ export default async function handler(
 
   try {
     console.log("Buscando ID do usuário no banco...")
-    const userResults = await queryAsync(
-      "SELECT id FROM usuarios WHERE email = ?",
-      [email]
-    )
-    if (userResults.length === 0) {
+    const user = await prisma.usuarios.findUnique({
+      where: { email },
+    })
+
+    if (!user) {
       console.log("Usuário não encontrado")
       throw new Error("Usuário não encontrado")
     }
 
-    const userId = userResults[0].id
+    const userId = user.id
     console.log("ID do usuário encontrado:", userId)
 
     const transactionId = uuidv4()
@@ -61,23 +37,24 @@ export default async function handler(
     const formattedValue = valor.replace("R$", "").trim().replace(/\./g, "")
 
     console.log("Salvando transação no banco de dados...")
-    await queryAsync(
-      "INSERT INTO transacoes (transactionId, userId, nome, tipo, fonte, detalhesFonte, data, valor) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
-      [
+    await prisma.transacoes.create({
+      data: {
         transactionId,
         userId,
         nome,
         tipo,
         fonte,
-        detalhesFonte,
-        formattedDate,
-        formattedValue,
-      ]
-    )
+        detalhesFonte: detalhesFonte || null,
+        data: formattedDate || null,
+        valor: formattedValue || null,
+      },
+    })
 
     res.status(200).json({ success: true })
   } catch (error) {
     console.error("Erro ao processar a requisição:", error)
     res.status(500).json({ error: "Erro ao processar a requisição" })
+  } finally {
+    await prisma.$disconnect()
   }
 }
