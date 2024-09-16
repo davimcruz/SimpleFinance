@@ -42,5 +42,8 @@
   "zenMode.fullScreen": false,
   "zenMode.centerLayout": false,
   "zenMode.hideLineNumbers": false,
-  "zenMode.showTabs": "single"
+  "zenMode.showTabs": "single",
+  "[prisma]": {
+    "editor.defaultFormatter": "Prisma.prisma"
+  }
 }

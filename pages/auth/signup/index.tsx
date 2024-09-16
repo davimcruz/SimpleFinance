@@ -29,39 +29,45 @@ export default function Register() {
   const [error, setError] = useState<string | undefined>(undefined)
   const [loading, setLoading] = useState(false)
 
+  const validateEmail = (email: string) =>
+    /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
+  const validatePassword = (password: string) => password.length >= 8
+
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault()
 
-    if (password.length < 8) {
+    if (!validatePassword(password)) {
       setError("Sua senha deve conter pelo menos 8 dígitos.")
       return
     }
+    if (!validateEmail(email)) {
+      setError("Digite um email válido.")
+      return
+    }
     if (nome.length < 4) {
-      setError("Verifique seu nome e tente novamente.")
+      setError("Seu nome deve conter pelo menos 4 caracteres.")
       return
     }
 
     try {
       setLoading(true)
 
-      const response = await fetch(
-        "/api/Auth/register",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ email, password, nome, sobrenome }),
-        }
-      )
+      const response = await fetch("/api/Auth/register", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email, password, nome, sobrenome }),
+      })
 
       if (!response.ok) {
-        throw new Error("Erro ao registrar novo usuário.")
+        const result = await response.json()
+        throw new Error(result.error || "Erro ao registrar")
       }
 
       router.push("/auth/signup/success")
     } catch (error: any) {
-      setError("Este email já foi cadastrado.")
+      setError(error.message || "Erro ao registrar")
     } finally {
       setLoading(false)
     }
@@ -134,10 +140,12 @@ export default function Register() {
                 type="submit"
                 disabled={loading}
               >
-                {loading ? "Registrando..." : "Registrar"}{" "}
+                {loading ? "Registrando..." : "Registrar"}
               </Button>
               {error && (
-                <p className="mt-4 text-center transition text-sm">{error}</p>
+                <p className="mt-4 text-center text-red-500 transition text-sm">
+                  {error}
+                </p>
               )}
             </form>
           </CardContent>

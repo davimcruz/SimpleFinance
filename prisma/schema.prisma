@@ -1,0 +1,33 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model transacoes {
+  userId        Int
+  nome          String   @db.VarChar(40)
+  tipo          String   @db.VarChar(40)
+  fonte         String   @db.VarChar(40)
+  detalhesFonte String?  @db.VarChar(255)
+  data          String?  @db.VarChar(10)
+  valor         String?  @db.VarChar(10)
+  dataCriacao   DateTime @default(now()) @db.Timestamp(0)
+  transactionId String   @id @default(uuid()) @db.Char(36)
+  usuarios      usuarios @relation(fields: [userId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "transacoes_ibfk_1")
+
+  @@index([userId], map: "userId")
+}
+
+model usuarios {
+  id         Int          @id @default(autoincrement())
+  email      String       @unique(map: "email") @db.VarChar(255)
+  senha      String       @db.VarChar(255)
+  nome       String       @db.VarChar(100)
+  sobrenome  String       @db.VarChar(100)
+  image      String?      @db.VarChar(255)
+  transacoes transacoes[]  
+}

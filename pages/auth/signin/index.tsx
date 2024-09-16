@@ -24,12 +24,21 @@ export default function LoginPage() {
   const router = useRouter()
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
-  const [error, setError] = useState("")
+  const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     setLoading(true)
+    setError(null) 
+
+    if (!email.includes("@") || password.length < 8) {
+      setError(
+        "Por favor, insira um email válido e uma senha com pelo menos 8 dígitos."
+      )
+      setLoading(false)
+      return
+    }
 
     try {
       const response = await fetch("/api/Auth/login", {
@@ -40,10 +49,9 @@ export default function LoginPage() {
         body: JSON.stringify({ email, password }),
       })
 
-      const data = await response.json()
-
       if (!response.ok) {
-        throw new Error(data.error)
+        const data = await response.json()
+        throw new Error(data.error || "Erro ao tentar fazer login.")
       }
 
       router.push("/auth/signin/success")
@@ -79,7 +87,9 @@ export default function LoginPage() {
                     type="email"
                     id="email"
                     placeholder="simplefinance@example.com"
+                    value={email}
                     onChange={(e) => setEmail(e.target.value)}
+                    required
                   />
                 </div>
                 <div>
@@ -88,7 +98,9 @@ export default function LoginPage() {
                     type="password"
                     id="password"
                     placeholder="Sua senha"
+                    value={password}
                     onChange={(e) => setPassword(e.target.value)}
+                    required
                   />
                 </div>
               </div>
@@ -100,7 +112,7 @@ export default function LoginPage() {
                 {loading ? "Logando..." : "Logar"}
               </Button>
               {error && (
-                <p className="mt-4 text-center transition text-sm">{error}</p>
+                <p className="mt-4 text-center text-sm text-red-600">{error}</p>
               )}
             </form>
           </CardContent>
