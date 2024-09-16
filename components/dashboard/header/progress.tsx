@@ -6,7 +6,7 @@ const ProgressBar = () => {
   const [dataCount, setDataCount] = useState(0)
 
   useEffect(() => {
-    fetch("/api/Progress/progress-tracker")
+    fetch("/api/Progress/progressTracker")
       .then((response) => response.json())
       .then((data) => {
         const progressPercentage = (data.count / 25) * 100

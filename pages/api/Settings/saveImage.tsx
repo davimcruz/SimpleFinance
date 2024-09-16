@@ -1,26 +1,7 @@
 import { NextApiRequest, NextApiResponse } from "next"
-import mysql, { Connection, MysqlError } from "mysql"
-import { dbConfig } from "@/config/dbConfig"
+import { PrismaClient } from "@prisma/client"
 
-const queryAsync = (
-  connection: Connection,
-  query: string,
-  values: any[]
-): Promise<any> => {
-  return new Promise((resolve, reject) => {
-    connection.query(
-      query,
-      values,
-      (err: MysqlError | null, results?: any[]) => {
-        if (err) {
-          reject(err)
-        } else {
-          resolve(results)
-        }
-      }
-    )
-  })
-}
+const prisma = new PrismaClient()
 
 export default async function handler(
   req: NextApiRequest,
@@ -34,27 +15,18 @@ export default async function handler(
   console.log("Email:", email)
   console.log("ImageUrl:", imageUrl)
 
-  const connection = mysql.createConnection(dbConfig)
-
   try {
-    await new Promise<void>((resolve, reject) => {
-      connection.connect((err: MysqlError | null) => {
-        if (err) reject(err)
-        else resolve()
-      })
+    const updatedUser = await prisma.usuarios.update({
+      where: { email },
+      data: { image: imageUrl },
     })
 
-    const updateQuery = "UPDATE usuarios SET image = ? WHERE email = ?"
-    console.log("Update Query:", updateQuery)
-    console.log("Values:", [imageUrl, email])
-
-    await queryAsync(connection, updateQuery, [imageUrl, email])
+    console.log("Updated User:", updatedUser)
 
     return res.status(200).json({ success: imageUrl })
   } catch (error) {
     console.error("Erro:", error)
     return res.status(500).json({ error: "Erro ao processar a requisição" })
   } finally {
-    connection.end()
   }
 }
