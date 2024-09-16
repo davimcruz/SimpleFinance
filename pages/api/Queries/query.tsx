@@ -1,26 +1,7 @@
 import { NextApiRequest, NextApiResponse } from "next"
-import mysql, { Connection, MysqlError } from "mysql"
-import { dbConfig } from "@/config/dbConfig"
+import { PrismaClient } from "@prisma/client"
 
-const queryAsync = (
-  connection: Connection,
-  query: string,
-  values: any[]
-): Promise<any> => {
-  return new Promise((resolve, reject) => {
-    connection.query(
-      query,
-      values,
-      (err: MysqlError | null, results?: any[]) => {
-        if (err) {
-          reject(err)
-        } else {
-          resolve(results)
-        }
-      }
-    )
-  })
-}
+const prisma = new PrismaClient()
 
 export default async function handler(
   req: NextApiRequest,
@@ -31,32 +12,26 @@ export default async function handler(
   }
 
   const { email } = req.query
-  const connection = mysql.createConnection(dbConfig)
+
+  if (typeof email !== "string") {
+    return res.status(400).json({ error: "Email inválido" })
+  }
 
   try {
-    await new Promise<void>((resolve, reject) => {
-      connection.connect((err: MysqlError | null) => {
-        if (err) reject(err)
-        else resolve()
-      })
+    const user = await prisma.usuarios.findUnique({
+      where: { email },
+      select: { id: true, nome: true, sobrenome: true, image: true },
     })
 
-    const selectQuery =
-      "SELECT id, nome, sobrenome, image FROM usuarios WHERE email = ?"
-    const rows = await queryAsync(connection, selectQuery, [email])
-
-    if (rows.length === 0) {
+    if (!user) {
       return res.status(404).json({ error: "Usuário não encontrado" })
     }
 
-    const { id, nome, sobrenome, image } = rows[0]
-
-    return res.status(200).json({ id, nome, sobrenome, image })
+    return res.status(200).json(user)
   } catch (error) {
     console.error("Erro:", error)
     return res.status(500).json({ error: "Erro ao processar a requisição" })
   } finally {
-    
-    connection.end()
+    await prisma.$disconnect()
   }
 }
