@@ -1,15 +1,19 @@
 import { GetServerSideProps } from "next"
 import { Inter } from "next/font/google"
 import "../../app/globals.css"
+
 import { ThemeProvider } from "@/components/theme/theme-provider"
+import { Skeleton } from "@/components/ui/skeleton"
+
 import Summary from "@/components/dashboard/summary/Summary"
 import TransactionsTable from "@/components/dashboard/table/TransactionsTable"
 import FinancesGraph from "@/components/dashboard/graphs/FinancesGraph"
-import { getServerSidePropsDashboard } from "@/utils/getServerSideProps"
-import { Skeleton } from "@/components/ui/skeleton"
 import Header from "@/components/dashboard/header/HeaderComponent"
 
+import { getServerSidePropsDashboard } from "@/utils/getServerSideProps"
+
 const inter = Inter({ subsets: ["latin"] })
+
 
 const DashboardPage = ({
   user,

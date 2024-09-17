@@ -62,7 +62,7 @@ const TransactionsDetails = ({ transactionId }: TransactionsDetailsProps) => {
   }
 
   const handleTransactionsDetails = async () => {
-    console.log("Transaction ID received:", transactionId)
+    console.log("Id recebido:", transactionId)
 
     try {
       const response = await fetch("/api/Transactions/viewTransactions", {
