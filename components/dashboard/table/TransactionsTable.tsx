@@ -23,8 +23,8 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { Skeleton } from "../../ui/skeleton"
-import CreateTransaction from "./create-transaction"
-import TransactionsDetails from "./transactions-details"
+import CreateTransaction from "./CreateTransaction"
+import TransactionsDetails from "./TransactionDetails"
 
 interface Transaction {
   transactionId: string

@@ -42,7 +42,6 @@ const TransactionsDetails = ({ transactionId }: TransactionsDetailsProps) => {
   const [date, setDate] = React.useState<Date>()
   const [valorEditado, setValor] = useState("")
   const [erro, setErro] = useState(false)
-  const [id, setTransactionId] = useState("")
   const [nome, setNome] = useState("")
   const [tipoTransacao, setTipoTransacao] = useState("")
   const [fonteTransacao, setFonteTransacao] = useState("")
