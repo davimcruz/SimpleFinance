@@ -1,9 +1,5 @@
-import { useState, useEffect } from "react"
-
 import { GetServerSideProps } from "next"
-
 import { Inter } from "next/font/google"
-
 import "../../app/globals.css"
 
 import { ThemeProvider } from "@/components/theme/theme-provider"
@@ -17,51 +13,22 @@ import FinancesGraph from "@/components/dashboard/finances-graph"
 
 const inter = Inter({ subsets: ["latin"] })
 
-const DashboardPage = () => {
-  const [name, setName] = useState("")
-  const [lastName, setLastName] = useState("")
-
-  useEffect(() => {
-    const emailCookie = document.cookie
-      .split("; ")
-      .find((row) => row.startsWith("email="))
-
-    if (emailCookie) {
-      const emailFromCookie = decodeURIComponent(
-        emailCookie.split("=")[1]
-      ).replace("%40", "@")
-
-      const fetchUserData = async () => {
-        try {
-          const response = await fetch(
-            `/api/Queries/query?email=${emailFromCookie}`
-          )
-          if (!response.ok) {
-            throw new Error("Erro ao obter dados do usuário")
-          }
-          const userData = await response.json()
-          setName(userData.nome)
-          setLastName(userData.sobrenome)
-        } catch (error) {
-          console.error(error)
-        }
-      }
-
-      fetchUserData()
-    }
-  }, [])
-
+const DashboardPage = ({
+  user,
+}: {
+  user?: { nome: string; sobrenome: string }
+}) => {
   return (
     <ThemeProvider defaultTheme="dark" attribute="class">
       <div className={`${inter.className} flex min-h-screen w-full flex-col`}>
         <Header />
         <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8">
           <div>
-            {!name || !lastName ? (
+            {!user || !user.nome || !user.sobrenome ? (
               <Skeleton className="h-8 w-[230px]" />
             ) : (
               <h1 className="ml-2 text-2xl font-bold py-2 lg:py-0">
-                Olá, {name} {lastName}
+                Olá, {user.nome} {user.sobrenome}
               </h1>
             )}
           </div>
@@ -81,7 +48,6 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
 
   if (!isVerified) {
     console.log("Falha na verificação do token.")
-
     return {
       redirect: {
         destination: "/auth/signin",
@@ -90,8 +56,36 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
     }
   }
 
-  console.log("Token verificado com sucesso.")
-  return { props: {} }
+  const emailCookie = ctx.req.cookies.email
+
+  if (!emailCookie) {
+    return {
+      redirect: {
+        destination: "/auth/signin",
+        permanent: false,
+      },
+    }
+  }
+
+  try {
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_BASE_URL}/api/Queries/query?email=${emailCookie}`
+    )
+    const userData = await response.json()
+
+    return {
+      props: {
+        user: userData || null, // (Obs: Dá para fazer com coalescência nula, acredito eu)
+      },
+    }
+  } catch (error) {
+    console.error("Erro ao buscar os dados do usuário:", error)
+    return {
+      props: {
+        user: null, // Em caso de erro, passamos null para evitar crash no render 
+      },
+    }
+  }
 }
 
 export default DashboardPage
