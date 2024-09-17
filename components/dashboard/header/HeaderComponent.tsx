@@ -104,14 +104,7 @@ const Header: React.FC<HeaderProps> = ({ userImage }) => {
             >
               Transações
             </Link>
-            <Link
-              href="/dashboard/billing"
-              className={`${linkClassName(
-                "/dashboard/billing"
-              )} transition-colors hover:text-foreground`}
-            >
-              Planos
-            </Link>
+          
           </nav>
         </SheetContent>
       </Sheet>

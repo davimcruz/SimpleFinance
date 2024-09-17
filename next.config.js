@@ -1,3 +1,5 @@
+//Redirecionamento do usuário por padrão para /dashboard
+
 module.exports = {
   async redirects() {
     return [
