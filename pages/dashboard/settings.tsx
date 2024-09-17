@@ -25,6 +25,12 @@ import Header from "@/components/dashboard/header/header"
 
 const inter = Inter({ subsets: ["latin"] })
 
+interface UserData {
+  nome: string
+  sobrenome: string
+  image?: string 
+}
+
 const DashboardPage = () => {
   const [name, setName] = useState("")
   const [lastName, setLastName] = useState("")
@@ -65,10 +71,10 @@ const DashboardPage = () => {
         if (!response.ok) {
           throw new Error("Erro ao obter dados do usuário")
         }
-        const userData = await response.json()
+        const userData: UserData = await response.json() 
         setName(userData.nome)
         setLastName(userData.sobrenome)
-        setUserImage(userData.image)
+        setUserImage(userData.image || "")
       } catch (error) {
         console.error(error)
       }
@@ -174,8 +180,6 @@ const DashboardPage = () => {
               <Link href="#" className="font-semibold text-primary">
                 Geral
               </Link>
-              {/* <Link href="#">Integrações</Link>
-              <Link href="#">Suporte</Link> */}
               <Link href="#" onClick={handleLogout}>
                 Sair
               </Link>
@@ -277,8 +281,7 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
   const isVerified = await verifyToken(ctx)
 
   if (!isVerified) {
-    console.log("Falha na verificação do token.")
-
+    console.log("Falha na verificação de token")
     return {
       redirect: {
         destination: "/auth/signin",
@@ -287,8 +290,9 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
     }
   }
 
-  console.log("Token verificado com sucesso.")
-  return { props: {} }
+  return {
+    props: {},
+  }
 }
 
 export default DashboardPage
