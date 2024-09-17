@@ -31,7 +31,7 @@ interface UserData {
   image?: string 
 }
 
-const DashboardPage = () => {
+const SettingsPage = () => {
   const [name, setName] = useState("")
   const [lastName, setLastName] = useState("")
   const [newName, setNewName] = useState("")
@@ -295,4 +295,4 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
   }
 }
 
-export default DashboardPage
+export default SettingsPage
