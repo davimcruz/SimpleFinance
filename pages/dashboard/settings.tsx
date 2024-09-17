@@ -3,9 +3,7 @@ import { useRouter } from "next/router"
 import { GetServerSideProps } from "next"
 import Link from "next/link"
 import { Inter } from "next/font/google"
-
 import "../../app/globals.css"
-
 import { ThemeProvider } from "@/components/theme/theme-provider"
 import { UploadButton } from "@/components/uploadthing"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
@@ -20,7 +18,9 @@ import {
 } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { getServerSidePropsDashboard } from "@/utils/getServerSideProps"
-import Header from "@/components/dashboard/header/Header"
+
+import Header from "@/components/dashboard/header/HeaderComponent"
+
 
 const inter = Inter({ subsets: ["latin"] })
 

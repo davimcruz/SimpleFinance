@@ -1,5 +1,4 @@
 //tsconfig atualizado
-
 {
   "compilerOptions": {
     "lib": [
