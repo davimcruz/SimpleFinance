@@ -97,14 +97,7 @@ const Header = () => {
         >
           Transações
         </Link>
-        <Link
-          href="/dashboard/billing"
-          className={`${linkClassName(
-            "/dashboard/billing"
-          )} transition-colors hover:text-foreground`}
-        >
-          Planos
-        </Link>
+       
       </nav>
       <Sheet>
         <SheetTrigger asChild>
