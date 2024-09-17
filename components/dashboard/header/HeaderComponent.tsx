@@ -14,7 +14,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
-import ProgressBar from "./Progress"
+import ProgressBar from "./ProgressBar"
 
 interface HeaderProps {
   userImage?: string 
