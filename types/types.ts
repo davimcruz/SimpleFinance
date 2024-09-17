@@ -3,9 +3,9 @@ export interface Transaction {
   nome: string
   tipo: string
   fonte: string
-  detalhesFonte: string | null
-  data: string | null
-  valor: string | null
+  detalhesFonte: string 
+  data: string 
+  valor: string 
   dataCriacao: Date
   transactionId: string
 }

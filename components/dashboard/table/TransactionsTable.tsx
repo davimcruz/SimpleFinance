@@ -25,16 +25,7 @@ import {
 import { Skeleton } from "../../ui/skeleton"
 import CreateTransaction from "./CreateTransaction"
 import TransactionsDetails from "./TransactionDetails"
-
-interface Transaction {
-  transactionId: string
-  nome: string
-  tipo: string
-  fonte: string
-  detalhesFonte: string
-  data: string
-  valor: string
-}
+import { Transaction } from "@/types/types"
 
 type FonteKey =
   | "cartao-credito"

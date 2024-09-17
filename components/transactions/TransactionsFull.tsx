@@ -19,18 +19,10 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { Skeleton } from "../ui/skeleton"
-import CreateTransaction from "./create-transaction"
+import CreateTransaction from "./CreateTransactions"
 import TransactionsDetails from "../dashboard/table/TransactionDetails"
 
-interface Transaction {
-  transactionId: string
-  nome: string
-  tipo: string
-  fonte: string
-  detalhesFonte: string
-  data: string
-  valor: string
-}
+import { Transaction } from "@/types/types"
 
 type FonteKey =
   | "cartao-credito"
