@@ -7,9 +7,9 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { verifyToken } from "../api/Auth/jwtAuth"
 
 import Header from "@/components/dashboard/header/header"
-import Summary from "@/components/dashboard/finances-summary"
+import Summary from "@/components/dashboard/summary/Summary"
 import TransactionsTable from "@/components/dashboard/table/transactions-table"
-import FinancesGraph from "@/components/dashboard/finances-graph"
+import FinancesGraph from "@/components/dashboard/graphs/FinancesGraph"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -32,7 +32,7 @@ const DashboardPage = ({
               </h1>
             )}
           </div>
-          <Summary />
+          <Summary initialData={null} />
           <div className="grid lg:max-h-96 gap-4 md:gap-8 xl:grid-cols-3">
             <TransactionsTable />
             <FinancesGraph />
@@ -82,7 +82,7 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
     console.error("Erro ao buscar os dados do usuário:", error)
     return {
       props: {
-        user: null, // Em caso de erro, passamos null para evitar crash no render 
+        user: null, // Em caso de erro, passamos null para evitar crash no render
       },
     }
   }

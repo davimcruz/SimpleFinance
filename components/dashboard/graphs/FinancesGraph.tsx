@@ -3,8 +3,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import BarChart from "./charts/bar-chart"
 import PieChart from "./charts/pie-chart"
-import { Separator } from "../ui/separator"
-import { Skeleton } from "../ui/skeleton"
+import { Separator } from "../../ui/separator"
+import { Skeleton } from "../../ui/skeleton"
 
 const FinancesGraph = () => {
   const [loading, setLoading] = useState(true)

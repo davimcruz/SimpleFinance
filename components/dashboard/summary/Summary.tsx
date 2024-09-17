@@ -1,75 +1,68 @@
 import { useEffect, useState } from "react"
-import { ArrowDownUp, MoveDownRight, MoveUpRight, WalletMinimal } from "lucide-react"
-import "../../app/globals.css"
+import {
+  ArrowDownUp,
+  MoveDownRight,
+  MoveUpRight,
+  WalletMinimal,
+} from "lucide-react"
+import "../../../app/globals.css"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
+import { fetchSummaryData, getServerSideProps } from "./summaryCalcs"
+import { SummaryData } from "@/types/types"
 
-const Summary = () => {
-  const [totalBalance, setTotalBalance] = useState<string>("")
+interface SummaryProps {
+  initialData: SummaryData | null
+}
+
+const Summary: React.FC<SummaryProps> = ({ initialData }) => {
+  const [totalBalance, setTotalBalance] = useState<string>(
+    initialData?.totalBalance || ""
+  )
   const [totalAvailableThisMonth, setTotalAvailableThisMonth] =
-    useState<string>("")
-  const [totalIncomeThisMonth, setTotalIncomeThisMonth] = useState<string>("")
-  const [totalExpenseThisMonth, setTotalExpenseThisMonth] = useState<string>("")
-  const [balanceDifference, setBalanceDifference] = useState<string>("")
-  const [incomeDifference, setIncomeDifference] = useState<string>("")
-  const [expenseDifference, setExpenseDifference] = useState<string>("")
-  const [loading, setLoading] = useState<boolean>(true)
+    useState<string>(initialData?.totalAvailableThisMonth || "")
+  const [totalIncomeThisMonth, setTotalIncomeThisMonth] = useState<string>(
+    initialData?.totalIncomeThisMonth || ""
+  )
+  const [totalExpenseThisMonth, setTotalExpenseThisMonth] = useState<string>(
+    initialData?.totalExpenseThisMonth || ""
+  )
+  const [balanceDifference, setBalanceDifference] = useState<string>(
+    initialData?.balanceDifference || ""
+  )
+  const [incomeDifference, setIncomeDifference] = useState<string>(
+    initialData?.incomeDifference || ""
+  )
+  const [expenseDifference, setExpenseDifference] = useState<string>(
+    initialData?.expenseDifference || ""
+  )
+  const [loading, setLoading] = useState<boolean>(!initialData)
 
   useEffect(() => {
-    const fetchTotalBalance = async () => {
-      try {
-        const response = await fetch("/api/Transactions/transactionsSummary")
-        const data = await response.json()
-
-        const totalBalanceString = addThousandSeparator(
-          data.totalBalance.toFixed(2).toString()
-        )
-        const totalAvailableThisMonthString = addThousandSeparator(
-          data.totalAvailableThisMonth.toFixed(2).toString()
-        )
-        const totalIncomeThisMonthString = addThousandSeparator(
-          data.totalIncomeThisMonth.toFixed(2).toString()
-        )
-        const totalExpenseThisMonthString = addThousandSeparator(
-          data.totalExpenseThisMonth.toFixed(2).toString()
-        )
-        setTotalAvailableThisMonth(totalAvailableThisMonthString)
-        setTotalIncomeThisMonth(totalIncomeThisMonthString)
-        setTotalExpenseThisMonth(totalExpenseThisMonthString)
-        setTotalBalance(totalBalanceString)
-
-        const balanceDifferenceString =
-          data.balanceDifferenceString === "+Infinity%" ||
-          data.balanceDifferenceString === "NaN%"
-            ? "0%"
-            : data.balanceDifferenceString
-        const incomeDifferenceString =
-          data.incomeDifferenceString === "+Infinity%" ||
-          data.incomeDifferenceString === "NaN%"
-            ? "0%"
-            : data.incomeDifferenceString
-        const expenseDifferenceString =
-          data.expenseDifferenceString === "+Infinity%" ||
-          data.expenseDifferenceString === "NaN%"
-            ? "0%"
-            : data.expenseDifferenceString
-
-        setBalanceDifference(balanceDifferenceString)
-        setIncomeDifference(incomeDifferenceString)
-        setExpenseDifference(expenseDifferenceString)
-
-        setLoading(false)
-      } catch (error) {
-        console.error("Erro ao buscar o total balance:", error)
-        setLoading(false)
-      }
+    if (!initialData) {
+      fetchTotalBalance()
     }
+  }, [initialData])
 
-    fetchTotalBalance()
-  }, [])
+  const fetchTotalBalance = async () => {
+    try {
+      const data = await fetchSummaryData()
 
-  const addThousandSeparator = (value: string) => {
-    return value.replace(".", ",").replace(/\B(?=(\d{3})+(?!\d))/g, ".")
+      if (data) {
+        setTotalAvailableThisMonth(data.totalAvailableThisMonth)
+        setTotalIncomeThisMonth(data.totalIncomeThisMonth)
+        setTotalExpenseThisMonth(data.totalExpenseThisMonth)
+        setTotalBalance(data.totalBalance)
+        setBalanceDifference(data.balanceDifference)
+        setIncomeDifference(data.incomeDifference)
+        setExpenseDifference(data.expenseDifference)
+      }
+
+      setLoading(false)
+    } catch (error) {
+      console.error("Erro ao buscar o total balance:", error)
+      setLoading(false)
+    }
   }
 
   return (
@@ -145,4 +138,5 @@ const SkeletonCard = () => (
   <Skeleton className="rounded-lg shadow-md p-4 h-[125px]"></Skeleton>
 )
 
+export { getServerSideProps }
 export default Summary

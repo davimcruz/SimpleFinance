@@ -9,3 +9,13 @@ export interface Transaction {
   dataCriacao: Date
   transactionId: string
 }
+
+export interface SummaryData {
+  totalBalance: string
+  totalAvailableThisMonth: string
+  totalIncomeThisMonth: string
+  totalExpenseThisMonth: string
+  balanceDifference: string
+  incomeDifference: string
+  expenseDifference: string
+}
