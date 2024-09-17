@@ -22,7 +22,7 @@ import { Skeleton } from "../ui/skeleton"
 import CreateTransaction from "./CreateTransactions"
 import TransactionsDetails from "../dashboard/table/TransactionDetails"
 
-import { Transaction } from "@/types/types"
+import { Transactions } from "@/types/types"
 
 type FonteKey =
   | "cartao-credito"
@@ -34,7 +34,7 @@ type FonteKey =
   | "cedulas"
 
 const TransactionsFull = () => {
-  const [transactions, setTransactions] = useState<Transaction[]>([])
+  const [transactions, setTransactions] = useState<Transactions[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -44,7 +44,7 @@ const TransactionsFull = () => {
       const data = await response.json()
 
       const sortedTransactions = data.table.sort(
-        (a: Transaction, b: Transaction) => {
+        (a: Transactions, b: Transactions) => {
           const dateA = new Date(
             a.data.split("-").reverse().join("/")
           ).getTime()
