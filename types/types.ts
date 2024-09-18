@@ -3,9 +3,9 @@ export interface Transaction {
   nome: string
   tipo: string
   fonte: string
-  detalhesFonte: string | null // Certifique-se de que está alinhado com o tipo real
-  data: string | null // Certifique-se de que está alinhado com o tipo real
-  valor: string | null // Certifique-se de que está alinhado com o tipo real
+  detalhesFonte: string | null 
+  data: string | null 
+  valor: string | null 
   dataCriacao: Date
   transactionId: string
 }
