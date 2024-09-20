@@ -36,7 +36,7 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="pt-br" suppressHydrationWarning>
       <Head>
         <link rel="icon" href="/favicon.ico" />
         <title>SimpleFinance</title>

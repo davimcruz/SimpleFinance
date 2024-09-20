@@ -54,7 +54,7 @@ export default function LoginPage() {
         throw new Error(data.error || "Erro ao tentar fazer login.")
       }
 
-      router.push("/auth/signin/success")
+      router.push("/dashboard")
     } catch (error: any) {
       setError(error.message)
     } finally {
