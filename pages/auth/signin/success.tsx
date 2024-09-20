@@ -71,4 +71,3 @@
 //   return { props: {} }
 // }
 
-// export default SuccessLogin
