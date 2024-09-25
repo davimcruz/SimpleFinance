@@ -113,7 +113,7 @@ const Header: React.FC<HeaderProps> = ({ userImage }) => {
         <div className="ml-auto flex-1 sm:flex-initial">
           <ProgressBar />
         </div>
-        <ModeToggle />
+        {/* <ModeToggle /> */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="secondary" size="icon" className="rounded-full">
