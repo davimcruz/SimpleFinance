@@ -4,21 +4,27 @@ import {
   BarChart,
   XAxis,
   YAxis,
-  Tooltip,
   ResponsiveContainer,
-  Legend,
+  CartesianGrid,
 } from "recharts"
-import { ChartConfig, ChartContainer } from "@/components/ui/chart"
+import {
+  ChartConfig,
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+  ChartLegend,
+  ChartLegendContent,
+} from "@/components/ui/chart"
 import { useEffect, useState } from "react"
 
 const chartConfig = {
   income: {
-    label: "Receita", // Alterado para "Receita"
-    color: "#4bc0c0",
+    label: "Receitas",
+    color: "#2563eb",
   },
   expense: {
-    label: "Despesas", // Alterado para "Despesas"
-    color: "#ff6384",
+    label: "Despesas",
+    color: "#60a5fa",
   },
 } satisfies ChartConfig
 
@@ -81,25 +87,22 @@ const BarChartComponent = () => {
         <BarChart data={chartData}>
           <XAxis dataKey="month" />
           <YAxis />
-          <Tooltip
-            formatter={(value: number, name: string) =>
-              name === "income" ? ["Receita", value] : ["Despesas", value]
-            }
+          <CartesianGrid vertical={false} />
+          <ChartTooltip
+            content={<ChartTooltipContent labelKey="income" nameKey="month" />}
           />
-          <Legend
-            formatter={(value) => (value === "income" ? "Receita" : "Despesas")}
-          />
+          <ChartLegend content={<ChartLegendContent />} />
           <Bar
             dataKey="income"
             fill={chartConfig.income.color}
             radius={4}
-            name="Receita"
+            name="Receitas: R$"
           />
           <Bar
             dataKey="expense"
             fill={chartConfig.expense.color}
             radius={4}
-            name="Despesas"
+            name="Despesas: R$"
           />
         </BarChart>
       </ResponsiveContainer>
