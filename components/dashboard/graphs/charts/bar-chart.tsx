@@ -1,8 +1,31 @@
-import { useEffect, useRef } from "react"
-import Chart from "chart.js/auto"
+"use client"
+import {
+  Bar,
+  BarChart,
+  XAxis,
+  YAxis,
+  Tooltip,
+  ResponsiveContainer,
+  Legend,
+} from "recharts"
+import { ChartConfig, ChartContainer } from "@/components/ui/chart"
+import { useEffect, useState } from "react"
 
-const BarChart = () => {
-  const chartRef = useRef<HTMLCanvasElement>(null)
+const chartConfig = {
+  income: {
+    label: "Receita", // Alterado para "Receita"
+    color: "#4bc0c0",
+  },
+  expense: {
+    label: "Despesas", // Alterado para "Despesas"
+    color: "#ff6384",
+  },
+} satisfies ChartConfig
+
+const BarChartComponent = () => {
+  const [chartData, setChartData] = useState<
+    { month: string; income: number; expense: number }[]
+  >([])
 
   useEffect(() => {
     const fetchData = async () => {
@@ -12,7 +35,17 @@ const BarChart = () => {
         const data: { [month: string]: { income: number; expense: number } } =
           await response.json()
 
-        renderChart(data)
+        const sortedMonths = Object.keys(data).sort(
+          (a, b) => parseInt(a) - parseInt(b)
+        )
+
+        const translatedData = sortedMonths.map((month) => ({
+          month: translateMonth(parseInt(month)),
+          income: data[month].income,
+          expense: data[month].expense,
+        }))
+
+        setChartData(translatedData)
       } catch (error) {
         console.error(error)
       }
@@ -20,75 +53,6 @@ const BarChart = () => {
 
     fetchData()
   }, [])
-
-  const renderChart = (data: {
-    [month: string]: { income: number; expense: number }
-  }) => {
-    if (chartRef.current) {
-      const ctx = chartRef.current.getContext("2d")
-      if (ctx) {
-        const sortedMonths = Object.keys(data).sort(
-          (a, b) => parseInt(a) - parseInt(b)
-        )
-        const translatedMonths = sortedMonths.map((month) =>
-          translateMonth(parseInt(month))
-        )
-        const receitas = sortedMonths.map((month) => data[month].income)
-        const despesas = sortedMonths.map((month) => data[month].expense)
-
-        new Chart(ctx, {
-          type: "bar",
-          data: {
-            labels: translatedMonths,
-            datasets: [
-              {
-                label: "Income",
-                data: receitas,
-                backgroundColor: "rgba(75, 192, 192, 0.2)",
-                borderColor: "rgba(75, 192, 192, 1)",
-                borderWidth: 1,
-              },
-              {
-                label: "Expense",
-                data: despesas,
-                backgroundColor: "rgba(255, 99, 132, 0.2)",
-                borderColor: "rgba(255, 99, 132, 1)",
-                borderWidth: 1,
-              },
-            ],
-          },
-          options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-              legend: {
-                position: "bottom",
-                labels: {
-                  generateLabels: function (chart) {
-                    const defaultLabels =
-                      Chart.defaults.plugins.legend.labels.generateLabels.call(
-                        this,
-                        chart
-                      )
-                    defaultLabels.forEach((label) => {
-                      if (label.text === "Income") label.text = "Receitas"
-                      if (label.text === "Expense") label.text = "Despesas"
-                    })
-                    return defaultLabels
-                  },
-                },
-              },
-            },
-            scales: {
-              y: {
-                beginAtZero: true,
-              },
-            },
-          },
-        })
-      }
-    }
-  }
 
   const translateMonth = (month: number) => {
     const monthNames = [
@@ -108,7 +72,39 @@ const BarChart = () => {
     return monthNames[month - 1]
   }
 
-  return <canvas ref={chartRef} id="barChart"></canvas>
+  return (
+    <ChartContainer
+      config={chartConfig}
+      className="md:min-h-[400px] min-h-[180px] w-full"
+    >
+      <ResponsiveContainer width="100%" height={600}>
+        <BarChart data={chartData}>
+          <XAxis dataKey="month" />
+          <YAxis />
+          <Tooltip
+            formatter={(value: number, name: string) =>
+              name === "income" ? ["Receita", value] : ["Despesas", value]
+            }
+          />
+          <Legend
+            formatter={(value) => (value === "income" ? "Receita" : "Despesas")}
+          />
+          <Bar
+            dataKey="income"
+            fill={chartConfig.income.color}
+            radius={4}
+            name="Receita"
+          />
+          <Bar
+            dataKey="expense"
+            fill={chartConfig.expense.color}
+            radius={4}
+            name="Despesas"
+          />
+        </BarChart>
+      </ResponsiveContainer>
+    </ChartContainer>
+  )
 }
 
-export default BarChart
+export default BarChartComponent

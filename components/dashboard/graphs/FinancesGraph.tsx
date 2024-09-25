@@ -22,7 +22,9 @@ const FinancesGraph = () => {
   }, [])
 
   return (
-    <Card x-chunk="dashboard-01-chunk-5">
+    <Card
+      x-chunk="dashboard-01-chunk-5"
+    >
       <CardHeader>
         <CardTitle>Resumos Gráficos</CardTitle>
       </CardHeader>
@@ -46,7 +48,7 @@ const FinancesGraph = () => {
                 value="pie"
                 className="w-full lg:h-80 lg:w-80 mt-16 ml-auto"
               >
-                <PieChart />
+               <PieChart /> 
               </TabsContent>
             </Tabs>
           ) : (

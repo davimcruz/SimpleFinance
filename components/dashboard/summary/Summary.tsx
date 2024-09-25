@@ -78,7 +78,6 @@ const Summary: React.FC<SummaryProps> = ({ initialData }) => {
         <>
           <Card
             x-chunk="dashboard-01-chunk-0"
-       className="rounded-lg bg-gradient-to-b from-[rgba(8,28,21,0.8)] to-[rgba(13,13,13,0.8)] shadow-lg"
           >
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">
@@ -96,7 +95,6 @@ const Summary: React.FC<SummaryProps> = ({ initialData }) => {
 
           <Card
             x-chunk="dashboard-01-chunk-1"
-            className="rounded-lg bg-gradient-to-b from-[#081c15] to-[#0d0d0d] "
           >
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Receitas</CardTitle>
@@ -111,7 +109,6 @@ const Summary: React.FC<SummaryProps> = ({ initialData }) => {
           </Card>
           <Card
             x-chunk="dashboard-01-chunk-2"
-            className="rounded-lg bg-gradient-to-b from-[#250902] to-[#0d0d0d] "
           >
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Despesas</CardTitle>
@@ -126,7 +123,6 @@ const Summary: React.FC<SummaryProps> = ({ initialData }) => {
           </Card>
           <Card
             x-chunk="dashboard-01-chunk-3"
-            className="rounded-lg bg-gradient-to-b from-[#000814] to-[#0d0d0d] "
           >
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">
