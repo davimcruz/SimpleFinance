@@ -76,7 +76,10 @@ const Summary: React.FC<SummaryProps> = ({ initialData }) => {
         </>
       ) : (
         <>
-          <Card x-chunk="dashboard-01-chunk-0">
+          <Card
+            x-chunk="dashboard-01-chunk-0"
+            className="rounded-lg bg-gradient-to-b from-[#081c15] to-[#0d0d0d] shadow-lg"
+          >
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">
                 Total Disponível
@@ -90,7 +93,11 @@ const Summary: React.FC<SummaryProps> = ({ initialData }) => {
               </p>
             </CardContent>
           </Card>
-          <Card x-chunk="dashboard-01-chunk-1">
+
+          <Card
+            x-chunk="dashboard-01-chunk-1"
+            className="rounded-lg bg-gradient-to-b from-[#081c15] to-[#0d0d0d] shadow-lg"
+          >
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Receitas</CardTitle>
               <MoveUpRight className="h-4 w-4 text-muted-foreground" />
@@ -102,7 +109,10 @@ const Summary: React.FC<SummaryProps> = ({ initialData }) => {
               </p>
             </CardContent>
           </Card>
-          <Card x-chunk="dashboard-01-chunk-2">
+          <Card
+            x-chunk="dashboard-01-chunk-2"
+            className="rounded-lg bg-gradient-to-b from-[#250902] to-[#0d0d0d] shadow-lg"
+          >
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Despesas</CardTitle>
               <MoveDownRight className="h-4 w-4 text-muted-foreground" />
@@ -114,7 +124,10 @@ const Summary: React.FC<SummaryProps> = ({ initialData }) => {
               </p>
             </CardContent>
           </Card>
-          <Card x-chunk="dashboard-01-chunk-3">
+          <Card
+            x-chunk="dashboard-01-chunk-3"
+            className="rounded-lg bg-gradient-to-b from-[#000814] to-[#0d0d0d] shadow-lg"
+          >
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">
                 Volume Transacionado
