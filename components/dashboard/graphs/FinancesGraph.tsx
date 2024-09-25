@@ -1,10 +1,6 @@
 import { useState, useEffect } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import BarChartComponent from "./charts/bar-chart"
-import PieChartComponent from "./charts/pie-chart"
-
-import { Separator } from "../../ui/separator"
 import { Skeleton } from "../../ui/skeleton"
 
 const FinancesGraph = () => {
@@ -25,31 +21,16 @@ const FinancesGraph = () => {
   return (
     <Card x-chunk="dashboard-01-chunk-5">
       <CardHeader>
-        <CardTitle>Resumos Gráficos</CardTitle>
+        <CardTitle>Resumo Gráfico Comparativo</CardTitle>
       </CardHeader>
       <CardContent className="flex flex-col justify-center items-center max-w-[22rem] md:max-w-none">
         <div className="hidden sm:hidden md:flex lg:flex xl:flex">
           {loading ? (
             <Skeleton className="h-64 w-96 mt-6" />
           ) : transactionsExist ? (
-            <Tabs
-              defaultValue="bar"
-              className="flex-col items-center justify-center text-center"
-            >
-              <TabsList className="items-center justify-center text-center">
-                <TabsTrigger value="bar">Comparação Mensal</TabsTrigger>
-                <TabsTrigger value="pie">Tipos de Transações</TabsTrigger>
-              </TabsList>
-              <TabsContent value="bar" className="w-full lg:h-96 lg:w-96 mt-8">
-                <BarChartComponent />
-              </TabsContent>
-              <TabsContent
-                value="pie"
-                className="w-full lg:h-80 lg:w-80 mt-16 ml-auto"
-              >
-                <PieChartComponent />
-              </TabsContent>
-            </Tabs>
+            <div className="w-full lg:h-96 lg:w-96 mt-8">
+              <BarChartComponent />
+            </div>
           ) : (
             <div className="flex items-center justify-center h-full mt-12">
               <p>Você não possui transações.</p>
@@ -60,15 +41,9 @@ const FinancesGraph = () => {
           {loading ? (
             <Skeleton className="w-full h-48 mb-8" />
           ) : transactionsExist ? (
-            <>
-              <div className="w-full h-auto mt-8">
-                <BarChartComponent />
-              </div>
-              <Separator className="w-full mt-8" />
-              <div className="w-full h-64 mt-8">
-                <PieChartComponent />
-              </div>
-            </>
+            <div className="w-full h-auto mt-8">
+              <BarChartComponent />
+            </div>
           ) : (
             <div className="flex items-center justify-center h-full">
               <p>Você não possui transações.</p>

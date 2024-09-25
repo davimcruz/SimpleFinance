@@ -1,104 +1,114 @@
-"use client"
-import { Pie, PieChart, ResponsiveContainer } from "recharts"
-import {
-  ChartConfig,
-  ChartContainer,
-  ChartLegend,
-  ChartLegendContent,
-  ChartTooltip,
-  ChartTooltipContent,
-} from "@/components/ui/chart"
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
-import { useEffect, useState } from "react"
+import { useEffect, useRef } from "react"
+import Chart from "chart.js/auto"
 
-// Definição do chartConfig para os meios de pagamento
-const chartConfig = {
-  paymentMethod: {
-    label: "Método de Pagamento",
-  },
-  creditCard: {
-    label: "Cartão de Crédito",
-    color: "#2563eb",
-  },
-  debitCard: {
-    label: "Cartão de Débito",
-    color: "#60a5fa",
-  },
-  paypal: {
-    label: "PayPal",
-    color: "#34d399",
-  },
-  bankTransfer: {
-    label: "Transferência Bancária",
-    color: "#fbbf24",
-  },
-  other: {
-    label: "Outro",
-    color: "#f87171",
-  },
-} satisfies ChartConfig
+interface PaymentMethodData {
+  labels: string[]
+  data: number[]
+}
 
-const PieChartComponent = () => {
-  const [chartData, setChartData] = useState<
-    { method: string; amount: number }[]
-  >([])
+const PieChart = () => {
+  const chartRef = useRef<HTMLCanvasElement>(null)
 
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchPaymentMethods = async () => {
       try {
-        const response = await fetch("/api/Queries/queryPaymentMethods")
-        if (!response.ok) throw new Error("Erro 500")
-        const data: { [method: string]: number } = await response.json()
+        const response = await fetch("/api/Queries/queryMethods")
+        if (!response.ok) throw new Error("Network response was not ok")
+        const methods: string[] = await response.json()
 
-        const formattedData = Object.keys(data).map((method) => ({
-          method,
-          amount: data[method],
-        }))
+        const methodCounts = methods.reduce((acc, method) => {
+          acc[method] = (acc[method] || 0) + 1
+          return acc
+        }, {} as Record<string, number>)
 
-        setChartData(formattedData)
+        const paymentMethodsData: PaymentMethodData = {
+          labels: Object.keys(methodCounts),
+          data: Object.values(methodCounts),
+        }
+
+        renderChart(paymentMethodsData)
       } catch (error) {
         console.error(error)
       }
     }
 
-    fetchData()
+    fetchPaymentMethods()
   }, [])
 
-  console.log(setChartData)
+  const translateLabel = (label: string): string => {
+    switch (label) {
+      case "cartao-debito":
+        return "Cartão de Débito"
+      case "cartao-credito":
+        return "Cartão de Crédito"
+      case "investimentos":
+        return "Investimentos"
+      case "pix":
+        return "PIX"
+      case "ted-doc":
+        return "TED/DOC"
+      case "boleto":
+        return "Boleto"
+      case "cedulas":
+        return "Cédulas"
+      default:
+        return label
+    }
+  }
 
-  return (
-        
-        <ChartContainer
-          config={chartConfig}
-          className="mx-auto aspect-square max-h-[300px]"
-        >
-          <ResponsiveContainer width="100%" height={300}>
-            <PieChart>
-              <Pie
-                data={chartData}
-                dataKey="amount"
-                nameKey="method"
-                outerRadius={80}
-                label={({ name, percent }) =>
-                  `${name}: ${(percent * 100).toFixed(0)}%`
-                }
-              />
-              <ChartLegend
-                content={<ChartLegendContent nameKey="method" />}
-                className="-translate-y-2 flex-wrap gap-2 [&>*]:basis-1/4 [&>*]:justify-center"
-              />
-              <ChartTooltip content={<ChartTooltipContent />} />
-            </PieChart>
-          </ResponsiveContainer>
-        </ChartContainer>
+  const renderChart = (paymentMethodsData: PaymentMethodData) => {
+    if (chartRef.current && paymentMethodsData.labels.length > 0) {
+      const ctx = chartRef.current.getContext("2d")
+      if (ctx) {
+        new Chart(ctx, {
+          type: "pie",
+          data: {
+            labels: paymentMethodsData.labels.map(translateLabel),
+            datasets: [
+              {
+                label: "Vezes Utilizada",
+                data: paymentMethodsData.data,
+                backgroundColor: [
+                  "rgba(255, 99, 132, 0.2)",
+                  "rgba(54, 162, 235, 0.2)",
+                  "rgba(255, 206, 86, 0.2)",
+                  "rgba(75, 192, 192, 0.2)",
+                  "rgba(153, 102, 255, 0.2)",
+                  "rgba(255, 159, 64, 0.2)",
+                  "rgba(233, 30, 99, 0.2)",
+                  "rgba(255, 87, 34, 0.2)",
+                  "rgba(205, 220, 57, 0.2)",
+                ],
+                borderColor: [
+                  "rgba(255, 99, 132, 1)",
+                  "rgba(54, 162, 235, 1)",
+                  "rgba(255, 206, 86, 1)",
+                  "rgba(75, 192, 192, 1)",
+                  "rgba(153, 102, 255, 1)",
+                  "rgba(255, 159, 64, 1)",
+                  "rgba(233, 30, 99, 1)",
+                  "rgba(255, 87, 34, 1)",
+                  "rgba(205, 220, 57, 1)",
+                ],
+                borderWidth: 2,
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                position: "bottom",
+              },
+            },
+          },
+        })
+      }
+    }
+  }
 
-  )
+  return <canvas ref={chartRef} id="piechart"></canvas>
 }
 
-export default PieChartComponent
+export default PieChart
