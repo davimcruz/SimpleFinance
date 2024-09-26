@@ -76,26 +76,7 @@ const Summary: React.FC<SummaryProps> = ({ initialData }) => {
         </>
       ) : (
         <>
-          <Card
-            x-chunk="dashboard-01-chunk-0"
-          >
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
-                Total Disponível
-              </CardTitle>
-              <WalletMinimal className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{`R$ ${totalAvailableThisMonth}`}</div>
-              <p className="text-xs text-muted-foreground">
-                {balanceDifference} em comparação ao mês anterior
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card
-            x-chunk="dashboard-01-chunk-1"
-          >
+          <Card x-chunk="dashboard-01-chunk-0">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Receitas</CardTitle>
               <MoveUpRight className="h-4 w-4 text-muted-foreground" />
@@ -107,9 +88,7 @@ const Summary: React.FC<SummaryProps> = ({ initialData }) => {
               </p>
             </CardContent>
           </Card>
-          <Card
-            x-chunk="dashboard-01-chunk-2"
-          >
+          <Card x-chunk="dashboard-01-chunk-1">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Despesas</CardTitle>
               <MoveDownRight className="h-4 w-4 text-muted-foreground" />
@@ -121,9 +100,22 @@ const Summary: React.FC<SummaryProps> = ({ initialData }) => {
               </p>
             </CardContent>
           </Card>
-          <Card
-            x-chunk="dashboard-01-chunk-3"
-          >
+          <Card x-chunk="dashboard-01-chunk-2">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">
+                Saldo
+              </CardTitle>
+              <WalletMinimal className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{`R$ ${totalAvailableThisMonth}`}</div>
+              <p className="text-xs text-muted-foreground">
+                {balanceDifference} em comparação ao mês anterior
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card x-chunk="dashboard-01-chunk-3">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">
                 Volume Transacionado

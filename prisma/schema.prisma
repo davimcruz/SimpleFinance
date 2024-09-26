@@ -29,5 +29,6 @@ model usuarios {
   nome       String       @db.VarChar(100)
   sobrenome  String       @db.VarChar(100)
   image      String?      @db.VarChar(255)
-  transacoes transacoes[]  
+  permissao  String?      @db.VarChar(20)
+  transacoes transacoes[]
 }

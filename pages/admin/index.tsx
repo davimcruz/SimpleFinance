@@ -17,25 +17,24 @@ import { parseCookies } from "nookies"
 import jwt from "jsonwebtoken"
 import "../../app/globals.css"
 
-// Definindo a fonte Inter
 const inter = Inter({ subsets: ["latin"] })
 
-// Função para verificar o token
-export async function getServerSideProps(ctx: GetServerSidePropsContext) {
+async function verifyToken(ctx: GetServerSidePropsContext) {
   const { token } = parseCookies(ctx)
-  if (!token) {
-    return {
-      redirect: {
-        destination: "/admin/signin",
-        permanent: false,
-      },
-    }
-  }
+  if (!token) return false
 
   try {
     await jwt.verify(token, process.env.JWT_SECRET as string)
-    return { props: {} } // Se o token for válido, retorna props vazias
+    return true
   } catch (error) {
+    return false
+  }
+}
+
+export async function getServerSideProps(ctx: GetServerSidePropsContext) {
+  const isVerified = await verifyToken(ctx)
+
+  if (!isVerified) {
     return {
       redirect: {
         destination: "/admin/signin",
@@ -43,6 +42,8 @@ export async function getServerSideProps(ctx: GetServerSidePropsContext) {
       },
     }
   }
+
+  return { props: {} }
 }
 
 export default function AdminPage() {
