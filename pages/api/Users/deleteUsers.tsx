@@ -20,6 +20,14 @@ export default async function deleteUser(
   }
 
   try {
+    await prisma.orcamento.deleteMany({
+      where: {
+        userId: {
+          in: ids,
+        },
+      },
+    })
+
     await prisma.transacoes.deleteMany({
       where: {
         userId: {

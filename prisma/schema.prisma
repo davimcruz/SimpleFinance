@@ -7,6 +7,15 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model orcamento {
+  userId     Int @id
+  mes        Int
+  valor      Float
+  ano        Int
+
+  @@index([userId], map: "userId")
+}
+
 model transacoes {
   userId        Int
   nome          String   @db.VarChar(40)
