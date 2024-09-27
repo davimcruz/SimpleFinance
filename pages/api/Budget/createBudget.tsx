@@ -19,8 +19,6 @@ export default async function handler(
 
   const { userId, orcamentoAnualPorMes } = req.body
 
-  console.log("Dados recebidos:", { userId, orcamentoAnualPorMes })
-
   if (!userId || !orcamentoAnualPorMes || orcamentoAnualPorMes.length !== 12) {
     return res.status(400).json({ message: "Informações inválidas" })
   }
@@ -55,9 +53,7 @@ export default async function handler(
         .json({ message: "Já existe um orçamento para o ano atual." })
     }
 
-    const sortedOrcamentoAnualPorMes = [...orcamentoAnualPorMes].reverse()
-
-    const promises = sortedOrcamentoAnualPorMes.map(
+    const promises = orcamentoAnualPorMes.map(
       (valor: number, index: number) => {
         const mes = index + 1
         console.log(`Criando orçamento para o mês ${mes}:`, {
@@ -77,16 +73,11 @@ export default async function handler(
       }
     )
 
-    console.log("Criando orçamentos:", promises)
-
-    const createdOrcamentos = await Promise.all(promises)
-
-    console.log("Orçamentos criados:", createdOrcamentos)
 
     return res.status(201).json({
       message: "Orçamento criado com sucesso",
       userId: userIdNumber,
-      valoresMensais: orcamentoAnualPorMes,
+      valoresMensais: orcamentoAnualPorMes, 
     })
   } catch (error) {
     console.error("Erro ao criar orçamento:", error)

@@ -4,7 +4,7 @@ import { Separator } from "../ui/separator"
 import { Label } from "../ui/label"
 import { Input } from "../ui/input"
 import { Button } from "../ui/button"
-import { parseCookies } from "nookies" 
+import { parseCookies } from "nookies"
 
 const CreateBudgetsComponent = () => {
   const [monthlyValue, setMonthlyValue] = useState("")
@@ -33,18 +33,25 @@ const CreateBudgetsComponent = () => {
     setBudgetError(null)
     setBudgetSuccessMessage(null)
 
-    const year = new Date().getFullYear()
     const values = customizing
       ? monthlyValues
       : Array(12).fill(parseFloat(monthlyValue))
+    const allPositive = values.every((value) => value > 0)
+
+    if (!allPositive) {
+      setBudgetError("Todos os valores devem ser positivos.")
+      return
+    }
 
     try {
+      const orderedValues = [...values]
+
       const response = await fetch("/api/Budget/createBudget", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ userId, orcamentoAnualPorMes: values }),
+        body: JSON.stringify({ userId, orcamentoAnualPorMes: orderedValues }),
       })
 
       if (!response.ok) {
@@ -78,7 +85,7 @@ const CreateBudgetsComponent = () => {
               <Label htmlFor="monthlyValue">Valor Mensal do Orçamento:</Label>
               <Input
                 className="mt-2"
-                type="number"
+                type="number" 
                 id="monthlyValue"
                 placeholder="Ex: 500.00"
                 value={monthlyValue}
@@ -103,7 +110,7 @@ const CreateBudgetsComponent = () => {
                     Mês {index + 1}:
                   </Label>
                   <Input
-                    type="number"
+                    type="number" // Alterado para "text"
                     id={`month-${index}`}
                     value={value}
                     onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
@@ -122,11 +129,7 @@ const CreateBudgetsComponent = () => {
               </Button>
             </div>
           )}
-          <Button
-            className="mt-4 w-full"
-            onClick={handleCreateBudget}
-            disabled={budgetError !== null}
-          >
+          <Button className="mt-4 w-full" onClick={handleCreateBudget}>
             Criar Orçamento
           </Button>
         </div>
