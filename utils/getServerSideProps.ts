@@ -16,9 +16,9 @@ export const getServerSidePropsDashboard = async (
     }
   }
 
-  const emailCookie = ctx.req.cookies.email
+  const userIdCookie = ctx.req.cookies.userId
 
-  if (!emailCookie) {
+  if (!userIdCookie) {
     return {
       redirect: {
         destination: "/auth/signin",
@@ -29,20 +29,20 @@ export const getServerSidePropsDashboard = async (
 
   try {
     const response = await fetch(
-      `${process.env.NEXT_PUBLIC_BASE_URL}/api/Queries/query?email=${emailCookie}`
+      `${process.env.NEXT_PUBLIC_BASE_URL}/api/Queries/query?userId=${userIdCookie}`
     )
     const userData = await response.json()
 
     return {
       props: {
-        user: userData || null, // Passa userData com a imagem
+        user: userData || null, 
       },
     }
   } catch (error) {
     console.error("Erro ao buscar os dados do usuário:", error)
     return {
       props: {
-        user: null, // Em caso de erro, passamos null para evitar crash no render
+        user: null, 
       },
     }
   }

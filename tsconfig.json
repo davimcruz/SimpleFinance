@@ -1,6 +1,6 @@
-//tsconfig atualizado
 {
   "compilerOptions": {
+    "target": "es2015",
     "lib": [
       "dom",
       "dom.iterable",

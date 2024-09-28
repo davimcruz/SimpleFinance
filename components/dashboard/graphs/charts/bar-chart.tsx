@@ -41,6 +41,8 @@ const BarChartComponent = () => {
         const data: { [month: string]: { income: number; expense: number } } =
           await response.json()
 
+          console.log(data)
+
         const sortedMonths = Object.keys(data).sort(
           (a, b) => parseInt(a) - parseInt(b)
         )
@@ -56,6 +58,7 @@ const BarChartComponent = () => {
         console.error(error)
       }
     }
+
 
     fetchData()
   }, [])

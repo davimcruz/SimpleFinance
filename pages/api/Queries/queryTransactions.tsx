@@ -1,5 +1,7 @@
 import { NextApiRequest, NextApiResponse } from "next"
 import { PrismaClient, transacoes } from "@prisma/client"
+import { verifyToken } from "../Auth/jwtAuth" 
+import { parseCookies } from "nookies"
 
 const prisma = new PrismaClient()
 
@@ -8,21 +10,17 @@ export default async function queryTransactions(
   res: NextApiResponse
 ): Promise<transacoes[]> {
   try {
-    const cookies = req.headers.cookie
-    if (!cookies) {
-      throw new Error("Cookies não encontrados na requisição.")
+    const tokenValid = await verifyToken({ req } as any)
+    if (!tokenValid) {
+      res.status(401).json({ error: "Não autorizado" })
+      return []
     }
 
-    const userIdCookie = cookies
-      .split("; ")
-      .find((row) => row.startsWith("userId="))
-    if (!userIdCookie) {
-      throw new Error("Cookie userId não encontrado na requisição.")
-    }
+    const cookies = parseCookies({ req })
+    const userId = Number(cookies.userId)
 
-    const userId = parseInt(userIdCookie.split("=")[1])
-    if (isNaN(userId)) {
-      throw new Error("Valor do userId nos cookies não é um número.")
+    if (!userId || isNaN(userId)) {
+      throw new Error("ID de usuário inválido ou não encontrado nos cookies.")
     }
 
     const transactions = await prisma.transacoes.findMany({
@@ -37,6 +35,8 @@ export default async function queryTransactions(
     res.status(500).json({ error: "Erro ao buscar transações" })
     return []
   } finally {
-    await prisma.$disconnect()
+    if (process.env.NODE_ENV === "development") {
+      await prisma.$disconnect()
+    }
   }
 }

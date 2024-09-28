@@ -11,15 +11,16 @@ export default async function handler(
     return res.status(405).json({ error: "Método não permitido" })
   }
 
-  const { email } = req.query
+  const { userId } = req.query
 
-  if (typeof email !== "string") {
-    return res.status(400).json({ error: "Email inválido" })
+  const userIdNumber = Number(userId)
+  if (isNaN(userIdNumber)) {
+    return res.status(400).json({ error: "ID de usuário inválido." })
   }
 
   try {
     const user = await prisma.usuarios.findUnique({
-      where: { email },
+      where: { id: userIdNumber },
       select: { id: true, nome: true, sobrenome: true, image: true },
     })
 
@@ -29,9 +30,7 @@ export default async function handler(
 
     return res.status(200).json(user)
   } catch (error) {
-    console.error("Erro:", error)
+    console.error("Erro ao processar a requisição:", error)
     return res.status(500).json({ error: "Erro ao processar a requisição" })
-  } finally {
-    await prisma.$disconnect()
   }
 }
