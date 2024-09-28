@@ -65,7 +65,7 @@ export default function Register() {
         throw new Error(result.error || "Erro ao registrar")
       }
 
-      router.push("/auth/signup/success")
+      router.push("/dashboard")
     } catch (error: any) {
       setError(error.message || "Erro ao registrar")
     } finally {
