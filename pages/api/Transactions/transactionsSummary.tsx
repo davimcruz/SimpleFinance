@@ -1,5 +1,7 @@
 import { NextApiRequest, NextApiResponse } from "next"
-import { PrismaClient } from "@prisma/client"
+import { PrismaClient, transacoes } from "@prisma/client" 
+import { verifyToken } from "../Auth/jwtAuth"
+import { parseCookies } from "nookies"
 
 const prisma = new PrismaClient()
 
@@ -8,118 +10,82 @@ export default async function transactionsSummary(
   res: NextApiResponse
 ): Promise<void> {
   try {
-    const cookies = req.headers.cookie
-    if (!cookies) {
-      throw new Error("Cookies não encontrados na requisição.")
+    const tokenValid = await verifyToken({ req } as any)
+    if (!tokenValid) {
+      return res.status(401).json({ error: "Não autorizado" })
     }
 
-    const userIdCookie = cookies
-      .split("; ")
-      .find((row) => row.startsWith("userId="))
-    if (!userIdCookie) {
-      throw new Error("Cookie userId não encontrado na requisição.")
+    const cookies = parseCookies({ req })
+    const userId = Number(cookies.userId)
+
+    if (!userId || isNaN(userId)) {
+      return res.status(400).json({ error: "ID de usuário inválido" })
     }
 
-    const userId = parseInt(userIdCookie.split("=")[1])
-    if (isNaN(userId)) {
-      throw new Error("Valor do userId nos cookies não é um número.")
-    }
-
-    // Consulta transações do usuário no banco de dados
-    const transactions = await prisma.transacoes.findMany({
-      where: {
-        userId: userId,
-      },
+    const transactions: transacoes[] = await prisma.transacoes.findMany({
+      where: { userId },
     })
 
-    // Define o mês atual e o mês anterior
-    const currentMonth = (new Date().getMonth() + 1).toString().padStart(2, "0")
-    const lastMonth =
-      new Date().getMonth() === 0
-        ? "12" // Se janeiro, o mês anterior é dezembro (Deve haver forma mais otimizada para fazer isso)
-        : new Date().getMonth().toString().padStart(2, "0")
+    const currentDate = new Date()
+    const currentMonth = currentDate.getMonth() + 1
+    const lastMonth = currentMonth === 1 ? 12 : currentMonth - 1
 
-    // Filtra transações do mês atual
-    const transactionsThisMonth = transactions.filter((transaction) => {
-      const transactionMonth = transaction.data
-        ? transaction.data.split("-")[1]
-        : ""
-      return transactionMonth === currentMonth
-    })
+    // Filtrar transações por mês
+    const filterTransactionsByMonth = (month: number): transacoes[] =>
+      transactions.filter((transaction: transacoes) => {
+        const transactionMonth = transaction.data?.split("-")[1]
+        return transactionMonth === month.toString().padStart(2, "0")
+      })
 
-    // Filtra transações do mês anterior
-    const transactionsLastMonth = transactions.filter((transaction) => {
-      const transactionMonth = transaction.data
-        ? transaction.data.split("-")[1]
-        : ""
-      return transactionMonth === lastMonth
-    })
+    const transactionsThisMonth = filterTransactionsByMonth(currentMonth)
+    const transactionsLastMonth = filterTransactionsByMonth(lastMonth)
 
-    // Inicializa variáveis para cálculos
-    let totalAvailableThisMonth = 0
-    let totalIncomeThisMonth = 0
-    let totalExpenseThisMonth = 0
+    const calculateTotals = (transactions: transacoes[]) => {
+      let totalAvailable = 0,
+        totalIncome = 0,
+        totalExpense = 0
 
-    transactionsThisMonth.forEach((transaction) => {
-      if (transaction.valor) {
-        const valueWithDot = transaction.valor.replace(",", ".")
-        const value = parseFloat(valueWithDot)
-
-        totalAvailableThisMonth += value
-
-        if (transaction.tipo === "receita") {
-          totalIncomeThisMonth += value
-        } else if (transaction.tipo === "despesa") {
-          totalExpenseThisMonth += value
+      transactions.forEach((transaction: transacoes) => {
+        if (transaction.valor) {
+          const value = parseFloat(transaction.valor.replace(",", "."))
+          totalAvailable += value
+          if (transaction.tipo === "receita") totalIncome += value
+          if (transaction.tipo === "despesa") totalExpense += value
         }
+      })
+
+      return {
+        totalAvailable: parseFloat(totalAvailable.toFixed(2)),
+        totalIncome: parseFloat(totalIncome.toFixed(2)),
+        totalExpense: parseFloat(totalExpense.toFixed(2)),
       }
-    })
+    }
 
-    let totalAvailableLastMonth = 0
-    let totalIncomeLastMonth = 0
-    let totalExpenseLastMonth = 0
+    const totalsThisMonth = calculateTotals(transactionsThisMonth)
+    const totalsLastMonth = calculateTotals(transactionsLastMonth)
 
-    transactionsLastMonth.forEach((transaction) => {
-      if (transaction.valor) {
-        const valueWithDot = transaction.valor.replace(",", ".")
-        const value = parseFloat(valueWithDot)
+    // Diferenças percentuais
+    const calculatePercentageDifference = (current: number, previous: number) =>
+      previous > 0 ? ((current - previous) / previous) * 100 : 0
 
-        totalAvailableLastMonth += value
+    const balanceDifferencePercentage = calculatePercentageDifference(
+      totalsThisMonth.totalAvailable,
+      totalsLastMonth.totalAvailable
+    )
+    const incomeDifferencePercentage = calculatePercentageDifference(
+      totalsThisMonth.totalIncome,
+      totalsLastMonth.totalIncome
+    )
+    const expenseDifferencePercentage = calculatePercentageDifference(
+      totalsThisMonth.totalExpense,
+      totalsLastMonth.totalExpense
+    )
 
-        if (transaction.tipo === "receita") {
-          totalIncomeLastMonth += value
-        } else if (transaction.tipo === "despesa") {
-          totalExpenseLastMonth += value
-        }
-      }
-    })
-
-    // Calcula as diferenças percentuais entre os meses
-    const balanceDifferencePercentage =
-      totalAvailableLastMonth > 0
-        ? ((totalAvailableThisMonth - totalAvailableLastMonth) /
-            totalAvailableLastMonth) *
-          100
-        : 0
-    const incomeDifferencePercentage =
-      totalIncomeLastMonth > 0
-        ? ((totalIncomeThisMonth - totalIncomeLastMonth) /
-            totalIncomeLastMonth) *
-          100
-        : 0
-    const expenseDifferencePercentage =
-      totalExpenseLastMonth > 0
-        ? ((totalExpenseThisMonth - totalExpenseLastMonth) /
-            totalExpenseLastMonth) *
-          100
-        : 0
-
-    // Formata as diferenças percentuais
-    const formatPercentageDifference = (percentage: number) => {
-      return percentage > 0
+    // Diferenças percentuais
+    const formatPercentageDifference = (percentage: number) =>
+      percentage > 0
         ? `+${percentage.toFixed(2)}%`
         : `${percentage.toFixed(2)}%`
-    }
 
     const balanceDifferenceString = formatPercentageDifference(
       balanceDifferencePercentage
@@ -131,36 +97,31 @@ export default async function transactionsSummary(
       expenseDifferencePercentage
     )
 
-    // Ajusta totais para o mês atual
-    totalAvailableThisMonth = parseFloat(totalAvailableThisMonth.toFixed(2))
-    totalAvailableThisMonth = totalIncomeThisMonth - totalExpenseThisMonth
-    totalAvailableLastMonth = parseFloat(totalAvailableLastMonth.toFixed(2))
-
-    // Calcula o saldo total das transações
-    const totalBalance = transactions.reduce((total: number, transaction) => {
-      if (transaction.valor) {
-        const valueWithDot = transaction.valor.replace(",", ".")
-        const value = parseFloat(valueWithDot)
-        return total + value
-      }
-      return total
-    }, 0)
+    // Responsável por calcular o saldo total de todas as transações
+    const totalBalance = transactions.reduce(
+      (total: number, transaction: transacoes) => {
+        if (transaction.valor) {
+          const value = parseFloat(transaction.valor.replace(",", "."))
+          return total + value
+        }
+        return total
+      },
+      0
+    )
 
     res.status(200).json({
-      totalAvailableThisMonth,
-      totalIncomeThisMonth,
-      totalExpenseThisMonth,
-      totalIncomeLastMonth,
-      totalExpenseLastMonth,
+      totalAvailableThisMonth: totalsThisMonth.totalAvailable,
+      totalIncomeThisMonth: totalsThisMonth.totalIncome,
+      totalExpenseThisMonth: totalsThisMonth.totalExpense,
+      totalIncomeLastMonth: totalsLastMonth.totalIncome,
+      totalExpenseLastMonth: totalsLastMonth.totalExpense,
       balanceDifferenceString,
       incomeDifferenceString,
       expenseDifferenceString,
-      totalBalance,
+      totalBalance: parseFloat(totalBalance.toFixed(2)),
     })
   } catch (error) {
     console.error("Erro ao buscar transações:", error)
     res.status(500).json({ error: "Erro ao buscar transações" })
-  } finally {
-    await prisma.$disconnect()
   }
 }

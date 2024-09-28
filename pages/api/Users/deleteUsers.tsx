@@ -1,5 +1,6 @@
 import { NextApiRequest, NextApiResponse } from "next"
 import { PrismaClient } from "@prisma/client"
+import { verifyToken } from "../Auth/jwtAuth" 
 
 const prisma = new PrismaClient()
 
@@ -11,6 +12,11 @@ export default async function deleteUser(
     return res.status(405).json({ error: "Método não permitido" })
   }
 
+  const tokenValid = await verifyToken({ req } as any)
+  if (!tokenValid) {
+    return res.status(401).json({ error: "Não autorizado" })
+  }
+
   const { ids } = req.body
 
   if (!ids || !Array.isArray(ids)) {
@@ -20,29 +26,24 @@ export default async function deleteUser(
   }
 
   try {
-    await prisma.orcamento.deleteMany({
-      where: {
-        userId: {
-          in: ids,
-        },
-      },
-    })
-
-    await prisma.transacoes.deleteMany({
-      where: {
-        userId: {
-          in: ids,
-        },
-      },
-    })
-
-    const deleteUsers = await prisma.usuarios.deleteMany({
-      where: {
-        id: {
-          in: ids,
-        },
-      },
-    })
+    const [deletedBudgets, deletedTransactions, deleteUsers] =
+      await Promise.all([
+        prisma.orcamento.deleteMany({
+          where: {
+            userId: { in: ids },
+          },
+        }),
+        prisma.transacoes.deleteMany({
+          where: {
+            userId: { in: ids },
+          },
+        }),
+        prisma.usuarios.deleteMany({
+          where: {
+            id: { in: ids },
+          },
+        }),
+      ])
 
     if (deleteUsers.count === 0) {
       return res
@@ -51,13 +52,15 @@ export default async function deleteUser(
     }
 
     res.status(200).json({
-      message: "Usuários e transações excluídos com sucesso.",
-      deletedCount: deleteUsers.count,
+      message: "Usuários, orçamentos e transações excluídos com sucesso.",
+      deletedUsers: deleteUsers.count,
+      deletedBudgets: deletedBudgets.count,
+      deletedTransactions: deletedTransactions.count,
     })
   } catch (error) {
     console.error("Erro ao excluir usuários e transações:", error)
-    res.status(500).json({ error: "Erro ao excluir usuários e transações." })
-  } finally {
-    await prisma.$disconnect()
+    return res
+      .status(500)
+      .json({ error: "Erro ao excluir usuários e transações." })
   }
 }

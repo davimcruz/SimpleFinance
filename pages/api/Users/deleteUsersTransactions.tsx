@@ -1,5 +1,6 @@
 import { NextApiRequest, NextApiResponse } from "next"
 import { PrismaClient } from "@prisma/client"
+import { verifyToken } from "../Auth/jwtAuth" 
 
 const prisma = new PrismaClient()
 
@@ -9,6 +10,11 @@ export default async function deleteUsersTransactions(
 ): Promise<void> {
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Método não permitido" })
+  }
+
+  const tokenValid = await verifyToken({ req } as any)
+  if (!tokenValid) {
+    return res.status(401).json({ error: "Não autorizado" })
   }
 
   const { ids } = req.body
@@ -28,14 +34,18 @@ export default async function deleteUsersTransactions(
       },
     })
 
+    if (deleteTransactions.count === 0) {
+      return res
+        .status(404)
+        .json({ error: "Nenhuma transação encontrada para exclusão." })
+    }
+
     res.status(200).json({
       message: "Transações excluídas com sucesso.",
       deletedCount: deleteTransactions.count,
     })
   } catch (error) {
     console.error("Erro ao excluir transações:", error)
-    res.status(500).json({ error: "Erro ao excluir transações." })
-  } finally {
-    await prisma.$disconnect()
+    return res.status(500).json({ error: "Erro ao excluir transações." })
   }
 }

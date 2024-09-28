@@ -1,5 +1,6 @@
 import { NextApiRequest, NextApiResponse } from "next"
 import { PrismaClient } from "@prisma/client"
+import { verifyToken } from "../Auth/jwtAuth" 
 
 const prisma = new PrismaClient()
 
@@ -9,6 +10,11 @@ export default async function deleteUsersBudgets(
 ): Promise<void> {
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Método não permitido" })
+  }
+
+  const tokenValid = await verifyToken({ req } as any)
+  if (!tokenValid) {
+    return res.status(401).json({ error: "Não autorizado" })
   }
 
   const { ids } = req.body
@@ -34,8 +40,6 @@ export default async function deleteUsersBudgets(
     })
   } catch (error) {
     console.error("Erro ao excluir orçamentos:", error)
-    res.status(500).json({ error: "Erro ao excluir orçamentos." })
-  } finally {
-    await prisma.$disconnect()
+    return res.status(500).json({ error: "Erro ao excluir orçamentos." })
   }
 }

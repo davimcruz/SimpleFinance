@@ -1,5 +1,6 @@
 import { NextApiRequest, NextApiResponse } from "next"
 import { PrismaClient } from "@prisma/client"
+import { verifyToken } from "../Auth/jwtAuth"
 
 const prisma = new PrismaClient()
 
@@ -9,6 +10,11 @@ export default async function editTransactions(
 ): Promise<void> {
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Método não permitido" })
+  }
+
+  const tokenValid = await verifyToken({ req } as any)
+  if (!tokenValid) {
+    return res.status(401).json({ error: "Não autorizado" })
   }
 
   const { transactionId } = req.body
@@ -21,21 +27,16 @@ export default async function editTransactions(
 
   try {
     const transaction = await prisma.transacoes.findUnique({
-      where: {
-        transactionId: transactionId,
-      },
+      where: { transactionId },
     })
 
     if (!transaction) {
-      console.log("Transação não encontrada para o ID:", transactionId)
       return res.status(404).json({ error: "Transação não encontrada" })
     }
 
     res.status(200).json(transaction)
   } catch (error) {
     console.error("Erro ao processar a requisição:", error)
-    res.status(500).json({ error: "Erro ao processar a requisição" })
-  } finally {
-    await prisma.$disconnect()
+    return res.status(500).json({ error: "Erro ao processar a requisição" })
   }
 }
