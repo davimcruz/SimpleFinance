@@ -45,39 +45,31 @@ export default async function handler(
       },
     })
 
-    console.log("Orçamento existente:", existingOrcamento)
-
     if (existingOrcamento) {
       return res
         .status(400)
         .json({ message: "Já existe um orçamento para o ano atual." })
     }
 
-    const promises = orcamentoAnualPorMes.map(
-      (valor: number, index: number) => {
-        const mes = index + 1
-        console.log(`Criando orçamento para o mês ${mes}:`, {
+    await prisma.$transaction(async (prisma) => {
+      const orcamentoData = orcamentoAnualPorMes.map(
+        (valor: number, index: number) => ({
           userId: userIdNumber,
-          mes,
+          mes: index + 1, 
           valor,
           ano: anoAtual,
         })
-        return prisma.orcamento.create({
-          data: {
-            userId: userIdNumber,
-            mes,
-            valor,
-            ano: anoAtual,
-          },
-        })
-      }
-    )
+      )
 
+      await prisma.orcamento.createMany({
+        data: orcamentoData,
+      })
+    })
 
     return res.status(201).json({
       message: "Orçamento criado com sucesso",
       userId: userIdNumber,
-      valoresMensais: orcamentoAnualPorMes, 
+      valoresMensais: orcamentoAnualPorMes,
     })
   } catch (error) {
     console.error("Erro ao criar orçamento:", error)

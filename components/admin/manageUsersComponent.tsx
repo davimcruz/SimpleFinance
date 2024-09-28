@@ -33,15 +33,29 @@ const ManageUsersComponent = () => {
       const users = []
 
       for (const id of formattedIds) {
-        const response = await fetch(`/api/Queries/queryId?id=${id}`)
+        const responseUser = await fetch(`/api/Queries/queryId?id=${id}`)
+        const responseBudget = await fetch(
+          `/api/Budget/getCurrentBudget?userId=${id}`
+        )
 
-        if (!response.ok) {
-          const data = await response.json()
+        if (!responseUser.ok) {
+          const data = await responseUser.json()
           throw new Error(data.error || "Erro ao buscar usuários.")
         }
 
-        const data = await response.json()
-        users.push(`${data.id}: ${data.nome} ${data.sobrenome}`)
+        if (!responseBudget.ok) {
+          const data = await responseBudget.json()
+          throw new Error(data.error || "Erro ao buscar orçamento.")
+        }
+
+        const userData = await responseUser.json()
+        const budgetData = await responseBudget.json()
+
+        users.push(
+          `${userData.id}: ${userData.nome} ${
+            userData.sobrenome
+          } - Orçamento: R$${budgetData.totalOrcamento.toFixed(2)}`
+        )
       }
 
       setUserNames(users)
