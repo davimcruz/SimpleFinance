@@ -1,6 +1,5 @@
-'use client'
+"use client"
+
 export default function LayoutPage() {
-  return (
-    <></>
-  )
+  return <></>
 }
