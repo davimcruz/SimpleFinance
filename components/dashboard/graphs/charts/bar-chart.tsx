@@ -36,7 +36,7 @@ const BarChartComponent = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch("/api/Queries/queryComparation")
+        const response = await fetch("/api/Queries/queryComparison")
         if (!response.ok) throw new Error("Erro 500")
         const data: { [month: string]: { income: number; expense: number } } =
           await response.json()

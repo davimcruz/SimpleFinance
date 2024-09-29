@@ -8,10 +8,12 @@ datasource db {
 }
 
 model orcamento {
-  userId     Int @id
-  mes        Int
-  valor      Float
-  ano        Int
+  userId        Int     @id
+  mes           Int
+  valor         Float
+  ano           Int
+  saldoRealocado Float?  
+  status        String? 
 
   @@index([userId], map: "userId")
 }

@@ -1,5 +1,5 @@
 import { NextApiRequest, NextApiResponse } from "next"
-import queryTransactions from "../Queries/queryTransactions"
+import queryTransactions from "./queryTransactions"
 import { Transaction } from "@/types/types"
 import { verifyToken } from "../Auth/jwtAuth"
 
