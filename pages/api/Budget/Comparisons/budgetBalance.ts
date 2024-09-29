@@ -8,7 +8,7 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
-  console.log("Recebendo requisição para comparação de receitas...")
+  console.log("Recebendo requisição para comparação de saldo...")
 
   if (req.method !== "GET") {
     return res.status(405).json({ message: "Método não permitido" })
@@ -71,7 +71,26 @@ export default async function handler(
       },
     })
 
+    const totalExpense = await prisma.transacoes.findMany({
+      where: {
+        userId: userIdNumber,
+        tipo: "despesa",
+      },
+      select: {
+        valor: true,
+        data: true, 
+      },
+    })
+
     const filteredIncome = totalIncome.filter((t) => {
+      const [day, month, year] = (t.data || "").split("-")
+      const transactionMonth = parseInt(month, 10)
+      const transactionYear = parseInt(year, 10)
+
+      return transactionMonth === monthNumber && transactionYear === yearNumber
+    })
+
+    const filteredExpense = totalExpense.filter((t) => {
       const [day, month, year] = (t.data || "").split("-")
       const transactionMonth = parseInt(month, 10)
       const transactionYear = parseInt(year, 10)
@@ -83,24 +102,31 @@ export default async function handler(
       .map((t) => parseFloat(t.valor || "0"))
       .reduce((acc, curr) => acc + curr, 0)
 
-    console.log("Receitas totais agregadas:", totalIncomeValue)
+    const totalExpenseValue = filteredExpense
+      .map((t) => parseFloat(t.valor || "0"))
+      .reduce((acc, curr) => acc + curr, 0)
+
+    const balance = totalIncomeValue - totalExpenseValue
+    console.log("Saldo final:", balance)
 
     const comparison =
-      totalIncomeValue >= budget.valor
-        ? "Receita atingiu ou ultrapassou o orçamento"
-        : "Receita abaixo do orçamento"
+      balance >= budget.valor
+        ? "Saldo suficiente para o orçamento"
+        : "Saldo insuficiente para o orçamento"
 
     console.log("Resultado da comparação:", comparison)
 
     return res.status(200).json({
       budget: budget.valor,
       income: totalIncomeValue,
+      expense: totalExpenseValue,
+      balance,
       comparison,
     })
   } catch (error) {
-    console.error("Erro ao buscar receitas:", error)
+    console.error("Erro ao calcular saldo:", error)
     return res.status(500).json({
-      message: "Erro ao buscar receitas",
+      message: "Erro ao calcular saldo",
       error: (error as Error).message,
     })
   }

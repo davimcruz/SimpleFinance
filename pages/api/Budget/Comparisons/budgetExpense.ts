@@ -8,62 +8,100 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
+  console.log("Recebendo requisição para comparação de despesas...")
+
+  if (req.method !== "GET") {
+    return res.status(405).json({ message: "Método não permitido" })
+  }
+
   const tokenValid = await verifyToken({ req } as any)
   if (!tokenValid) {
+    console.log("Token inválido. Requisição não autorizada.")
     return res.status(401).json({ message: "Não autorizado" })
   }
 
   const { userId, month, year } = req.query
+
   if (!userId || !month || !year) {
-    return res.status(400).json({ message: "Parâmetros faltando." })
+    console.log("Parâmetros ausentes: ", { userId, month, year })
+    return res.status(400).json({ message: "Parâmetros obrigatórios ausentes" })
   }
+
+  const userIdNumber = Number(userId)
+  const monthNumber = Number(month)
+  const yearNumber = Number(year)
+
+  if (isNaN(userIdNumber) || isNaN(monthNumber) || isNaN(yearNumber)) {
+    console.log("Parâmetros inválidos: ", { userId, month, year })
+    return res.status(400).json({ message: "Parâmetros inválidos" })
+  }
+
+  console.log("Parâmetros recebidos:", {
+    userIdNumber,
+    monthNumber,
+    yearNumber,
+  })
 
   try {
     const budget = await prisma.orcamento.findFirst({
       where: {
-        userId: Number(userId),
-        mes: Number(month),
-        ano: Number(year),
+        userId: userIdNumber,
+        mes: monthNumber,
+        ano: yearNumber,
       },
     })
 
     if (!budget) {
-      return res.status(404).json({ message: "Orçamento não encontrado." })
+      console.log(
+        "Orçamento não encontrado para o usuário no mês e ano fornecidos."
+      )
+      return res.status(404).json({ message: "Orçamento não encontrado" })
     }
 
-    const transactions = await prisma.transacoes.findMany({
+    console.log("Orçamento encontrado:", budget.valor)
+
+    const totalExpense = await prisma.transacoes.findMany({
       where: {
-        userId: Number(userId),
-        tipo: "despesa", 
-        data: {
-          contains: `${year}-${String(month).padStart(2, "0")}`, 
-        },
+        userId: userIdNumber,
+        tipo: "despesa",
+      },
+      select: {
+        valor: true,
+        data: true, 
       },
     })
 
-    const totalExpense = transactions.reduce((acc, transaction) => {
-      const valor = transaction.valor
-        ? parseFloat(transaction.valor.replace(",", "."))
-        : 0
-      return acc + valor
-    }, 0)
+    const filteredExpense = totalExpense.filter((t) => {
+      const [day, month, year] = (t.data || "").split("-")
+      const transactionMonth = parseInt(month, 10)
+      const transactionYear = parseInt(year, 10)
 
-    const comparison = budget.valor - totalExpense
+      return transactionMonth === monthNumber && transactionYear === yearNumber
+    })
 
-    res.status(200).json({
+    const totalExpenseValue = filteredExpense
+      .map((t) => parseFloat(t.valor || "0"))
+      .reduce((acc, curr) => acc + curr, 0)
+
+    console.log("Despesas totais agregadas:", totalExpenseValue)
+
+    const comparison =
+      totalExpenseValue <= budget.valor
+        ? "Despesas dentro do orçamento"
+        : "Despesas acima do orçamento"
+
+    console.log("Resultado da comparação:", comparison)
+
+    return res.status(200).json({
       budget: budget.valor,
-      expense: totalExpense,
-      comparison:
-        comparison >= 0
-          ? `Orçamento excede as despesas por R$ ${comparison.toFixed(2)}`
-          : `Despesas excedem o orçamento por R$ ${Math.abs(comparison).toFixed(
-              2
-            )}`,
+      expense: totalExpenseValue,
+      comparison,
     })
   } catch (error) {
-    console.error("Erro ao comparar orçamento com despesas:", error)
-    res.status(500).json({ error: "Erro ao comparar orçamento com despesas." })
-  } finally {
-    await prisma.$disconnect()
+    console.error("Erro ao buscar despesas:", error)
+    return res.status(500).json({
+      message: "Erro ao buscar despesas",
+      error: (error as Error).message,
+    })
   }
 }

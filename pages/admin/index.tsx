@@ -6,6 +6,7 @@ import { GetServerSidePropsContext } from "next"
 import { parseCookies } from "nookies"
 import jwt from "jsonwebtoken"
 import "../../app/globals.css"
+import TestBudgetComparison from "@/components/admin/testBudgetComparison"
 
 
 async function verifyToken(ctx: GetServerSidePropsContext) {
@@ -47,6 +48,7 @@ export default function AdminPage() {
           <div className="flex flex-col lg:flex-row gap-8">
             <ManageUsersComponent />
             <CreateBudgetsComponent />
+            <TestBudgetComparison />
           </div>
         </main>
       </div>
