@@ -1,66 +1,66 @@
 import { useEffect, useState } from "react"
-import {
-  ArrowDownUp,
-  MoveDownRight,
-  MoveUpRight,
-  WalletMinimal,
-} from "lucide-react"
 import "../../../app/globals.css"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { fetchSummaryData } from "./summaryCalcs"
+import IncomeCard from "./cards/IncomeCard"
+import ExpenseCard from "./cards/ExpenseCard"
+import BalanceCard from "./cards/BalanceCard"
+import BudgetCard from "./cards/BudgetCard"
 import { Skeleton } from "@/components/ui/skeleton"
-import { fetchSummaryData, getServerSideProps } from "./summaryCalcs"
 import { SummaryData } from "@/types/types"
+import { parseCookies } from "nookies" 
 
 interface SummaryProps {
   initialData: SummaryData | null
 }
 
 const Summary: React.FC<SummaryProps> = ({ initialData }) => {
-  const [totalBalance, setTotalBalance] = useState<string>(
-    initialData?.totalBalance || ""
+  const [summaryData, setSummaryData] = useState<SummaryData | null>(
+    initialData
   )
-  const [totalAvailableThisMonth, setTotalAvailableThisMonth] =
-    useState<string>(initialData?.totalAvailableThisMonth || "")
-  const [totalIncomeThisMonth, setTotalIncomeThisMonth] = useState<string>(
-    initialData?.totalIncomeThisMonth || ""
-  )
-  const [totalExpenseThisMonth, setTotalExpenseThisMonth] = useState<string>(
-    initialData?.totalExpenseThisMonth || ""
-  )
-  const [balanceDifference, setBalanceDifference] = useState<string>(
-    initialData?.balanceDifference || ""
-  )
-  const [incomeDifference, setIncomeDifference] = useState<string>(
-    initialData?.incomeDifference || ""
-  )
-  const [expenseDifference, setExpenseDifference] = useState<string>(
-    initialData?.expenseDifference || ""
-  )
+  const [budgetData, setBudgetData] = useState<{
+    totalOrcamento: number
+    mesAtual: string
+  } | null>(null)
   const [loading, setLoading] = useState<boolean>(!initialData)
 
   useEffect(() => {
     if (!initialData) {
-      fetchTotalBalance()
+      fetchAllData()
     }
   }, [initialData])
 
-  const fetchTotalBalance = async () => {
+  const fetchAllData = async () => {
     try {
-      const data = await fetchSummaryData()
+      const cookies = parseCookies()
+      const userId = cookies.userId
 
-      if (data) {
-        setTotalAvailableThisMonth(data.totalAvailableThisMonth)
-        setTotalIncomeThisMonth(data.totalIncomeThisMonth)
-        setTotalExpenseThisMonth(data.totalExpenseThisMonth)
-        setTotalBalance(data.totalBalance)
-        setBalanceDifference(data.balanceDifference)
-        setIncomeDifference(data.incomeDifference)
-        setExpenseDifference(data.expenseDifference)
+      if (!userId) {
+        console.error("userId não encontrado nos cookies")
+        return
+      }
+
+      const [summaryResponse, budgetResponse] = await Promise.all([
+        fetchSummaryData(),
+        fetch(`/api/Queries/queryCurrentBudget?userId=${userId}`),
+      ])
+
+      const summaryData = await summaryResponse
+      const budgetData = await budgetResponse.json()
+
+      if (
+        summaryData &&
+        budgetData &&
+        typeof budgetData.totalOrcamento === "number"
+      ) {
+        setSummaryData(summaryData)
+        setBudgetData(budgetData)
+      } else {
+        console.error("Erro ao carregar os dados")
       }
 
       setLoading(false)
     } catch (error) {
-      console.error("Erro ao buscar o total balance:", error)
+      console.error("Erro ao buscar os dados:", error)
       setLoading(false)
     }
   }
@@ -76,59 +76,22 @@ const Summary: React.FC<SummaryProps> = ({ initialData }) => {
         </>
       ) : (
         <>
-          <Card x-chunk="dashboard-01-chunk-0">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Receitas</CardTitle>
-              <MoveUpRight className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{`R$ ${totalIncomeThisMonth}`}</div>
-              <p className="text-xs text-muted-foreground">
-                {incomeDifference} em comparação ao mês anterior
-              </p>
-            </CardContent>
-          </Card>
-          <Card x-chunk="dashboard-01-chunk-1">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Despesas</CardTitle>
-              <MoveDownRight className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{`R$ ${totalExpenseThisMonth}`}</div>
-              <p className="text-xs text-muted-foreground">
-                {expenseDifference} em comparação ao mês anterior
-              </p>
-            </CardContent>
-          </Card>
-          <Card x-chunk="dashboard-01-chunk-2">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
-                Saldo
-              </CardTitle>
-              <WalletMinimal className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{`R$ ${totalAvailableThisMonth}`}</div>
-              <p className="text-xs text-muted-foreground">
-                {balanceDifference} em comparação ao mês anterior
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card x-chunk="dashboard-01-chunk-3">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
-                Volume Transacionado
-              </CardTitle>
-              <ArrowDownUp className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{`R$ ${totalBalance}`}</div>
-              <p className="text-xs text-muted-foreground">
-                Total transacionado em todos os meses
-              </p>
-            </CardContent>
-          </Card>
+          <IncomeCard
+            totalIncomeThisMonth={summaryData?.totalIncomeThisMonth || ""}
+            incomeDifference={summaryData?.incomeDifference || ""}
+          />
+          <ExpenseCard
+            totalExpenseThisMonth={summaryData?.totalExpenseThisMonth || ""}
+            expenseDifference={summaryData?.expenseDifference || ""}
+          />
+          <BalanceCard
+            totalAvailableThisMonth={summaryData?.totalAvailableThisMonth || ""}
+            balanceDifference={summaryData?.balanceDifference || ""}
+          />
+          <BudgetCard
+            totalOrcamento={budgetData?.totalOrcamento || 0}
+            mesAtual={budgetData?.mesAtual || ""}
+          />
         </>
       )}
     </div>
@@ -136,8 +99,7 @@ const Summary: React.FC<SummaryProps> = ({ initialData }) => {
 }
 
 const SkeletonCard = () => (
-  <Skeleton className="rounded-lg shadow-md p-4 h-[125px]"></Skeleton>
+  <Skeleton className="rounded-lg shadow-md p-4 h-[125px]" />
 )
 
-export { getServerSideProps }
 export default Summary

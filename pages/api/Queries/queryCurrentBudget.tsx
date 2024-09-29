@@ -4,6 +4,24 @@ import { PrismaClient } from "@prisma/client"
 
 const prisma = new PrismaClient()
 
+const getMonthName = (monthNumber: number) => {
+  const monthNames = [
+    "Janeiro",
+    "Fevereiro",
+    "Março",
+    "Abril",
+    "Maio",
+    "Junho",
+    "Julho",
+    "Agosto",
+    "Setembro",
+    "Outubro",
+    "Novembro",
+    "Dezembro",
+  ]
+  return monthNames[monthNumber - 1]
+}
+
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
@@ -32,6 +50,8 @@ export default async function handler(
     const anoAtual = new Date().getFullYear()
     const mesAtual = new Date().getMonth() + 1
 
+    const mesAtualNome = getMonthName(mesAtual)
+
     const totalOrcamento = await prisma.orcamento.aggregate({
       _sum: {
         valor: true,
@@ -48,6 +68,7 @@ export default async function handler(
     return res.status(200).json({
       message: "Orçamento acumulado até o mês atual obtido com sucesso",
       totalOrcamento: totalOrcamento._sum.valor || 0,
+      mesAtual: mesAtualNome, 
     })
   } catch (error) {
     console.error("Erro ao obter orçamento:", error)
