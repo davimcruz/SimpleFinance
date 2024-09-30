@@ -1,6 +1,6 @@
 import { NextApiRequest, NextApiResponse } from "next"
 import { PrismaClient } from "@prisma/client"
-import { verifyToken } from "../../Auth/jwtAuth"
+import { verifyToken } from "../../../Auth/jwtAuth"
 
 const prisma = new PrismaClient()
 
@@ -8,7 +8,7 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
-  console.log("Recebendo requisição para comparação de saldo...")
+  console.log("Recebendo requisição para comparação de despesas...")
 
   if (req.method !== "GET") {
     return res.status(405).json({ message: "Método não permitido" })
@@ -60,35 +60,15 @@ export default async function handler(
 
     console.log("Orçamento encontrado:", budget.valor)
 
-    const [totalIncome, totalExpense] = await Promise.all([
-      prisma.transacoes.findMany({
-        where: {
-          userId: userIdNumber,
-          tipo: "receita",
-        },
-        select: {
-          valor: true,
-          data: true,
-        },
-      }),
-      prisma.transacoes.findMany({
-        where: {
-          userId: userIdNumber,
-          tipo: "despesa",
-        },
-        select: {
-          valor: true,
-          data: true,
-        },
-      }),
-    ])
-
-    const filteredIncome = totalIncome.filter((t) => {
-      const [day, month, year] = (t.data || "").split("-")
-      const transactionMonth = parseInt(month, 10)
-      const transactionYear = parseInt(year, 10)
-
-      return transactionMonth === monthNumber && transactionYear === yearNumber
+    const totalExpense = await prisma.transacoes.findMany({
+      where: {
+        userId: userIdNumber,
+        tipo: "despesa",
+      },
+      select: {
+        valor: true,
+        data: true,
+      },
     })
 
     const filteredExpense = totalExpense.filter((t) => {
@@ -99,25 +79,20 @@ export default async function handler(
       return transactionMonth === monthNumber && transactionYear === yearNumber
     })
 
-    const totalIncomeValue = filteredIncome
-      .map((t) => parseFloat(t.valor.toString() || "0"))
-      .reduce((acc, curr) => acc + curr, 0)
-
     const totalExpenseValue = filteredExpense
       .map((t) => parseFloat(t.valor.toString() || "0"))
       .reduce((acc, curr) => acc + curr, 0)
 
-    const balance = totalIncomeValue - totalExpenseValue
-    console.log("Saldo final:", balance)
+    console.log("Despesas totais agregadas:", totalExpenseValue)
 
     const comparison =
-      balance >= parseFloat(budget.valor.toString())
-        ? "Saldo suficiente para o orçamento"
-        : "Saldo insuficiente para o orçamento"
+      totalExpenseValue <= parseFloat(budget.valor.toString())
+        ? "Despesas dentro do orçamento"
+        : "Despesas acima do orçamento"
 
-    // Cálculo da diferença percentual entre orçamento e saldo
     const budgetValue = parseFloat(budget.valor.toString())
-    const percentDifference = ((balance - budgetValue) / budgetValue) * 100
+    const percentDifference =
+      ((totalExpenseValue - budgetValue) / budgetValue) * 100
     const formattedPercentDifference =
       percentDifference > 0
         ? `+${percentDifference.toFixed(2)}%`
@@ -127,16 +102,14 @@ export default async function handler(
 
     return res.status(200).json({
       budget: budgetValue,
-      income: totalIncomeValue,
       expense: totalExpenseValue,
-      balance,
       comparison,
-      percentDifference: formattedPercentDifference, 
+      percentDifference: formattedPercentDifference,
     })
   } catch (error) {
-    console.error("Erro ao calcular saldo:", error)
+    console.error("Erro ao buscar despesas:", error)
     return res.status(500).json({
-      message: "Erro ao calcular saldo",
+      message: "Erro ao buscar despesas",
       error: (error as Error).message,
     })
   }

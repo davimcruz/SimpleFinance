@@ -1,6 +1,6 @@
 import { NextApiRequest, NextApiResponse } from "next"
 import { PrismaClient } from "@prisma/client"
-import { verifyToken } from "../../Auth/jwtAuth"
+import { verifyToken } from "../../../Auth/jwtAuth"
 
 const prisma = new PrismaClient()
 
@@ -104,7 +104,7 @@ export default async function handler(
       budget: budgetValue,
       income: totalIncomeValue,
       comparison,
-      percentDifference: formattedPercentDifference, 
+      percentDifference: formattedPercentDifference,
     })
   } catch (error) {
     console.error("Erro ao buscar receitas:", error)
