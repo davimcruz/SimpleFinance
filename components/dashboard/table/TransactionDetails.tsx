@@ -49,8 +49,7 @@ const TransactionsDetails = ({ transactionId }: TransactionsDetailsProps) => {
   const [submitSuccess, setSubmitSuccess] = useState(false)
   const [dialogOpen, setDialogOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
-  const [isDataLoading, setIsDataLoading] = useState(false) // Estado para controlar o carregamento dos dados
-
+  const [isDataLoading, setIsDataLoading] = useState(false) 
   const router = useRouter()
 
   const formatarValor = (valor: number): string => {
@@ -74,7 +73,7 @@ const TransactionsDetails = ({ transactionId }: TransactionsDetailsProps) => {
 
   const handleTransactionsDetails = async () => {
     console.log("Id recebido:", transactionId)
-    setIsDataLoading(true) // Inicia o estado de carregamento dos dados
+    setIsDataLoading(true) 
 
     try {
       const response = await fetch("/api/Transactions/viewTransactions", {
@@ -113,7 +112,7 @@ const TransactionsDetails = ({ transactionId }: TransactionsDetailsProps) => {
     } catch (error) {
       console.error("Erro na requisição:", error)
     } finally {
-      setIsDataLoading(false) // Finaliza o estado de carregamento dos dados
+      setIsDataLoading(false) 
     }
   }
 
