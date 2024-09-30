@@ -1,3 +1,5 @@
+import Head from "next/head"
+
 import { GetServerSideProps } from "next"
 import { Inter } from "next/font/google"
 import "../../app/globals.css"
@@ -14,7 +16,6 @@ import { getServerSidePropsDashboard } from "@/utils/getServerSideProps"
 
 const inter = Inter({ subsets: ["latin"] })
 
-
 const DashboardPage = ({
   user,
 }: {
@@ -22,6 +23,12 @@ const DashboardPage = ({
 }) => {
   return (
     <ThemeProvider defaultTheme="dark" attribute="class">
+      <Head>
+        <meta
+          name="viewport"
+          content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+        />
+      </Head>
       <div className={`${inter.className} flex min-h-screen w-full flex-col`}>
         <Header userImage={user?.image} />
         <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8">

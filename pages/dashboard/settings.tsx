@@ -23,6 +23,7 @@ import { Input } from "@/components/ui/input"
 import { getServerSidePropsDashboard } from "@/utils/getServerSideProps"
 
 import Header from "@/components/dashboard/header/HeaderComponent"
+import Head from "next/head"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -145,6 +146,12 @@ const SettingsPage = ({ user }: { user?: UserData }) => {
 
   return (
     <ThemeProvider defaultTheme="dark" attribute="class">
+      <Head>
+        <meta
+          name="viewport"
+          content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+        />
+      </Head>
       <div className={`${inter.className} flex min-h-screen w-full flex-col`}>
         <Header userImage={userImage} />
         <main className="flex min-h-[calc(100vh_-_theme(spacing.16))] flex-1 flex-col gap-4 bg-muted/40 p-4 md:gap-8 md:p-10">

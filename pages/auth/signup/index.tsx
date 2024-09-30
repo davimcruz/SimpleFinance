@@ -17,6 +17,7 @@ import { ModeToggle } from "@/components/theme/toggleTheme"
 import { ThemeProvider } from "@/components/theme/theme-provider"
 
 import "../../../app/globals.css"
+import Head from "next/head"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -75,6 +76,12 @@ export default function Register() {
 
   return (
     <ThemeProvider defaultTheme="dark" attribute="class">
+      <Head>
+        <meta
+          name="viewport"
+          content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+        />
+      </Head>
       <div
         className={`${inter.className} flex items-center justify-center max-h-[90vh] min-h-[90vh]`}
       >
