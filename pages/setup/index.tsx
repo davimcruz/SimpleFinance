@@ -1,12 +1,19 @@
-import ManageUsersComponent from "@/components/admin/manageUsersComponent"
-import CreateBudgetsComponent from "@/components/setup/createBudgetsComponent"
 import { ThemeProvider } from "@/components/theme/theme-provider"
 import { GetServerSidePropsContext } from "next"
 import { parseCookies } from "nookies"
 import jwt from "jsonwebtoken"
 import "../../app/globals.css"
-import TestBudgetComparison from "@/components/admin/testBudgetComparison"
-
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardContent,
+  CardFooter,
+} from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
+import { Button } from "@/components/ui/button"
+import { useState } from "react"
+import CreateBudgetsComponent from "@/components/setup/createBudgetsComponent"
 
 async function verifyToken(ctx: GetServerSidePropsContext) {
   const { token } = parseCookies(ctx)
@@ -26,7 +33,7 @@ export async function getServerSideProps(ctx: GetServerSidePropsContext) {
   if (!isVerified) {
     return {
       redirect: {
-        destination: "/admin/signin",
+        destination: "/auth/signin",
         permanent: false,
       },
     }
@@ -35,17 +42,15 @@ export async function getServerSideProps(ctx: GetServerSidePropsContext) {
   return { props: {} }
 }
 
-export default function AdminPage() {
+export default function SetupPage() {
+  const [budget, setBudget] = useState<string>("")
+
+
   return (
     <ThemeProvider defaultTheme="dark" attribute="class">
-      <div className="flex min-h-screen flex-col items-center justify-between p-24">
+      <div className="flex min-h-screen flex-col items-center justify-center p-6">
         <main className="flex flex-col items-center justify-center flex-1 gap-8 px-4 py-16 lg:px-0">
-          <h1 className="text-4xl font-bold">Admin Dashboard</h1>
-          <div className="flex flex-col lg:flex-row gap-8">
-            <ManageUsersComponent />
-            <CreateBudgetsComponent />
-            <TestBudgetComparison />
-          </div>
+          <CreateBudgetsComponent/>
         </main>
       </div>
     </ThemeProvider>

@@ -12,7 +12,6 @@ const realocarSaldo = async (userId: number, anoAtual: number) => {
     where: { userId, ano: anoAtual },
     orderBy: { mes: "asc" },
   })
-  console.log(`Orçamentos encontrados: ${orcamentos.length}`)
 
   const transacoes = await prisma.transacoes.findMany({
     where: {
@@ -22,12 +21,13 @@ const realocarSaldo = async (userId: number, anoAtual: number) => {
       },
     },
   })
-  console.log(`Transações encontradas: ${transacoes.length}`)
 
   const transacoesPorMes = transacoes.reduce((acc, transacao) => {
     const mes = parseInt(transacao.data?.split("-")[1] || "0", 10)
 
-    const valor = transacao.valor ?? 0
+    const valor = parseFloat(
+      String(transacao.valor)?.replace("R$", "").replace(",", ".").trim() || "0"
+    )
 
     if (!acc[mes]) {
       acc[mes] = { receita: 0, despesa: 0 }
@@ -94,12 +94,28 @@ export default async function handler(
     return res.status(405).json({ error: "Método não permitido" })
   }
 
-  const { email, nome, tipo, fonte, detalhesFonte, data, valor } = req.body
+ const { email, nome, tipo, fonte, detalhesFonte, data, valor } = req.body
 
-  if (!email || !nome || !tipo || !fonte || !data || valor === undefined) {
-    console.log("Dados obrigatórios estão faltando:", req.body)
-    return res.status(400).json({ error: "Dados obrigatórios estão faltando" })
-  }
+ if (
+   !email ||
+   !nome ||
+   !tipo ||
+   !fonte ||
+   !data ||
+   valor === null ||
+   valor === undefined
+ ) {
+   console.log("Dados obrigatórios estão faltando:", req.body)
+   return res.status(400).json({ error: "Dados obrigatórios estão faltando" })
+ }
+
+ const valorFloat = parseFloat(valor)
+
+ if (isNaN(valorFloat)) {
+   console.log("Valor inválido:", valor)
+   return res.status(400).json({ error: "Valor inválido" })
+ }
+
 
   console.log("Email recebido:", email)
 
@@ -114,9 +130,6 @@ export default async function handler(
       return res.status(404).json({ error: "Usuário não encontrado" })
     }
 
-    const userId = user.id
-    console.log("ID do usuário encontrado:", userId)
-
     const transactionId = uuidv4()
 
     const extractedDate = data.split("T")[0]
@@ -125,31 +138,26 @@ export default async function handler(
     const valorFloat = valor
 
     console.log("Salvando transação no banco de dados...")
+
     await Promise.all([
-      prisma.transacoes
-        .create({
-          data: {
-            transactionId,
-            userId,
-            nome,
-            tipo,
-            fonte,
-            detalhesFonte: detalhesFonte || null,
-            data: formattedDate || null,
-            valor: valorFloat,
+      prisma.transacoes.create({
+        data: {
+          transactionId,
+          nome,
+          tipo,
+          fonte,
+          detalhesFonte: detalhesFonte || null,
+          data: formattedDate || null,
+          valor: valorFloat,
+          usuarios: {
+            connect: { id: user.id }, 
           },
-        })
-        .then(() => console.log("Transação salva com sucesso."))
-        .catch((error) => {
-          console.error("Erro ao salvar transação:", error)
-          throw error
-        }),
-      realocarSaldo(userId, new Date().getFullYear()).catch((error) => {
-        console.error("Erro ao realocar saldo:", error)
-        throw error
+        },
       }),
+      realocarSaldo(user.id, new Date().getFullYear()),
     ])
 
+    console.log("Transação salva com sucesso.")
     res.status(200).json({ success: true })
   } catch (error) {
     console.error("Erro ao processar a requisição:", error)

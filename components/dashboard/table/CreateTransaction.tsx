@@ -47,22 +47,35 @@ const CreateTransaction = () => {
   const [dataTransacao, setDataTransacao] = useState<Date | undefined>()
   const [isLoading, setIsLoading] = useState(false)
 
-  const handleValorChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const novoValor = event.target.value
-    const valorFormatado = "R$ " + formatadorValor(novoValor)
-    setValor(valorFormatado)
-  }
+const handleValorChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const novoValor = event.target.value
+
+  const valorValidado = novoValor.replace(/[^0-9.,]/g, "")
+
+  const valorFormatado = "R$ " + formatadorValor(valorValidado)
+  setValor(valorFormatado)
+}
+
 
   const handleTipoTransacaoChange = (value: string) => {
     setTipoTransacao(value)
     setFonteTransacao("")
   }
 
-  const converterValorParaFloat = (valor: string): number => {
-    const valorSemPontos = valor.replace(/\./g, "")
-    const valorComPonto = valorSemPontos.replace(",", ".")
-    return parseFloat(valorComPonto)
+const converterValorParaFloat = (valor: string): number => {
+  const valorValidado = valor.replace(/[^0-9,]/g, "")
+
+  if (!valorValidado) {
+    return NaN
   }
+
+  const valorSemPontos = valorValidado.replace(/\./g, "")
+  const valorComPonto = valorSemPontos.replace(",", ".")
+
+  return parseFloat(valorComPonto)
+}
+
+
 
   const handleSubmit = async (event: { preventDefault: () => void }) => {
     event.preventDefault()
@@ -82,6 +95,12 @@ const CreateTransaction = () => {
     emailFromCookie = decodeURIComponent(emailFromCookie)
 
     const valorFloat = converterValorParaFloat(valorEditado)
+
+    if (isNaN(valorFloat) || valorFloat <= 0) {
+      console.error("Valor inválido")
+      setIsLoading(false)
+      return
+    }
 
     const transactionData = {
       email: emailFromCookie,

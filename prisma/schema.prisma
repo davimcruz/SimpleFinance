@@ -29,7 +29,7 @@ model transacoes {
   valor         Float
   dataCriacao   DateTime @default(now()) @db.Timestamp(0)
   transactionId String   @id @default(uuid()) @db.Char(36)
-  usuarios      usuarios @relation(fields: [userId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "transacoes_ibfk_1")
+  usuarios      usuarios? @relation(fields: [userId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "transacoes_ibfk_1")
 
   @@index([userId], map: "userId")
 }
