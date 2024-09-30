@@ -7,7 +7,7 @@ import BalanceCard from "./cards/BalanceCard"
 import BudgetCard from "./cards/BudgetCard"
 import { Skeleton } from "@/components/ui/skeleton"
 import { SummaryData } from "@/types/types"
-import { parseCookies } from "nookies" 
+import { parseCookies } from "nookies"
 
 interface SummaryProps {
   initialData: SummaryData | null
@@ -22,6 +22,7 @@ const Summary: React.FC<SummaryProps> = ({ initialData }) => {
     mesAtual: string
   } | null>(null)
   const [loading, setLoading] = useState<boolean>(!initialData)
+  const [error, setError] = useState<boolean>(false)
 
   useEffect(() => {
     if (!initialData) {
@@ -31,13 +32,20 @@ const Summary: React.FC<SummaryProps> = ({ initialData }) => {
 
   const fetchAllData = async () => {
     try {
+      setLoading(true)
+      setError(false)
+
       const cookies = parseCookies()
       const userId = cookies.userId
 
       if (!userId) {
         console.error("userId não encontrado nos cookies")
+        setError(true)
+        setLoading(false)
         return
       }
+
+      console.log("Iniciando busca de dados para resumo e orçamento...")
 
       const [summaryResponse, budgetResponse] = await Promise.all([
         fetchSummaryData(),
@@ -46,6 +54,9 @@ const Summary: React.FC<SummaryProps> = ({ initialData }) => {
 
       const summaryData = await summaryResponse
       const budgetData = await budgetResponse.json()
+
+      console.log("Dados de resumo recebidos:", summaryData)
+      console.log("Dados de orçamento recebidos:", budgetData)
 
       if (
         summaryData &&
@@ -56,44 +67,57 @@ const Summary: React.FC<SummaryProps> = ({ initialData }) => {
         setBudgetData(budgetData)
       } else {
         console.error("Erro ao carregar os dados")
+        setError(true)
       }
-
-      setLoading(false)
     } catch (error) {
       console.error("Erro ao buscar os dados:", error)
+      setError(true)
+    } finally {
       setLoading(false)
     }
   }
 
+  if (loading) {
+    return (
+      <div className="grid gap-4 md:grid-cols-2 md:gap-8 lg:grid-cols-4">
+        <SkeletonCard />
+        <SkeletonCard />
+        <SkeletonCard />
+        <SkeletonCard />
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="text-red-500">
+        Erro ao carregar os dados. Tente novamente mais tarde.
+      </div>
+    )
+  }
+
   return (
     <div className="grid gap-4 md:grid-cols-2 md:gap-8 lg:grid-cols-4">
-      {loading ? (
-        <>
-          <SkeletonCard />
-          <SkeletonCard />
-          <SkeletonCard />
-          <SkeletonCard />
-        </>
-      ) : (
-        <>
-          <IncomeCard
-            totalIncomeThisMonth={summaryData?.totalIncomeThisMonth || ""}
-            incomeDifference={summaryData?.incomeDifference || ""}
-          />
-          <ExpenseCard
-            totalExpenseThisMonth={summaryData?.totalExpenseThisMonth || ""}
-            expenseDifference={summaryData?.expenseDifference || ""}
-          />
-          <BalanceCard
-            totalAvailableThisMonth={summaryData?.totalAvailableThisMonth || ""}
-            balanceDifference={summaryData?.balanceDifference || ""}
-          />
-          <BudgetCard
-            totalOrcamento={budgetData?.totalOrcamento || 0}
-            mesAtual={budgetData?.mesAtual || ""}
-          />
-        </>
-      )}
+      <>
+        <IncomeCard
+          totalIncomeThisMonth={summaryData?.totalIncomeThisMonth || "0,00"}
+          incomeDifference={summaryData?.incomeDifference || "0%"}
+        />
+        <ExpenseCard
+          totalExpenseThisMonth={summaryData?.totalExpenseThisMonth || "0,00"}
+          expenseDifference={summaryData?.expenseDifference || "0%"}
+        />
+        <BalanceCard
+          balanceThisMonth={
+            summaryData?.balanceThisMonth || "0,00"
+          }
+          balanceDifference={summaryData?.balanceDifference || "0%"}
+        />
+        <BudgetCard
+          totalOrcamento={budgetData?.totalOrcamento || 0}
+          mesAtual={budgetData?.mesAtual || ""}
+        />
+      </>
     </div>
   )
 }

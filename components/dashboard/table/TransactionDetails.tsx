@@ -2,11 +2,12 @@ import React, { useState, useEffect } from "react"
 import { format } from "date-fns"
 import { cn } from "@/lib/utils"
 import { ptBR } from "date-fns/locale"
+import { useRouter } from "next/router" 
+import LottieAnimation from "./loadingAnimation" 
 
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -31,29 +32,38 @@ import { Label } from "@/components/ui/label"
 import { DialogClose } from "@radix-ui/react-dialog"
 import { Calendar as CalendarIcon } from "lucide-react"
 
-import formatadorValor from "@/utils/valueFormatter"
-import { monthNames } from "@/utils/monthNames"
-
 interface TransactionsDetailsProps {
   transactionId: string
 }
 
 const TransactionsDetails = ({ transactionId }: TransactionsDetailsProps) => {
   const [date, setDate] = React.useState<Date>()
-  const [valorEditado, setValor] = useState("")
+  const [valorEditado, setValorEditado] = useState<string>("")
   const [erro, setErro] = useState(false)
   const [nome, setNome] = useState("")
   const [tipoTransacao, setTipoTransacao] = useState("")
   const [fonteTransacao, setFonteTransacao] = useState("")
   const [detalhesFonte, setDetalhesFonte] = useState("")
-  const [valorTransacao, setValorTransacao] = useState("")
+  const [valorTransacao, setValorTransacao] = useState<number | null>(null)
   const [dataTransacao, setDataTransacao] = useState<Date | undefined>()
   const [submitSuccess, setSubmitSuccess] = useState(false)
   const [dialogOpen, setDialogOpen] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
+
+  const router = useRouter() 
+
+  const formatarValor = (valor: number): string => {
+    return valor
+      .toFixed(2)
+      .replace(".", ",")
+      .replace(/\B(?=(\d{3})+(?!\d))/g, ".")
+  }
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const novoValor = "R$ " + formatadorValor(event.target.value)
-    setValor(novoValor)
+    const valorInput = event.target.value.replace(/\D/g, "") 
+    const valorNumerico = parseFloat(valorInput) / 100 
+    setValorTransacao(valorNumerico)
+    setValorEditado(formatarValor(valorNumerico)) 
   }
 
   const handleTipoTransacaoChange = (value: string) => {
@@ -86,20 +96,15 @@ const TransactionsDetails = ({ transactionId }: TransactionsDetailsProps) => {
         setDetalhesFonte(data.detalhesFonte || "")
 
         const dateParts = data.data.split("-")
-        const monthNumber = parseInt(dateParts[1], 10)
-        const monthName = monthNames[monthNumber - 1]
-
         const formattedDate = new Date(
-          `${monthName} ${dateParts[0]} ${dateParts[2]}`
+          `${dateParts[1]}/${dateParts[0]}/${dateParts[2]}`
         )
 
         setDataTransacao(formattedDate)
         setDate(formattedDate)
 
-        const valorFormatado = "R$ " + formatadorValor(data.valor)
-        setValorTransacao(data.valor || "")
-        setValor(valorFormatado || "")
-
+        setValorTransacao(data.valor)
+        setValorEditado(formatarValor(data.valor)) 
         setDialogOpen(true)
       }
     } catch (error) {
@@ -108,13 +113,15 @@ const TransactionsDetails = ({ transactionId }: TransactionsDetailsProps) => {
   }
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    setIsLoading(true)
 
     if (
       nome &&
       tipoTransacao &&
       fonteTransacao &&
       detalhesFonte &&
-      valorTransacao &&
+      valorTransacao !== null &&
       dataTransacao
     ) {
       try {
@@ -129,7 +136,7 @@ const TransactionsDetails = ({ transactionId }: TransactionsDetailsProps) => {
             tipo: tipoTransacao,
             fonte: fonteTransacao,
             detalhesFonte,
-            valor: valorTransacao,
+            valor: valorTransacao, 
             data: dataTransacao,
           }),
         })
@@ -138,12 +145,16 @@ const TransactionsDetails = ({ transactionId }: TransactionsDetailsProps) => {
           throw new Error("Falha ao enviar requisição para a API.")
         }
 
-        setSubmitSuccess(true)
+        setIsLoading(false) 
+        setDialogOpen(false) 
+        router.reload() 
       } catch (error) {
         console.error("Erro na requisição:", error)
+        setIsLoading(false) 
       }
     } else {
       setErro(true)
+      setIsLoading(false) 
     }
   }
 
@@ -195,158 +206,158 @@ const TransactionsDetails = ({ transactionId }: TransactionsDetailsProps) => {
         <DialogContent className="w-[90vw] max-h-[90vh] overflow-auto rounded-xl">
           <DialogHeader>
             <DialogTitle>Detalhes da Transação</DialogTitle>
-            <DialogDescription>
-              Aqui você poderá verificar todos os detalhes referentes à esta
-              transação.
-            </DialogDescription>
-            <div className="pt-8 pb-4">
-              <form onSubmit={handleSubmit}>
-                <div className="grid gap-4 mb-12 sm:grid-cols-2 sm:gap-8">
-                  <div className="grid gap-2">
-                    <Label className="text-left" htmlFor="nome">
-                      Nome da Transação
-                    </Label>
-                    <Input
-                      id="nome"
-                      placeholder="Tênis Nike, Burger King, etc"
-                      required
-                      value={nome}
-                      onChange={(e) => setNome(e.target.value)}
-                    />
+            {isLoading ? (
+              <div className="flex flex-col items-center justify-center">
+                <LottieAnimation animationPath="/loadingAnimation.json" />
+                <p className="text-lg font-bold">Editando Transação...</p>
+              </div>
+            ) : (
+              <div className="pt-8 pb-4">
+                <form onSubmit={handleSubmit}>
+                  <div className="grid gap-4 mb-12 sm:grid-cols-2 sm:gap-8">
+                    <div className="grid gap-2">
+                      <Label className="text-left" htmlFor="nome">
+                        Nome da Transação
+                      </Label>
+                      <Input
+                        id="nome"
+                        placeholder="Tênis Nike, Burger King, etc"
+                        required
+                        value={nome}
+                        onChange={(e) => setNome(e.target.value)}
+                      />
+                    </div>
+                    <div className="grid gap-2">
+                      <Label className="text-left" htmlFor="type-transaction">
+                        Tipo de Transação
+                      </Label>
+                      <Select
+                        value={tipoTransacao}
+                        onValueChange={(value) =>
+                          handleTipoTransacaoChange(value)
+                        }
+                        required
+                      >
+                        <SelectTrigger className="w-full text-muted-foreground focus:text-foreground">
+                          <SelectValue placeholder="Receita ou Despesa"></SelectValue>
+                        </SelectTrigger>
+                        <SelectContent id="select-type">
+                          <SelectItem value="receita">Receita</SelectItem>
+                          <SelectItem value="despesa">Despesa</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
                   </div>
-                  <div className="grid gap-2">
-                    <Label className="text-left" htmlFor="type-transaction">
-                      Tipo de Transação
-                    </Label>
-                    <Select
-                      value={tipoTransacao}
-                      onValueChange={(value) =>
-                        handleTipoTransacaoChange(value)
-                      }
-                      required
-                    >
-                      <SelectTrigger className="w-full text-muted-foreground focus:text-foreground">
-                        <SelectValue placeholder="Receita ou Despesa"></SelectValue>
-                      </SelectTrigger>
-                      <SelectContent id="select-type">
-                        <SelectItem value="receita">Receita</SelectItem>
-                        <SelectItem value="despesa">Despesa</SelectItem>
-                      </SelectContent>
-                    </Select>
+                  <div className="grid gap-4 mb-12 sm:grid-cols-2 sm:gap-8">
+                    <div className="grid gap-2">
+                      <Label className="text-left" htmlFor="select-fonte">
+                        Fonte da Transação
+                      </Label>
+                      <Select
+                        value={fonteTransacao}
+                        onValueChange={(value) => setFonteTransacao(value)}
+                        required
+                      >
+                        <SelectTrigger className="w-full text-muted-foreground focus:text-foreground">
+                          <SelectValue placeholder="Onde saiu ou entrou?"></SelectValue>
+                        </SelectTrigger>
+                        <SelectContent id="select-fonte">
+                          <SelectItem value="cartao-credito">
+                            Cartão de Crédito
+                          </SelectItem>
+                          <SelectItem value="cartao-debito">
+                            Cartão de Débito
+                          </SelectItem>
+                          <SelectItem value="investimentos">
+                            Investimentos
+                          </SelectItem>
+                          <SelectItem value="pix">PIX</SelectItem>
+                          <SelectItem value="boleto">Boleto</SelectItem>
+                          <SelectItem value="ted-doc">TED/DOC</SelectItem>
+                          <SelectItem value="cedulas">Cédulas</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="grid gap-2">
+                      <Label className="text-left" htmlFor="detalhes-fonte">
+                        Detalhes da Fonte
+                      </Label>
+                      <Input
+                        id="detalhes-fonte"
+                        placeholder="De qual Conta/Instituição"
+                        value={detalhesFonte}
+                        required
+                        onChange={(e) => setDetalhesFonte(e.target.value)}
+                      />
+                    </div>
                   </div>
-                </div>
-                <div className="grid gap-4 mb-12 sm:grid-cols-2 sm:gap-8">
-                  <div className="grid gap-2">
-                    <Label className="text-left" htmlFor="select-fonte">
-                      Fonte da Transação
-                    </Label>
-                    <Select
-                      value={fonteTransacao}
-                      onValueChange={(value) => setFonteTransacao(value)}
-                      required
-                    >
-                      <SelectTrigger className="w-full text-muted-foreground focus:text-foreground">
-                        <SelectValue placeholder="Onde saiu ou entrou?"></SelectValue>
-                      </SelectTrigger>
-                      <SelectContent id="select-fonte">
-                        <SelectItem value="cartao-credito">
-                          Cartão de Crédito
-                        </SelectItem>
-                        <SelectItem value="cartao-debito">
-                          Cartão de Débito
-                        </SelectItem>
-                        <SelectItem value="investimentos">
-                          Investimentos
-                        </SelectItem>
-                        <SelectItem value="pix">PIX</SelectItem>
-                        <SelectItem value="boleto">Boleto</SelectItem>
-                        <SelectItem value="ted-doc">TED/DOC</SelectItem>
-                        <SelectItem value="cedulas">Cédulas</SelectItem>
-                      </SelectContent>
-                    </Select>
+                  <div className="grid gap-4 mb-12 sm:grid-cols-2 sm:gap-8">
+                    <div className="grid gap-2">
+                      <Label className="text-left" htmlFor="data">
+                        Data da Transação
+                      </Label>
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <Button
+                            variant={"outline"}
+                            className={cn(
+                              "w-full justify-start text-left font-normal",
+                              !date && "text-muted-foreground"
+                            )}
+                          >
+                            <CalendarIcon className="mr-2 h-4 w-4" />
+                            {date ? (
+                              format(date, "dd/MM/yyyy")
+                            ) : (
+                              <span>Selecione uma Data</span>
+                            )}
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0">
+                          <Calendar
+                            locale={ptBR}
+                            mode="single"
+                            selected={date}
+                            onSelect={(selectedDate) => {
+                              setDate(selectedDate)
+                              setDataTransacao(selectedDate)
+                            }}
+                            initialFocus
+                            required
+                          />
+                        </PopoverContent>
+                      </Popover>
+                    </div>
+                    <div className="grid gap-2">
+                      <Label className="text-left" htmlFor="valor">
+                        Valor da Transação
+                      </Label>
+                      <Input
+                        id="valor"
+                        placeholder="Exemplo: 199,90"
+                        value={valorEditado} 
+                        onChange={handleChange} 
+                        required
+                      />
+                    </div>
                   </div>
-                  <div className="grid gap-2">
-                    <Label className="text-left" htmlFor="detalhes-fonte">
-                      Detalhes da Fonte
-                    </Label>
-                    <Input
-                      id="detalhes-fonte"
-                      placeholder="De qual Conta/Instituição"
-                      value={detalhesFonte}
-                      required
-                      onChange={(e) => setDetalhesFonte(e.target.value)}
-                    />
-                  </div>
-                </div>
-                <div className="grid gap-4 mb-12 sm:grid-cols-2 sm:gap-8">
-                  <div className="grid gap-2">
-                    <Label className="text-left" htmlFor="data">
-                      Data da Transação
-                    </Label>
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <Button
-                          variant={"outline"}
-                          className={cn(
-                            "w-full justify-start text-left font-normal",
-                            !date && "text-muted-foreground"
-                          )}
-                        >
-                          <CalendarIcon className="mr-2 h-4 w-4" />
-                          {date ? (
-                            format(date, "dd/MM/yyyy")
-                          ) : (
-                            <span>Selecione uma Data</span>
-                          )}
-                        </Button>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0">
-                        <Calendar
-                          locale={ptBR}
-                          mode="single"
-                          selected={date}
-                          onSelect={(selectedDate) => {
-                            setDate(selectedDate)
-                            setDataTransacao(selectedDate)
-                          }}
-                          initialFocus
-                          required
-                        />
-                      </PopoverContent>
-                    </Popover>
-                  </div>
-                  <div className="grid gap-2">
-                    <Label className="text-left" htmlFor="valor">
-                      Valor da Transação
-                    </Label>
-                    <Input
-                      id="valor"
-                      placeholder="Exemplo: 199,90"
-                      value={valorEditado}
-                      onChange={(e) => {
-                        handleChange(e)
-                        setValorTransacao(e.target.value)
-                      }}
-                      required
-                    />
-                  </div>
-                </div>
-                {erro && (
-                  <div className="text-red-500">
-                    Por favor, preencha todos os campos!
-                  </div>
-                )}
-                <DialogFooter className="lg:flex lg:justify-end lg:items-end flex-col gap-4">
-                  <DialogClose asChild>
-                    <Button variant="outline">Cancelar</Button>
-                  </DialogClose>
-                  <Button onClick={handleDeleteTransaction} variant="outline">
-                    Excluir Transação
-                  </Button>
-                  <Button type="submit">Salvar Transação</Button>
-                </DialogFooter>
-              </form>
-            </div>
+                  {erro && (
+                    <div className="text-red-500">
+                      Por favor, preencha todos os campos!
+                    </div>
+                  )}
+                  <DialogFooter className="lg:flex lg:justify-end lg:items-end flex-col gap-4">
+                    <DialogClose asChild>
+                      <Button variant="outline">Cancelar</Button>
+                    </DialogClose>
+                    <Button onClick={handleDeleteTransaction} variant="outline">
+                      Excluir Transação
+                    </Button>
+                    <Button type="submit">Salvar Transação</Button>
+                  </DialogFooter>
+                </form>
+              </div>
+            )}
           </DialogHeader>
         </DialogContent>
       </Dialog>

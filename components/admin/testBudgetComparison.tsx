@@ -7,7 +7,7 @@ import { parseCookies } from "nookies"
 
 const TestBudgetComparison = () => {
   const [userId, setUserId] = useState<number | null>(null)
-  const [month, setMonth] = useState<number>(new Date().getMonth() + 1) // Mês atual
+  const [month, setMonth] = useState<number>(new Date().getMonth() + 1) 
   const [year, setYear] = useState<number>(new Date().getFullYear())
   const [incomeData, setIncomeData] = useState<any>(null)
   const [expenseData, setExpenseData] = useState<any>(null)
@@ -30,21 +30,18 @@ const TestBudgetComparison = () => {
     setError(null)
 
     try {
-      // Busca para income
       const incomeResponse = await fetch(
         `/api/Budget/Comparisons/budgetIncome?userId=${userId}&month=${month}&year=${year}`,
         { method: "GET" }
       )
       const incomeResult = await incomeResponse.json()
 
-      // Busca para expense
       const expenseResponse = await fetch(
         `/api/Budget/Comparisons/budgetExpense?userId=${userId}&month=${month}&year=${year}`,
         { method: "GET" }
       )
       const expenseResult = await expenseResponse.json()
 
-      // Busca para balance
       const balanceResponse = await fetch(
         `/api/Budget/Comparisons/budgetBalance?userId=${userId}&month=${month}&year=${year}`,
         { method: "GET" }

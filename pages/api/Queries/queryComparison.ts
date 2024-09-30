@@ -30,8 +30,7 @@ export default async function queryComparison(
           monthlyTransactions[month] = { income: 0, expense: 0 }
         }
 
-        const valueWithDot = (transaction.valor ?? "0").replace(",", ".")
-        const value = parseFloat(valueWithDot)
+        const value = transaction.valor ?? 0
 
         if (transaction.tipo === "receita") {
           monthlyTransactions[month].income += value

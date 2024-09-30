@@ -67,7 +67,7 @@ export default async function handler(
       },
       select: {
         valor: true,
-        data: true, 
+        data: true,
       },
     })
 
@@ -80,20 +80,16 @@ export default async function handler(
     })
 
     const totalIncomeValue = filteredIncome
-      .map((t) => parseFloat(t.valor || "0"))
+      .map((t) => parseFloat(t.valor.toString() || "0")) 
       .reduce((acc, curr) => acc + curr, 0)
 
-    console.log("Receitas totais agregadas:", totalIncomeValue)
-
     const comparison =
-      totalIncomeValue >= budget.valor
+      totalIncomeValue >= parseFloat(budget.valor.toString())
         ? "Receita atingiu ou ultrapassou o orçamento"
         : "Receita abaixo do orçamento"
 
-    console.log("Resultado da comparação:", comparison)
-
     return res.status(200).json({
-      budget: budget.valor,
+      budget: parseFloat(budget.valor.toString()), 
       income: totalIncomeValue,
       comparison,
     })

@@ -17,7 +17,7 @@ const ExpenseCard: React.FC<ExpenseCardProps> = ({
         <MoveDownRight className="h-4 w-4 text-muted-foreground" />
       </CardHeader>
       <CardContent>
-        <div className="text-2xl font-bold">{`R$ ${totalExpenseThisMonth}`}</div>
+        <div className="text-2xl font-bold">{`${totalExpenseThisMonth}`}</div>
         <p className="text-xs text-muted-foreground">
           {expenseDifference} em comparação ao mês anterior
         </p>

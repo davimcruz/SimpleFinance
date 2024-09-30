@@ -1,7 +1,7 @@
 import { NextApiRequest, NextApiResponse } from "next"
 import { PrismaClient, transacoes } from "@prisma/client"
 import { parseCookies } from "nookies"
-import { verifyToken } from "../Auth/jwtAuth" 
+import { verifyToken } from "../Auth/jwtAuth"
 
 const prisma = new PrismaClient()
 
@@ -33,7 +33,7 @@ export default async function transactionsTable(
       fonte: transaction.fonte,
       detalhesFonte: transaction.detalhesFonte || null,
       data: transaction.data || null,
-      valor: transaction.valor || null,
+      valor: transaction.valor ? Number(transaction.valor) : 0,
     }))
 
     res.status(200).json({ table })

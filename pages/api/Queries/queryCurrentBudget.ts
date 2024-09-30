@@ -1,6 +1,6 @@
 import { NextApiRequest, NextApiResponse } from "next"
-import { verifyToken } from "../Auth/jwtAuth"
 import { PrismaClient } from "@prisma/client"
+import { verifyToken } from "../Auth/jwtAuth"
 
 const prisma = new PrismaClient()
 
@@ -49,7 +49,6 @@ export default async function handler(
   try {
     const anoAtual = new Date().getFullYear()
     const mesAtual = new Date().getMonth() + 1
-
     const mesAtualNome = getMonthName(mesAtual)
 
     const totalOrcamento = await prisma.orcamento.aggregate({
@@ -68,7 +67,7 @@ export default async function handler(
     return res.status(200).json({
       message: "Orçamento acumulado até o mês atual obtido com sucesso",
       totalOrcamento: totalOrcamento._sum.valor || 0,
-      mesAtual: mesAtualNome, 
+      mesAtual: mesAtualNome,
     })
   } catch (error) {
     console.error("Erro ao obter orçamento:", error)

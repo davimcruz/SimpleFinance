@@ -4,7 +4,7 @@ import { verifyToken } from "../Auth/jwtAuth"
 
 const prisma = new PrismaClient()
 
-export default async function editTransactions(
+export default async function viewTransactions(
   req: NextApiRequest,
   res: NextApiResponse
 ): Promise<void> {
@@ -34,7 +34,12 @@ export default async function editTransactions(
       return res.status(404).json({ error: "Transação não encontrada" })
     }
 
-    res.status(200).json(transaction)
+    const transactionData = {
+      ...transaction,
+      valor: parseFloat(transaction.valor as unknown as string), 
+    }
+
+    res.status(200).json(transactionData)
   } catch (error) {
     console.error("Erro ao processar a requisição:", error)
     return res.status(500).json({ error: "Erro ao processar a requisição" })

@@ -17,7 +17,7 @@ const IncomeCard: React.FC<IncomeCardProps> = ({
         <MoveUpRight className="h-4 w-4 text-muted-foreground" />
       </CardHeader>
       <CardContent>
-        <div className="text-2xl font-bold">{`R$ ${totalIncomeThisMonth}`}</div>
+        <div className="text-2xl font-bold">{`${totalIncomeThisMonth}`}</div>
         <p className="text-xs text-muted-foreground">
           {incomeDifference} em comparação ao mês anterior
         </p>

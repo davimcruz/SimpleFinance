@@ -2,12 +2,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { WalletMinimal } from "lucide-react"
 
 interface BalanceCardProps {
-  totalAvailableThisMonth: string
-  balanceDifference: string
+  balanceThisMonth: string 
+  balanceDifference: string 
 }
 
 const BalanceCard: React.FC<BalanceCardProps> = ({
-  totalAvailableThisMonth,
+  balanceThisMonth,
   balanceDifference,
 }) => {
   return (
@@ -17,9 +17,9 @@ const BalanceCard: React.FC<BalanceCardProps> = ({
         <WalletMinimal className="h-4 w-4 text-muted-foreground" />
       </CardHeader>
       <CardContent>
-        <div className="text-2xl font-bold">{`R$ ${totalAvailableThisMonth}`}</div>
+        <div className="text-2xl font-bold">{balanceThisMonth}</div>{" "}
         <p className="text-xs text-muted-foreground">
-          {balanceDifference} em comparação ao mês anterior
+          {balanceDifference} em comparação ao mês anterior{" "}
         </p>
       </CardContent>
     </Card>

@@ -67,7 +67,7 @@ export default async function handler(
       },
       select: {
         valor: true,
-        data: true, 
+        data: true,
       },
     })
 
@@ -80,20 +80,22 @@ export default async function handler(
     })
 
     const totalExpenseValue = filteredExpense
-      .map((t) => parseFloat(t.valor || "0"))
+      .map((t) => parseFloat(t.valor.toString() || "0")) 
       .reduce((acc, curr) => acc + curr, 0)
 
     console.log("Despesas totais agregadas:", totalExpenseValue)
 
+
     const comparison =
-      totalExpenseValue <= budget.valor
+      totalExpenseValue <= parseFloat(budget.valor.toString())
         ? "Despesas dentro do orçamento"
         : "Despesas acima do orçamento"
 
     console.log("Resultado da comparação:", comparison)
 
+
     return res.status(200).json({
-      budget: budget.valor,
+      budget: parseFloat(budget.valor.toString()), 
       expense: totalExpenseValue,
       comparison,
     })

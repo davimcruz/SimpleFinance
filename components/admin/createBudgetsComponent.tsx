@@ -110,7 +110,7 @@ const CreateBudgetsComponent = () => {
                     Mês {index + 1}:
                   </Label>
                   <Input
-                    type="number" // Alterado para "text"
+                    type="number" 
                     id={`month-${index}`}
                     value={value}
                     onChange={(e: React.ChangeEvent<HTMLInputElement>) => {

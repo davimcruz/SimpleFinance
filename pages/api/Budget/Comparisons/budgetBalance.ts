@@ -60,27 +60,28 @@ export default async function handler(
 
     console.log("Orçamento encontrado:", budget.valor)
 
-    const totalIncome = await prisma.transacoes.findMany({
-      where: {
-        userId: userIdNumber,
-        tipo: "receita",
-      },
-      select: {
-        valor: true,
-        data: true, 
-      },
-    })
-
-    const totalExpense = await prisma.transacoes.findMany({
-      where: {
-        userId: userIdNumber,
-        tipo: "despesa",
-      },
-      select: {
-        valor: true,
-        data: true, 
-      },
-    })
+    const [totalIncome, totalExpense] = await Promise.all([
+      prisma.transacoes.findMany({
+        where: {
+          userId: userIdNumber,
+          tipo: "receita",
+        },
+        select: {
+          valor: true,
+          data: true,
+        },
+      }),
+      prisma.transacoes.findMany({
+        where: {
+          userId: userIdNumber,
+          tipo: "despesa",
+        },
+        select: {
+          valor: true,
+          data: true,
+        },
+      }),
+    ])
 
     const filteredIncome = totalIncome.filter((t) => {
       const [day, month, year] = (t.data || "").split("-")
@@ -99,25 +100,25 @@ export default async function handler(
     })
 
     const totalIncomeValue = filteredIncome
-      .map((t) => parseFloat(t.valor || "0"))
+      .map((t) => parseFloat(t.valor.toString() || "0")) 
       .reduce((acc, curr) => acc + curr, 0)
 
     const totalExpenseValue = filteredExpense
-      .map((t) => parseFloat(t.valor || "0"))
+      .map((t) => parseFloat(t.valor.toString() || "0")) 
       .reduce((acc, curr) => acc + curr, 0)
 
     const balance = totalIncomeValue - totalExpenseValue
     console.log("Saldo final:", balance)
 
     const comparison =
-      balance >= budget.valor
+      balance >= parseFloat(budget.valor.toString()) 
         ? "Saldo suficiente para o orçamento"
         : "Saldo insuficiente para o orçamento"
 
     console.log("Resultado da comparação:", comparison)
 
     return res.status(200).json({
-      budget: budget.valor,
+      budget: parseFloat(budget.valor.toString()), 
       income: totalIncomeValue,
       expense: totalExpenseValue,
       balance,

@@ -5,8 +5,6 @@ import { verifyToken } from "../Auth/jwtAuth"
 const prisma = new PrismaClient()
 
 const realocarSaldo = async (userId: number, anoAtual: number) => {
-  console.log("Iniciando realocação de saldo...")
-
   const orcamentos = await prisma.orcamento.findMany({
     where: { userId, ano: anoAtual },
     orderBy: { mes: "asc" },
@@ -23,10 +21,7 @@ const realocarSaldo = async (userId: number, anoAtual: number) => {
 
   const transacoesPorMes = transacoes.reduce((acc, transacao) => {
     const mes = parseInt(transacao.data?.split("-")[1] || "0", 10)
-
-    const valor = parseFloat(
-      String(transacao.valor)?.replace("R$", "").replace(",", ".").trim() || "0"
-    )
+    const valor = parseFloat(String(transacao.valor) || "0")
 
     if (!acc[mes]) {
       acc[mes] = { receita: 0, despesa: 0 }
@@ -56,8 +51,6 @@ const realocarSaldo = async (userId: number, anoAtual: number) => {
     const saldoRealocado = saldoMes + saldoRealocadoAnterior
     saldoRealocadoAnterior = saldoRealocado
 
-    console.log(`Atualizando saldo realocado para o mês ${mesAtual.mes}...`)
-
     return prisma.orcamento.update({
       where: {
         userId_mes_ano: {
@@ -74,59 +67,45 @@ const realocarSaldo = async (userId: number, anoAtual: number) => {
   })
 
   await prisma.$transaction(updates)
-  console.log("Realocação de saldo concluída.")
 }
 
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
-  console.log("Recebendo requisição:", req.method, req.body)
+  if (req.method !== "POST") {
+    return res.status(405).json({ message: "Método não permitido" })
+  }
 
   const tokenValid = await verifyToken({ req } as any)
   if (!tokenValid) {
-    return res.status(401).json({ error: "Não autorizado" })
+    return res.status(401).json({ message: "Não autorizado" })
   }
 
-  if (req.method !== "POST") {
-    return res.status(405).json({ error: "Método não permitido" })
+  const { userId } = req.body
+
+  if (!userId) {
+    return res.status(400).json({ message: "UserId não fornecido" })
   }
 
-  const { nome, tipo, fonte, detalhesFonte, data, valor, transactionId } =
-    req.body
-
-  if (!transactionId || !nome || !tipo || !fonte || !data || !valor) {
-    return res.status(400).json({ error: "Dados obrigatórios estão faltando" })
+  const userIdNumber = Number(userId)
+  if (isNaN(userIdNumber)) {
+    return res.status(400).json({ message: "UserId inválido" })
   }
-
-  console.log("Transaction ID recebido:", transactionId)
 
   try {
-    const valorFloat = typeof valor === "number" ? valor : parseFloat(valor)
+    const anoAtual = new Date().getFullYear()
 
-    const extractedDate = data.split("T")[0]
-    const formattedDate = extractedDate.split("-").reverse().join("-")
+    await realocarSaldo(userIdNumber, anoAtual)
 
-    const updatedTransaction = await prisma.transacoes.update({
-      where: { transactionId },
-      data: {
-        nome,
-        tipo,
-        fonte,
-        detalhesFonte: detalhesFonte || null,
-        data: formattedDate || null,
-        valor: valorFloat, 
-      },
+    return res.status(200).json({
+      message: "Realocação de saldo realizada com sucesso",
     })
-
-    console.log("Transação atualizada com sucesso:", updatedTransaction)
-
-    await realocarSaldo(updatedTransaction.userId, new Date().getFullYear())
-
-    res.status(200).json({ success: true })
   } catch (error) {
-    console.error("Erro ao processar a requisição:", error)
-    return res.status(500).json({ error: "Erro ao processar a requisição" })
+    console.error("Erro ao realocar saldo:", error)
+    return res.status(500).json({
+      message: "Erro ao realocar saldo",
+      error: (error as Error).message,
+    })
   }
 }
-

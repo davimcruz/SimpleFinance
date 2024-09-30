@@ -81,19 +81,14 @@ const TransactionsFull = () => {
     return mappings[key] || fonte
   }
 
-  const formatValor = (valor: string): string => {
-    const hasComma = valor.includes(",")
+const formatValor = (valor: number): string => {
+  return new Intl.NumberFormat("pt-BR", {
+    style: "currency",
+    currency: "BRL",
+    minimumFractionDigits: 2,
+  }).format(valor)
+}
 
-    if (!hasComma) {
-      valor += ",00"
-    }
-
-    let [inteira, decimal] = valor.split(",")
-
-    inteira = inteira.replace(/\B(?=(\d{3})+(?!\d))/g, ".")
-
-    return `${inteira},${decimal}`
-  }
 
   return (
     <div className="flex justify-center items-center">
@@ -152,7 +147,7 @@ const TransactionsFull = () => {
                       {transaction.data.replace(/-/g, "/")}
                     </TableCell>
                     <TableCell className="hidden lg:table-cell">
-                      R$ {formatValor(transaction.valor)}
+                      {formatValor(transaction.valor)}
                     </TableCell>
                     <TableCell className="">
                       <TransactionsDetails
