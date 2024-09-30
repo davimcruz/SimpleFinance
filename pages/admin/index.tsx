@@ -40,9 +40,6 @@ export default function AdminPage() {
   return (
     <ThemeProvider defaultTheme="dark" attribute="class">
       <div className="flex min-h-screen flex-col items-center justify-between p-24">
-        <div className="fixed top-0 right-0 p-4">
-          <ModeToggle />
-        </div>
         <main className="flex flex-col items-center justify-center flex-1 gap-8 px-4 py-16 lg:px-0">
           <h1 className="text-4xl font-bold">Admin Dashboard</h1>
           <div className="flex flex-col lg:flex-row gap-8">
