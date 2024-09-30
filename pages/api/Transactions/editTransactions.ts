@@ -42,6 +42,8 @@ const realocarSaldo = async (userId: number, anoAtual: number) => {
   }, {} as Record<number, { receita: number; despesa: number }>)
 
   let saldoRealocadoAnterior = 0
+  const mesAtualNumero = new Date().getMonth() + 1
+
   const updates = orcamentos.map((mesAtual) => {
     const transacoesMes = transacoesPorMes[mesAtual.mes] || {
       receita: 0,
@@ -50,8 +52,14 @@ const realocarSaldo = async (userId: number, anoAtual: number) => {
     const saldoMes = transacoesMes.receita - transacoesMes.despesa
 
     let statusMes = "padrao"
-    if (saldoMes > 0) statusMes = "excedente"
-    else if (saldoMes < 0) statusMes = "deficit"
+
+    if (mesAtual.mes > mesAtualNumero) {
+      statusMes = "futuro"
+    } else {
+      if (saldoMes > 0) statusMes = "excedente"
+      else if (saldoMes < 0) statusMes = "deficit"
+      else statusMes = "padrao"
+    }
 
     const saldoRealocado = saldoMes + saldoRealocadoAnterior
     saldoRealocadoAnterior = saldoRealocado
