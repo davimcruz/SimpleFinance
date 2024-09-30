@@ -18,6 +18,9 @@ import {
 import { useEffect, useState } from "react"
 
 const chartConfig = {
+  graphlabel: {
+    label: "Comparativo",
+  },
   income: {
     label: "Receitas",
     color: "#2563eb",
@@ -92,7 +95,7 @@ const BarChartComponent = () => {
           <YAxis />
           <CartesianGrid vertical={false} />
           <ChartTooltip
-            content={<ChartTooltipContent labelKey="income" nameKey="month" />}
+            content={<ChartTooltipContent labelKey="graphlabel" nameKey="month" />}
           />
           <ChartLegend content={<ChartLegendContent />} />
           <Bar
