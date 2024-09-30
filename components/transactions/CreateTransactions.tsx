@@ -29,7 +29,7 @@ import {
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Plus } from "lucide-react"
+import { ChevronRight } from "lucide-react"
 import { Calendar as CalendarIcon } from "lucide-react"
 
 import formatadorValor from "@/utils/valueFormatter"
@@ -49,7 +49,10 @@ const CreateTransaction = () => {
 
   const handleValorChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const novoValor = event.target.value
-    const valorFormatado = "R$ " + formatadorValor(novoValor)
+
+    const valorValidado = novoValor.replace(/[^0-9.,]/g, "")
+
+    const valorFormatado = "R$ " + formatadorValor(valorValidado)
     setValor(valorFormatado)
   }
 
@@ -59,8 +62,15 @@ const CreateTransaction = () => {
   }
 
   const converterValorParaFloat = (valor: string): number => {
-    const valorSemPontos = valor.replace(/\./g, "")
+    const valorValidado = valor.replace(/[^0-9,]/g, "")
+
+    if (!valorValidado) {
+      return NaN
+    }
+
+    const valorSemPontos = valorValidado.replace(/\./g, "")
     const valorComPonto = valorSemPontos.replace(",", ".")
+
     return parseFloat(valorComPonto)
   }
 
@@ -82,6 +92,12 @@ const CreateTransaction = () => {
     emailFromCookie = decodeURIComponent(emailFromCookie)
 
     const valorFloat = converterValorParaFloat(valorEditado)
+
+    if (isNaN(valorFloat) || valorFloat <= 0) {
+      console.error("Valor inválido")
+      setIsLoading(false)
+      return
+    }
 
     const transactionData = {
       email: emailFromCookie,
@@ -118,9 +134,13 @@ const CreateTransaction = () => {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="secondary" size="sm" className="ml-auto border-2">
+        <Button
+          variant="secondary"
+          className="ml-auto lg:ml-4 gap-1 border-2"
+          onClick={() => setOpen(true)}
+        >
           Adicionar
-          <Plus className="h-4 w-4 ml-2" />
+          <ChevronRight className="h-4 w-4" />
         </Button>
       </DialogTrigger>
       <DialogContent className="w-[90vw] max-h-[90vh] overflow-auto rounded-xl">

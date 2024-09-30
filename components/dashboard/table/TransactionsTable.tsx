@@ -1,6 +1,5 @@
 import Link from "next/link"
 import { useEffect, useState } from "react"
-
 import { ArrowUpRight } from "lucide-react"
 
 import "../../../app/globals.css"
@@ -36,9 +35,16 @@ type FonteKey =
   | "ted-doc"
   | "cedulas"
 
+type SortKey = "nome" | "data" | "valor"
+
 const TransactionsTable = () => {
   const [transactions, setTransactions] = useState<Transactions[]>([])
+  const [filteredTransactions, setFilteredTransactions] = useState<
+    Transactions[]
+  >([])
   const [loading, setLoading] = useState(true)
+  const [sortKey, setSortKey] = useState<SortKey>("data")
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc")
 
   useEffect(() => {
     const fetchTransactions = async () => {
@@ -58,12 +64,40 @@ const TransactionsTable = () => {
         }
       )
 
-      setTransactions(sortedTransactions.slice(0, 5))
+      const limitedTransactions = sortedTransactions.slice(0, 5)
+      setTransactions(limitedTransactions)
+      setFilteredTransactions(limitedTransactions)
       setLoading(false)
     }
 
     fetchTransactions()
   }, [])
+
+  const handleSort = (key: SortKey) => {
+    let order: "asc" | "desc" = sortOrder === "asc" ? "desc" : "asc"
+    if (sortKey !== key) {
+      order = "asc"
+    }
+
+    const sorted = [...filteredTransactions].sort((a, b) => {
+      if (key === "nome") {
+        return order === "asc"
+          ? a.nome.localeCompare(b.nome)
+          : b.nome.localeCompare(a.nome)
+      } else if (key === "data") {
+        const dateA = new Date(a.data.split("-").reverse().join("/")).getTime()
+        const dateB = new Date(b.data.split("-").reverse().join("/")).getTime()
+        return order === "asc" ? dateA - dateB : dateB - dateA
+      } else if (key === "valor") {
+        return order === "asc" ? a.valor - b.valor : b.valor - a.valor
+      }
+      return 0
+    })
+
+    setFilteredTransactions(sorted)
+    setSortKey(key)
+    setSortOrder(order)
+  }
 
   const capitalizeFirstLetter = (string: string) => {
     return string.charAt(0).toUpperCase() + string.slice(1).toLowerCase()
@@ -84,20 +118,16 @@ const TransactionsTable = () => {
     return mappings[key] || fonte
   }
 
-const formatValor = (valor: number): string => {
-  return new Intl.NumberFormat("pt-BR", {
-    style: "currency",
-    currency: "BRL",
-    minimumFractionDigits: 2,
-  }).format(valor)
-}
-
+  const formatValor = (valor: number): string => {
+    return new Intl.NumberFormat("pt-BR", {
+      style: "currency",
+      currency: "BRL",
+      minimumFractionDigits: 2,
+    }).format(valor)
+  }
 
   return (
-    <Card
-      x-chunk="dashboard-01-chunk-4"
-      className="lg:col-span-2"
-    >
+    <Card className="lg:col-span-2">
       <CardHeader className="flex flex-row items-center">
         <div className="grid gap-2">
           <CardTitle>Transações</CardTitle>
@@ -114,66 +144,77 @@ const formatValor = (valor: number): string => {
             <ArrowUpRight className="h-4 w-4" />
           </Link>
         </Button>
-        <CreateTransaction /> 
+        <CreateTransaction />
       </CardHeader>
       <CardContent>
         {loading ? (
           <Skeleton className="h-[250px]" />
-        ) : transactions.length === 0 ? (
+        ) : filteredTransactions.length === 0 ? (
           <div className="text-center justify-center items-center pt-6">
             <p>Você não possui Transações</p>
           </div>
         ) : (
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="table-cell">Transação</TableHead>
-                <TableHead className="sm:opacity-0 md:hidden lg:hidden"></TableHead>
-                <TableHead className="hidden lg:table-cell md:table-cell">
-                  Tipo
-                </TableHead>
-                <TableHead className="hidden lg:table-cell">Fonte</TableHead>
-                <TableHead className="hidden lg:table-cell">Data</TableHead>
-                <TableHead className="hidden lg:table-cell">Valor</TableHead>
-                <TableHead className="ml-auto">Visualização</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {transactions.map((transaction, index) => (
-                <TableRow key={index}>
-                  <TableCell>
-                    <div className="font-medium">{transaction.nome}</div>
-                  </TableCell>
-                  <TableCell>
-                    <Badge
-                      className="hidden lg:inline-flex md:inline-flex text-xs"
-                      variant="outline"
-                    >
-                      {capitalizeFirstLetter(transaction.tipo)}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="hidden lg:table-cell">
-                    {formatFonte(transaction.fonte)}
-                    <br />
-                    <div className="hidden text-sm text-muted-foreground md:inline">
-                      {transaction.detalhesFonte}
-                    </div>
-                  </TableCell>
-                  <TableCell className="hidden lg:table-cell">
-                    {transaction.data.replace(/-/g, "/")}
-                  </TableCell>
-                  <TableCell className="hidden lg:table-cell">
-                    {formatValor(transaction.valor)}
-                  </TableCell>
-                  <TableCell className="">
-                    <TransactionsDetails
-                      transactionId={transaction.transactionId}
-                    />
-                  </TableCell>
+          <div className="overflow-x-auto">
+            <Table className="min-w-full">
+              <TableHeader>
+                <TableRow>
+                  <TableHead onClick={() => handleSort("nome")}>
+                    Transação{" "}
+                    {sortKey === "nome" && (sortOrder === "asc" ? "↑" : "↓")}
+                  </TableHead>
+                  <TableHead className="hidden lg:table-cell">Tipo</TableHead>
+                  <TableHead className="hidden lg:table-cell">Fonte</TableHead>
+                  <TableHead
+                    onClick={() => handleSort("data")}
+                    className="hidden lg:table-cell cursor-pointer"
+                  >
+                    Data{" "}
+                    {sortKey === "data" && (sortOrder === "asc" ? "↑" : "↓")}
+                  </TableHead>
+                  <TableHead
+                    onClick={() => handleSort("valor")}
+                    className="hidden lg:table-cell cursor-pointer"
+                  >
+                    Valor{" "}
+                    {sortKey === "valor" && (sortOrder === "asc" ? "↑" : "↓")}
+                  </TableHead>
+                  <TableHead className="text-right">Visualização</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {filteredTransactions.map((transaction, index) => (
+                  <TableRow key={index}>
+                    <TableCell>
+                      <div className="font-medium">{transaction.nome}</div>
+                    </TableCell>
+                    <TableCell className="hidden lg:table-cell">
+                      <Badge className="text-xs" variant="outline">
+                        {capitalizeFirstLetter(transaction.tipo)}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="hidden lg:table-cell">
+                      {formatFonte(transaction.fonte)}
+                      <br />
+                      <div className="hidden text-sm text-muted-foreground md:inline">
+                        {transaction.detalhesFonte}
+                      </div>
+                    </TableCell>
+                    <TableCell className="hidden lg:table-cell">
+                      {transaction.data.replace(/-/g, "/")}
+                    </TableCell>
+                    <TableCell className="hidden lg:table-cell">
+                      {formatValor(transaction.valor)}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <TransactionsDetails
+                        transactionId={transaction.transactionId}
+                      />
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
         )}
       </CardContent>
       <div className="flex justify-center items-center pb-6 px-6">

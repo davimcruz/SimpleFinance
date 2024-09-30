@@ -47,35 +47,32 @@ const CreateTransaction = () => {
   const [dataTransacao, setDataTransacao] = useState<Date | undefined>()
   const [isLoading, setIsLoading] = useState(false)
 
-const handleValorChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-  const novoValor = event.target.value
+  const handleValorChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const novoValor = event.target.value
 
-  const valorValidado = novoValor.replace(/[^0-9.,]/g, "")
+    const valorValidado = novoValor.replace(/[^0-9.,]/g, "")
 
-  const valorFormatado = "R$ " + formatadorValor(valorValidado)
-  setValor(valorFormatado)
-}
-
+    const valorFormatado = "R$ " + formatadorValor(valorValidado)
+    setValor(valorFormatado)
+  }
 
   const handleTipoTransacaoChange = (value: string) => {
     setTipoTransacao(value)
     setFonteTransacao("")
   }
 
-const converterValorParaFloat = (valor: string): number => {
-  const valorValidado = valor.replace(/[^0-9,]/g, "")
+  const converterValorParaFloat = (valor: string): number => {
+    const valorValidado = valor.replace(/[^0-9,]/g, "")
 
-  if (!valorValidado) {
-    return NaN
+    if (!valorValidado) {
+      return NaN
+    }
+
+    const valorSemPontos = valorValidado.replace(/\./g, "")
+    const valorComPonto = valorSemPontos.replace(",", ".")
+
+    return parseFloat(valorComPonto)
   }
-
-  const valorSemPontos = valorValidado.replace(/\./g, "")
-  const valorComPonto = valorSemPontos.replace(",", ".")
-
-  return parseFloat(valorComPonto)
-}
-
-
 
   const handleSubmit = async (event: { preventDefault: () => void }) => {
     event.preventDefault()
