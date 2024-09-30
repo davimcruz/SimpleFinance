@@ -136,7 +136,7 @@ const CreateTransaction = () => {
       <DialogTrigger asChild>
         <Button
           variant="secondary"
-          className="ml-auto lg:ml-4 gap-1 border-2"
+          className="ml-12 lg:ml-4 gap-1 border-2"
           onClick={() => setOpen(true)}
         >
           Adicionar
