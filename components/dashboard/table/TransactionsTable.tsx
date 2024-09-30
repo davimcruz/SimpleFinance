@@ -1,9 +1,7 @@
 import Link from "next/link"
 import { useEffect, useState } from "react"
 import { ArrowUpRight } from "lucide-react"
-
 import "../../../app/globals.css"
-
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import {
