@@ -98,6 +98,7 @@ const TestBudgetComparison = () => {
             <p>Orçamento: {incomeData.budget}</p>
             <p>Receitas: {incomeData.income}</p>
             <p>{incomeData.comparison}</p>
+            <p>{incomeData.percentDifference}</p>
           </div>
         )}
 
@@ -107,6 +108,7 @@ const TestBudgetComparison = () => {
             <p>Orçamento: {expenseData.budget}</p>
             <p>Despesas: {expenseData.expense}</p>
             <p>{expenseData.comparison}</p>
+            <p>{expenseData.percentDifference}</p>
           </div>
         )}
 
@@ -116,6 +118,7 @@ const TestBudgetComparison = () => {
             <p>Orçamento: {balanceData.budget}</p>
             <p>Saldo: {balanceData.balance}</p>
             <p>{balanceData.comparison}</p>
+            <p>{balanceData.percentDifference}</p>
           </div>
         )}
       </CardContent>

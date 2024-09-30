@@ -80,18 +80,31 @@ export default async function handler(
     })
 
     const totalIncomeValue = filteredIncome
-      .map((t) => parseFloat(t.valor.toString() || "0")) 
+      .map((t) => parseFloat(t.valor.toString() || "0"))
       .reduce((acc, curr) => acc + curr, 0)
+
+    console.log("Receitas totais agregadas:", totalIncomeValue)
 
     const comparison =
       totalIncomeValue >= parseFloat(budget.valor.toString())
         ? "Receita atingiu ou ultrapassou o orçamento"
         : "Receita abaixo do orçamento"
 
+    const budgetValue = parseFloat(budget.valor.toString())
+    const percentDifference =
+      ((totalIncomeValue - budgetValue) / budgetValue) * 100
+    const formattedPercentDifference =
+      percentDifference > 0
+        ? `+${percentDifference.toFixed(2)}%`
+        : `${percentDifference.toFixed(2)}%`
+
+    console.log("Diferença percentual:", formattedPercentDifference)
+
     return res.status(200).json({
-      budget: parseFloat(budget.valor.toString()), 
+      budget: budgetValue,
       income: totalIncomeValue,
       comparison,
+      percentDifference: formattedPercentDifference, 
     })
   } catch (error) {
     console.error("Erro ao buscar receitas:", error)

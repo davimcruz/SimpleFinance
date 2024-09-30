@@ -80,24 +80,31 @@ export default async function handler(
     })
 
     const totalExpenseValue = filteredExpense
-      .map((t) => parseFloat(t.valor.toString() || "0")) 
+      .map((t) => parseFloat(t.valor.toString() || "0"))
       .reduce((acc, curr) => acc + curr, 0)
 
     console.log("Despesas totais agregadas:", totalExpenseValue)
-
 
     const comparison =
       totalExpenseValue <= parseFloat(budget.valor.toString())
         ? "Despesas dentro do orçamento"
         : "Despesas acima do orçamento"
 
-    console.log("Resultado da comparação:", comparison)
+    const budgetValue = parseFloat(budget.valor.toString())
+    const percentDifference =
+      ((totalExpenseValue - budgetValue) / budgetValue) * 100
+    const formattedPercentDifference =
+      percentDifference > 0
+        ? `+${percentDifference.toFixed(2)}%`
+        : `${percentDifference.toFixed(2)}%`
 
+    console.log("Diferença percentual:", formattedPercentDifference)
 
     return res.status(200).json({
-      budget: parseFloat(budget.valor.toString()), 
+      budget: budgetValue,
       expense: totalExpenseValue,
       comparison,
+      percentDifference: formattedPercentDifference, 
     })
   } catch (error) {
     console.error("Erro ao buscar despesas:", error)

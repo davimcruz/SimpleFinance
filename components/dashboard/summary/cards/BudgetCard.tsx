@@ -25,7 +25,7 @@ const BudgetCard: React.FC<BudgetCardProps> = ({
       <CardContent>
         <div className="text-2xl font-bold">{formattedBudget}</div>{" "}
         <p className="text-xs text-muted-foreground">
-          Orçamento acumulado de Janeiro - {mesAtual}
+          Orçamento do mês de {mesAtual}
         </p>
       </CardContent>
     </Card>

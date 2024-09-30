@@ -51,22 +51,26 @@ export default async function handler(
     const mesAtual = new Date().getMonth() + 1
     const mesAtualNome = getMonthName(mesAtual)
 
-    const totalOrcamento = await prisma.orcamento.aggregate({
-      _sum: {
-        valor: true,
-      },
+    const orcamentoMesAtual = await prisma.orcamento.findFirst({
       where: {
         userId: userIdNumber,
         ano: anoAtual,
-        mes: {
-          lte: mesAtual,
-        },
+        mes: mesAtual,
+      },
+      select: {
+        valor: true,
       },
     })
 
+    if (!orcamentoMesAtual) {
+      return res.status(404).json({
+        message: "Orçamento não encontrado para o mês atual",
+      })
+    }
+
     return res.status(200).json({
-      message: "Orçamento acumulado até o mês atual obtido com sucesso",
-      totalOrcamento: totalOrcamento._sum.valor || 0,
+      message: "Orçamento do mês atual obtido com sucesso",
+      totalOrcamento: orcamentoMesAtual.valor || 0,
       mesAtual: mesAtualNome,
     })
   } catch (error) {

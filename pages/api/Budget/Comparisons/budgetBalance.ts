@@ -100,29 +100,38 @@ export default async function handler(
     })
 
     const totalIncomeValue = filteredIncome
-      .map((t) => parseFloat(t.valor.toString() || "0")) 
+      .map((t) => parseFloat(t.valor.toString() || "0"))
       .reduce((acc, curr) => acc + curr, 0)
 
     const totalExpenseValue = filteredExpense
-      .map((t) => parseFloat(t.valor.toString() || "0")) 
+      .map((t) => parseFloat(t.valor.toString() || "0"))
       .reduce((acc, curr) => acc + curr, 0)
 
     const balance = totalIncomeValue - totalExpenseValue
     console.log("Saldo final:", balance)
 
     const comparison =
-      balance >= parseFloat(budget.valor.toString()) 
+      balance >= parseFloat(budget.valor.toString())
         ? "Saldo suficiente para o orçamento"
         : "Saldo insuficiente para o orçamento"
 
-    console.log("Resultado da comparação:", comparison)
+    // Cálculo da diferença percentual entre orçamento e saldo
+    const budgetValue = parseFloat(budget.valor.toString())
+    const percentDifference = ((balance - budgetValue) / budgetValue) * 100
+    const formattedPercentDifference =
+      percentDifference > 0
+        ? `+${percentDifference.toFixed(2)}%`
+        : `${percentDifference.toFixed(2)}%`
+
+    console.log("Diferença percentual:", formattedPercentDifference)
 
     return res.status(200).json({
-      budget: parseFloat(budget.valor.toString()), 
+      budget: budgetValue,
       income: totalIncomeValue,
       expense: totalExpenseValue,
       balance,
       comparison,
+      percentDifference: formattedPercentDifference, 
     })
   } catch (error) {
     console.error("Erro ao calcular saldo:", error)
