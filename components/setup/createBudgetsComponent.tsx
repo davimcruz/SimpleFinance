@@ -83,18 +83,16 @@ const CreateBudgetsComponent = () => {
       const data = await response.json()
       setBudgetSuccessMessage(data.message || "Orçamento criado com sucesso!")
 
-      // Atraso para o redirecionamento
       setTimeout(() => {
-        router.push("/dashboard") // Redireciona após 2 segundos
+        router.push("/dashboard") 
       }, 2000)
 
-      // Garante que a animação dure pelo menos 3 segundos
       setTimeout(() => {
         setIsLoading(false)
       }, 3000)
     } catch (error: any) {
       setBudgetError(error.message)
-      setIsLoading(false) // Para a animação em caso de erro
+      setIsLoading(false) 
     }
   }
 
@@ -115,7 +113,6 @@ const CreateBudgetsComponent = () => {
         {isLoading ? (
           <div className="flex flex-col items-center justify-center">
             <LottieAnimation animationPath="/loadingAnimation.json" />
-            <p className="text-lg font-bold mt-4">Criando orçamento...</p>
           </div>
         ) : (
           <div className="grid max-w-sm gap-5 mx-auto">

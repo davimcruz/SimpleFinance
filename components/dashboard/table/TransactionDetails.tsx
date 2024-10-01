@@ -214,14 +214,12 @@ const TransactionsDetails = ({ transactionId }: TransactionsDetailsProps) => {
           {isDataLoading ? (
             <div className="flex flex-col items-center justify-center">
               <LottieAnimation animationPath="/loadingAnimation.json" />
-              <p className="text-lg font-bold">Carregando Dados...</p>
             </div>
           ) : (
             <>
               {isLoading ? (
                 <div className="flex flex-col items-center justify-center">
                   <LottieAnimation animationPath="/loadingAnimation.json" />
-                  <p className="text-lg font-bold">Editando Transação...</p>
                 </div>
               ) : (
                 <div className="pt-8 pb-4">

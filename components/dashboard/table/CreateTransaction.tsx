@@ -137,7 +137,7 @@ const CreateTransaction = () => {
         <Button
           variant="secondary"
           size="sm"
-          className="ml-auto lg:ml-4 gap-1 border-2"
+          className="ml-auto lg:ml-4 gap-1 border-1"
           onClick={() => setOpen(true)}
         >
           Adicionar
@@ -150,7 +150,6 @@ const CreateTransaction = () => {
           {isLoading ? (
             <div className="flex flex-col items-center justify-center">
               <LottieAnimation animationPath="/loadingAnimation.json" />
-              <p className="text-lg font-bold">Salvando transação...</p>
             </div>
           ) : (
             <div className="pt-8 pb-4">
