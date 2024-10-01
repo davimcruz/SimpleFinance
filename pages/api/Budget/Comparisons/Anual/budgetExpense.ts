@@ -8,7 +8,6 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
-  console.log("Recebendo requisição para comparação anual de despesas...")
 
   if (req.method !== "GET") {
     return res.status(405).json({ message: "Método não permitido" })
@@ -22,109 +21,108 @@ export default async function handler(
 
   const { userId } = req.query
 
-  if (!userId) {
-    console.log("Parâmetro userId ausente.")
-    return res.status(400).json({ message: "Parâmetro userId é obrigatório" })
+  if (!userId || isNaN(Number(userId))) {
+    console.log("Parâmetro userId ausente ou inválido.")
+    return res
+      .status(400)
+      .json({ message: "Parâmetro userId é obrigatório e deve ser válido." })
   }
 
   const userIdNumber = Number(userId)
-  if (isNaN(userIdNumber)) {
-    console.log("Parâmetro userId inválido.")
-    return res.status(400).json({ message: "Parâmetro userId inválido" })
-  }
-
   const currentYear = new Date().getFullYear()
 
   try {
-    const user = await prisma.usuarios.findUnique({
-      where: { id: userIdNumber },
-    })
+    const [user, budgets, transactions] = await Promise.all([
+      prisma.usuarios.findUnique({ where: { id: userIdNumber } }),
+      prisma.orcamento.findMany({
+        where: {
+          userId: userIdNumber,
+          ano: currentYear,
+          status: { in: ["excedente", "deficit", "futuro", "padrao"] },
+        },
+        select: { mes: true, valor: true }, 
+        orderBy: { mes: "asc" },
+      }),
+      prisma.transacoes.findMany({
+        where: {
+          userId: userIdNumber,
+          tipo: "despesa", 
+          data: { contains: `-${currentYear}` },
+        },
+        select: { valor: true, data: true },
+      }),
+    ])
 
     if (!user) {
       console.log("Usuário não encontrado.")
       return res.status(404).json({ message: "Usuário não encontrado" })
     }
 
-    const budgets = await prisma.orcamento.findMany({
-      where: {
-        userId: userIdNumber,
-        ano: currentYear,
-        status: {
-          in: ["excedente", "deficit", "futuro"],
-        },
-      },
-      select: {
-        mes: true,
-        valor: true,
-        status: true,
-      },
-    })
-
-    if (!budgets || budgets.length === 0) {
+    if (!budgets.length) {
       console.log("Nenhum orçamento encontrado para o usuário no ano atual.")
       return res.status(404).json({ message: "Nenhum orçamento encontrado" })
     }
 
-    const transactions = await prisma.transacoes.findMany({
-      where: {
-        userId: userIdNumber,
-        tipo: "despesa",
-        data: {
-          contains: `-${currentYear}`,
-        },
-      },
-      select: {
-        valor: true,
-        data: true,
-      },
-    })
+    const despesasPorMes = transactions.reduce((acc, transacao) => {
+      const [_, monthStr, yearStr] = (transacao.data || "").split("-")
+      const mes = parseInt(monthStr || "0", 10)
+      const ano = parseInt(yearStr || "0", 10)
 
-    const transactionsPerMonth: Record<number, { expense: number }> = {}
-
-    transactions.forEach((transaction) => {
-      const [day, monthStr, yearStr] = (transaction.data || "").split("-")
-      const month = parseInt(monthStr, 10)
-      const year = parseInt(yearStr, 10)
-
-      if (year === currentYear) {
-        if (!transactionsPerMonth[month]) {
-          transactionsPerMonth[month] = { expense: 0 }
-        }
-
-        const value = parseFloat(transaction.valor.toString())
-        transactionsPerMonth[month].expense += value
+      if (ano === currentYear) {
+        if (!acc[mes]) acc[mes] = 0
+        acc[mes] += parseFloat(transacao.valor.toString())
       }
-    })
+
+      return acc
+    }, {} as Record<number, number>)
+
+    const calculateGap = (despesaReal: number, budgetValue: number) => {
+      const gapMoney = budgetValue - despesaReal
+      const gapPercentage =
+        gapMoney !== 0
+          ? `${((gapMoney / budgetValue) * 100).toFixed(2)}%`
+          : "0%"
+      const status =
+        gapMoney > 0 ? "excedente" : gapMoney < 0 ? "deficit" : "padrao"
+      return { gapMoney, gapPercentage, status }
+    }
+
+    const mesesComDespesa = Object.keys(despesasPorMes).map(Number)
+    const primeiroMesComDespesa = Math.min(...mesesComDespesa)
+    const ultimoMesComDespesa = Math.max(...mesesComDespesa)
 
     const results = budgets.map((budget) => {
       const month = budget.mes
-      let expense = 0
-      let gapMoney = 0
-      let gapPercentage = "0%"
+      const budgetValue = budget.valor
 
-      if (budget.status !== "futuro") {
-        expense = transactionsPerMonth[month]?.expense || 0
-        gapMoney = expense - parseFloat(budget.valor.toString())
+      let despesaReal = despesasPorMes[month] || 0
+      let statusDespesa = "padrao"
+      let gapMoneyDespesa = 0
+      let gapPercentageDespesa = "0%"
 
-        const percentageValue =
-          parseFloat(budget.valor.toString()) !== 0
-            ? (gapMoney / parseFloat(budget.valor.toString())) * 100
-            : 0
-
-        if (budget.status === "excedente") {
-          gapPercentage = `+${percentageValue.toFixed(2)}%`
-        } else if (budget.status === "deficit") {
-          gapPercentage = `${percentageValue.toFixed(2)}%`
+      if (despesaReal > 0) {
+        const gapResult = calculateGap(despesaReal, budgetValue)
+        gapMoneyDespesa = gapResult.gapMoney
+        gapPercentageDespesa = gapResult.gapPercentage
+        statusDespesa = gapResult.status
+      } else {
+        if (month < primeiroMesComDespesa) {
+          statusDespesa = "padrao"
+        } else if (month > ultimoMesComDespesa) {
+          statusDespesa = "futuro"
+          gapPercentageDespesa = "-"
+        } else {
+          statusDespesa = "sem despesa"
         }
       }
 
       return {
-        month: month,
-        budget: parseFloat(budget.valor.toString()),
-        expense: expense,
-        status: budget.status,
-        gapMoney: gapMoney,
-        gapPercentage: gapPercentage,
+        month,
+        budget: budgetValue,
+        despesaReal,
+        statusDespesa,
+        gapMoneyDespesa,
+        gapPercentageDespesa,
       }
     })
 

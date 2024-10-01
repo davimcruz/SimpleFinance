@@ -8,7 +8,6 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
-  console.log("Recebendo requisição para comparação anual de receita...")
 
   if (req.method !== "GET") {
     return res.status(405).json({ message: "Método não permitido" })
