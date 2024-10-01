@@ -62,7 +62,14 @@ const realocarSaldo = async (userId: number, anoAtual: number) => {
       else statusMes = "padrao"
     }
 
-    const saldoRealocado = saldoMes + saldoRealocadoAnterior
+    let saldoRealocado = saldoRealocadoAnterior
+
+    if (saldoMes < 0) {
+      saldoRealocado += saldoMes
+    } else {
+      saldoRealocado += saldoMes
+    }
+
     saldoRealocadoAnterior = saldoRealocado
 
     console.log(`Atualizando saldo realocado para o mês ${mesAtual.mes}...`)

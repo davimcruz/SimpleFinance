@@ -22,124 +22,114 @@ export default async function handler(
 
   const { userId } = req.query
 
-  if (!userId) {
-    console.log("Parâmetro userId ausente.")
-    return res.status(400).json({ message: "Parâmetro userId é obrigatório" })
+  if (!userId || isNaN(Number(userId))) {
+    console.log("Parâmetro userId ausente ou inválido.")
+    return res
+      .status(400)
+      .json({ message: "Parâmetro userId é obrigatório e deve ser válido." })
   }
 
   const userIdNumber = Number(userId)
-  if (isNaN(userIdNumber)) {
-    console.log("Parâmetro userId inválido.")
-    return res.status(400).json({ message: "Parâmetro userId inválido" })
-  }
-
   const currentYear = new Date().getFullYear()
 
   try {
-    const user = await prisma.usuarios.findUnique({
-      where: { id: userIdNumber },
-    })
+    const [user, budgets, transactions] = await Promise.all([
+      prisma.usuarios.findUnique({ where: { id: userIdNumber } }),
+      prisma.orcamento.findMany({
+        where: {
+          userId: userIdNumber,
+          ano: currentYear,
+          status: { in: ["excedente", "deficit", "futuro", "padrao"] },
+        },
+        select: { mes: true, valor: true, status: true, saldoRealocado: true },
+        orderBy: { mes: "asc" },
+      }),
+      prisma.transacoes.findMany({
+        where: { userId: userIdNumber, data: { contains: `-${currentYear}` } },
+        select: { valor: true, tipo: true, data: true },
+      }),
+    ])
 
     if (!user) {
       console.log("Usuário não encontrado.")
       return res.status(404).json({ message: "Usuário não encontrado" })
     }
 
-    const budgets = await prisma.orcamento.findMany({
-      where: {
-        userId: userIdNumber,
-        ano: currentYear,
-        status: {
-          in: ["excedente", "deficit", "futuro"],
-        },
-      },
-      select: {
-        mes: true,
-        valor: true,
-        status: true,
-      },
-    })
-
-    if (!budgets || budgets.length === 0) {
+    if (!budgets.length) {
       console.log("Nenhum orçamento encontrado para o usuário no ano atual.")
       return res.status(404).json({ message: "Nenhum orçamento encontrado" })
     }
 
-    const transactions = await prisma.transacoes.findMany({
-      where: {
-        userId: userIdNumber,
-        data: {
-          contains: `-${currentYear}`,
-        },
-      },
-      select: {
-        valor: true,
-        tipo: true,
-        data: true,
-      },
-    })
+    const transactionsPorMes = transactions.reduce((acc, transacao) => {
+      const [_, monthStr, yearStr] = (transacao.data || "").split("-")
+      const mes = parseInt(monthStr || "0", 10)
+      const ano = parseInt(yearStr || "0", 10)
 
-    const transactionsPerMonth: Record<
-      number,
-      { income: number; expense: number }
-    > = {}
+      if (ano === currentYear) {
+        if (!acc[mes]) acc[mes] = { receita: 0, despesa: 0 }
 
-    transactions.forEach((transaction) => {
-      const [day, monthStr, yearStr] = (transaction.data || "").split("-")
-      const month = parseInt(monthStr, 10)
-      const year = parseInt(yearStr, 10)
-
-      if (year === currentYear) {
-        if (!transactionsPerMonth[month]) {
-          transactionsPerMonth[month] = { income: 0, expense: 0 }
-        }
-
-        const value = parseFloat(transaction.valor.toString())
-
-        if (transaction.tipo === "receita") {
-          transactionsPerMonth[month].income += value
-        } else if (transaction.tipo === "despesa") {
-          transactionsPerMonth[month].expense += value
-        }
+        const valor = parseFloat(transacao.valor.toString())
+        if (transacao.tipo === "receita") acc[mes].receita += valor
+        else if (transacao.tipo === "despesa") acc[mes].despesa += valor
       }
-    })
+
+      return acc
+    }, {} as Record<number, { receita: number; despesa: number }>)
+
+    const calculateGap = (balance: number, budgetValue: number) => {
+      const gapMoney = balance - budgetValue
+      const gapPercentage =
+        gapMoney !== 0
+          ? `${((gapMoney / budgetValue) * 100).toFixed(2)}%`
+          : "0%"
+      const status =
+        gapMoney > 0 ? "excedente" : gapMoney < 0 ? "deficit" : "padrao"
+      return { gapMoney, gapPercentage, status }
+    }
 
     const results = budgets.map((budget) => {
       const month = budget.mes
-      let income = 0
-      let expense = 0
-      let balance = 0
-      let gapMoney = 0
-      let gapPercentage = "0%"
+      const budgetValue = budget.valor
 
-      if (budget.status !== "futuro") {
-        income = transactionsPerMonth[month]?.income || 0
-        expense = transactionsPerMonth[month]?.expense || 0
-        balance = income - expense
-
-        gapMoney = balance - parseFloat(budget.valor.toString())
-        const percentageValue =
-          parseFloat(budget.valor.toString()) !== 0
-            ? (gapMoney / parseFloat(budget.valor.toString())) * 100
-            : 0
-
-        if (budget.status === "excedente") {
-          gapPercentage = `+${percentageValue.toFixed(2)}%`
-        } else if (budget.status === "deficit") {
-          gapPercentage = `${percentageValue.toFixed(2)}%`
-        }
+      const saldoRealocado = budget.saldoRealocado || 0
+      const transacoesMes = transactionsPorMes[month] || {
+        receita: 0,
+        despesa: 0,
       }
+      const saldoSemRealocacao = transacoesMes.receita - transacoesMes.despesa
+
+      const carryOverApplied = budget.status !== "padrao"
+
+      const balanceRealocada = carryOverApplied
+        ? saldoRealocado
+        : saldoSemRealocacao
+      const {
+        gapMoney: gapMoneyRealocada,
+        gapPercentage: gapPercentageRealocada,
+        status: statusRealocada,
+      } = calculateGap(balanceRealocada, budgetValue)
+
+      const {
+        gapMoney: gapMoneySemRealocacao,
+        gapPercentage: gapPercentageSemRealocacao,
+        status: statusSemRealocacao,
+      } = calculateGap(saldoSemRealocacao, budgetValue)
 
       return {
-        month: month,
-        budget: parseFloat(budget.valor.toString()),
-        balance: balance,
-        status: budget.status,
-        gapMoney: gapMoney,
-        gapPercentage: gapPercentage,
+        month,
+        budget: budgetValue,
+        balanceRealocada,
+        balanceSemRealocacao: carryOverApplied ? saldoSemRealocacao : 0,
+        statusRealocada: carryOverApplied ? statusRealocada : "padrao",
+        statusSemRealocacao: carryOverApplied ? statusSemRealocacao : "padrao",
+        gapMoneyRealocada: carryOverApplied ? gapMoneyRealocada : 0,
+        gapPercentageRealocada: carryOverApplied ? gapPercentageRealocada : "-",
+        gapMoneySemRealocacao: carryOverApplied ? gapMoneySemRealocacao : 0,
+        gapPercentageSemRealocacao: carryOverApplied
+          ? gapPercentageSemRealocacao
+          : "-",
       }
     })
-
 
     return res.status(200).json(results)
   } catch (error) {

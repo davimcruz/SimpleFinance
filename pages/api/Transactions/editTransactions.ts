@@ -61,7 +61,14 @@ const realocarSaldo = async (userId: number, anoAtual: number) => {
       else statusMes = "padrao"
     }
 
-    const saldoRealocado = saldoMes + saldoRealocadoAnterior
+    let saldoRealocado = saldoRealocadoAnterior
+
+    if (saldoMes < 0) {
+      saldoRealocado += saldoMes 
+    } else {
+      saldoRealocado += saldoMes 
+    }
+
     saldoRealocadoAnterior = saldoRealocado
 
     console.log(`Atualizando saldo realocado para o mês ${mesAtual.mes}...`)
@@ -84,6 +91,7 @@ const realocarSaldo = async (userId: number, anoAtual: number) => {
   await prisma.$transaction(updates)
   console.log("Realocação de saldo concluída.")
 }
+
 
 export default async function handler(
   req: NextApiRequest,
