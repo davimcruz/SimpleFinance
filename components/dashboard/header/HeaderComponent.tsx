@@ -112,6 +112,14 @@ const Header: React.FC<HeaderProps> = ({ userImage }) => {
             >
               Transações
             </Link>
+        <Link
+          href="/dashboard/budgets"
+          className={`${linkClassName(
+            "/dashboard/budgets"
+          )} transition-colors hover:text-foreground`}
+        >
+          Orçamentos
+        </Link>
           </nav>
         </SheetContent>
       </Sheet>
