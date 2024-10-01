@@ -4,7 +4,7 @@ import {
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from "@/components/ui/tooltip" 
+} from "@/components/ui/tooltip"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import {
   Table,
@@ -19,20 +19,15 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { Badge } from "@/components/ui/badge"
 import { parseCookies } from "nookies"
 import { Switch } from "@/components/ui/switch"
-import { Separator } from "@/components/ui/separator"
 import { CircleHelp } from "lucide-react"
 
-interface BudgetComparison {
+interface IncomeComparison {
   month: number
   budget: number
-  balanceRealocada: number
-  balanceSemRealocacao: number
-  statusRealocada: string
-  statusSemRealocacao: string
-  gapMoneyRealocada: number
-  gapPercentageRealocada: string
-  gapMoneySemRealocacao: number
-  gapPercentageSemRealocacao: string
+  receitaReal: number
+  statusReceita: string
+  gapMoneyReceita: number
+  gapPercentageReceita: string
 }
 
 const monthNames: { [key: number]: string } = {
@@ -72,13 +67,12 @@ const getBadgeClass = (status: string) => {
   }
 }
 
-const BalanceComparisonTable = () => {
-  const [data, setData] = useState<BudgetComparison[]>([])
+const IncomeComparisonTable = () => {
+  const [data, setData] = useState<IncomeComparison[]>([])
   const [searchTerm, setSearchTerm] = useState("")
-  const [sortKey, setSortKey] = useState<keyof BudgetComparison>("month")
+  const [sortKey, setSortKey] = useState<keyof IncomeComparison>("month")
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc")
   const [showPadrao, setShowPadrao] = useState(false)
-  const [showCarryOver, setShowCarryOver] = useState(true)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -96,12 +90,12 @@ const BalanceComparisonTable = () => {
 
       try {
         const response = await fetch(
-          `/api/Budget/Comparisons/Anual/budgetBalance?userId=${userId}`
+          `/api/Budget/Comparisons/Anual/budgetIncome?userId=${userId}`
         )
         if (!response.ok) {
           throw new Error("Erro ao buscar dados")
         }
-        const result: BudgetComparison[] = await response.json()
+        const result: IncomeComparison[] = await response.json()
         setData(result)
       } catch (error) {
         console.error("Erro ao buscar dados:", error)
@@ -116,11 +110,7 @@ const BalanceComparisonTable = () => {
     let filtered = data
 
     if (!showPadrao) {
-      filtered = filtered.filter(
-        (item) =>
-          item.statusRealocada !== "padrao" &&
-          item.statusSemRealocacao !== "padrao"
-      )
+      filtered = filtered.filter((item) => item.statusReceita !== "padrao")
     }
 
     if (searchTerm !== "") {
@@ -129,10 +119,7 @@ const BalanceComparisonTable = () => {
           monthNames[item.month]
             .toLowerCase()
             .includes(searchTerm.toLowerCase()) ||
-          statusTranslations[item.statusRealocada]
-            ?.toLowerCase()
-            .includes(searchTerm.toLowerCase()) ||
-          statusTranslations[item.statusSemRealocacao]
+          statusTranslations[item.statusReceita]
             ?.toLowerCase()
             .includes(searchTerm.toLowerCase())
       )
@@ -142,17 +129,8 @@ const BalanceComparisonTable = () => {
       let aValue: number | string
       let bValue: number | string
 
-      if (showCarryOver) {
-        aValue = a[sortKey]
-        bValue = b[sortKey]
-      } else {
-        const noCarryKey = sortKey.replace(
-          "Realocada",
-          "SemRealocacao"
-        ) as keyof BudgetComparison
-        aValue = a[noCarryKey]
-        bValue = b[noCarryKey]
-      }
+      aValue = a[sortKey]
+      bValue = b[sortKey]
 
       if (sortKey === "month") {
         return sortOrder === "asc" ? a.month - b.month : b.month - a.month
@@ -166,9 +144,9 @@ const BalanceComparisonTable = () => {
     })
 
     return sorted
-  }, [data, searchTerm, showPadrao, showCarryOver, sortKey, sortOrder])
+  }, [data, searchTerm, showPadrao, sortKey, sortOrder])
 
-  const handleSort = useCallback((key: keyof BudgetComparison) => {
+  const handleSort = useCallback((key: keyof IncomeComparison) => {
     setSortKey(key)
     setSortOrder((prevOrder) => (prevOrder === "asc" ? "desc" : "asc"))
   }, [])
@@ -177,7 +155,7 @@ const BalanceComparisonTable = () => {
     <div className="flex justify-center items-center">
       <Card className="m-12 w-[90vw]">
         <CardHeader className="flex flex-col md:flex-row md:items-center md:justify-between space-y-4 md:space-y-0 mb-4">
-          <CardTitle>Comparação Orçamento e Saldo</CardTitle>
+          <CardTitle>Comparação Receita e Orçamento</CardTitle>
           <div className="flex flex-col md:flex-row items-start md:items-center space-y-4 md:space-y-0 md:space-x-4">
             <div className="flex items-center space-x-2">
               <p className="text-xs text-zinc-400 text-nowrap">Mostrar Todos</p>
@@ -189,35 +167,13 @@ const BalanceComparisonTable = () => {
                     </span>
                   </TooltipTrigger>
                   <TooltipContent className="rounded bg-background p-2 text-primary text-sm">
-                    Ao ativar, mostrará também os meses sem transações
+                    Ao ativar, mostrará também os meses sem receita
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
               <Switch
                 checked={showPadrao}
                 onCheckedChange={(checked) => setShowPadrao(checked)}
-              />
-            </div>
-            <div className="flex items-center space-x-2">
-              <p className="text-xs text-zinc-400 text-nowrap">
-                Mostrar com Realocação
-              </p>
-              <TooltipProvider>
-                <Tooltip delayDuration={0}>
-                  <TooltipTrigger asChild>
-                    <span className="text-zinc-500 cursor-help">
-                      <CircleHelp className="w-4" />
-                    </span>
-                  </TooltipTrigger>
-                  <TooltipContent className="rounded bg-background p-2 text-primary text-sm">
-                    Ao desligar, fará a comparação sem realocação de saldo (Não
-                    recomendado)
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-              <Switch
-                checked={showCarryOver}
-                onCheckedChange={(checked) => setShowCarryOver(checked)}
               />
             </div>
             <Input
@@ -254,48 +210,27 @@ const BalanceComparisonTable = () => {
                     {sortKey === "budget" && (sortOrder === "asc" ? "↑" : "↓")}
                   </TableHead>
                   <TableHead
-                    onClick={() =>
-                      handleSort(
-                        showCarryOver
-                          ? "balanceRealocada"
-                          : "balanceSemRealocacao"
-                      )
-                    }
+                    onClick={() => handleSort("receitaReal")}
                     className="cursor-pointer"
                   >
-                    Saldo{" "}
-                    {(sortKey === "balanceRealocada" ||
-                      sortKey === "balanceSemRealocacao") &&
+                    Receita{" "}
+                    {sortKey === "receitaReal" &&
                       (sortOrder === "asc" ? "↑" : "↓")}
                   </TableHead>
                   <TableHead
-                    onClick={() =>
-                      handleSort(
-                        showCarryOver
-                          ? "gapMoneyRealocada"
-                          : "gapMoneySemRealocacao"
-                      )
-                    }
+                    onClick={() => handleSort("gapMoneyReceita")}
                     className="cursor-pointer"
                   >
                     Gap (R$){" "}
-                    {(sortKey === "gapMoneyRealocada" ||
-                      sortKey === "gapMoneySemRealocacao") &&
+                    {sortKey === "gapMoneyReceita" &&
                       (sortOrder === "asc" ? "↑" : "↓")}
                   </TableHead>
                   <TableHead
-                    onClick={() =>
-                      handleSort(
-                        showCarryOver
-                          ? "gapPercentageRealocada"
-                          : "gapPercentageSemRealocacao"
-                      )
-                    }
+                    onClick={() => handleSort("gapPercentageReceita")}
                     className="cursor-pointer"
                   >
                     Gap (%){" "}
-                    {(sortKey === "gapPercentageRealocada" ||
-                      sortKey === "gapPercentageSemRealocacao") &&
+                    {sortKey === "gapPercentageReceita" &&
                       (sortOrder === "asc" ? "↑" : "↓")}
                   </TableHead>
                   <TableHead>Status</TableHead>
@@ -303,18 +238,10 @@ const BalanceComparisonTable = () => {
               </TableHeader>
               <TableBody>
                 {filteredAndSortedData.map((item, index) => {
-                  const balance = showCarryOver
-                    ? item.balanceRealocada
-                    : item.balanceSemRealocacao
-                  const gapMoney = showCarryOver
-                    ? item.gapMoneyRealocada
-                    : item.gapMoneySemRealocacao
-                  const gapPercentage = showCarryOver
-                    ? item.gapPercentageRealocada
-                    : item.gapPercentageSemRealocacao
-                  const status = showCarryOver
-                    ? item.statusRealocada
-                    : item.statusSemRealocacao
+                  const isSemReceita =
+                    item.statusReceita === "padrao" ||
+                    item.statusReceita === "sem receita"
+                  const isAindaSemReceita = item.statusReceita === "futuro"
 
                   return (
                     <TableRow key={index}>
@@ -326,30 +253,29 @@ const BalanceComparisonTable = () => {
                         }).format(item.budget)}
                       </TableCell>
                       <TableCell>
-                        {status === "padrao"
+                        {new Intl.NumberFormat("pt-BR", {
+                          style: "currency",
+                          currency: "BRL",
+                        }).format(item.receitaReal)}
+                      </TableCell>
+                      <TableCell>
+                        {isSemReceita || isAindaSemReceita
                           ? "-"
                           : new Intl.NumberFormat("pt-BR", {
                               style: "currency",
                               currency: "BRL",
-                            }).format(balance)}
+                            }).format(item.gapMoneyReceita)}
                       </TableCell>
                       <TableCell>
-                        {status === "padrao"
-                          ? "-"
-                          : new Intl.NumberFormat("pt-BR", {
-                              style: "currency",
-                              currency: "BRL",
-                            }).format(gapMoney)}
-                      </TableCell>
-                      <TableCell>
-                        {status === "padrao" ? "-" : gapPercentage}
+                        {isSemReceita ? "-" : item.gapPercentageReceita}
                       </TableCell>
                       <TableCell>
                         <Badge
                           variant="outline"
-                          className={getBadgeClass(status)}
+                          className={getBadgeClass(item.statusReceita)}
                         >
-                          {statusTranslations[status] || status}
+                          {statusTranslations[item.statusReceita] ||
+                            item.statusReceita}
                         </Badge>
                       </TableCell>
                     </TableRow>
@@ -364,4 +290,4 @@ const BalanceComparisonTable = () => {
   )
 }
 
-export default BalanceComparisonTable
+export default IncomeComparisonTable
