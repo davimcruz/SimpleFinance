@@ -126,7 +126,7 @@ const Header: React.FC<HeaderProps> = ({ userImage }) => {
 
       <div className="flex w-full items-center gap-4 md:ml-auto md:gap-2 lg:gap-4">
         <div className="ml-auto flex-1 sm:flex-initial">
-          <ProgressBar />
+          {/* <ProgressBar /> */}
         </div>
         <ModeToggle />
         <DropdownMenu>
