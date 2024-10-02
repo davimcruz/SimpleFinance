@@ -10,7 +10,7 @@ import { Skeleton } from "@/components/ui/skeleton"
 import Summary from "@/components/dashboard/summary/Summary"
 import TransactionsTable from "@/components/dashboard/table/TransactionsTable"
 import FinancesGraph from "@/components/dashboard/graphs/FinancesGraph"
-import Header from "@/components/dashboard/header/HeaderComponent"
+import Header from "@/components/header/HeaderComponent"
 
 import { getServerSidePropsDashboard } from "@/utils/getServerSideProps"
 

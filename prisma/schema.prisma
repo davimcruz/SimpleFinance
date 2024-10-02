@@ -43,4 +43,20 @@ model usuarios {
   image      String?      @db.VarChar(255)
   permissao  String?      @db.VarChar(20)
   transacoes transacoes[]
+  cartoes    cartoes[]
 }
+
+model cartoes {
+  cardId        String   @id @default(uuid()) @db.Char(36)
+  userId        Int
+  nomeCartao    String   @db.VarChar(100)
+  primeirosDigitos String @db.VarChar(4)
+  instituicao   String   @db.VarChar(100)
+  tipoCartao    String   @db.VarChar(10) 
+  vencimento    String?  @db.VarChar(5) 
+  limite        Float?   
+  usuarios      usuarios @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId], map: "userId")
+}
+

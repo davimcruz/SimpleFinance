@@ -5,15 +5,15 @@ import "../../app/globals.css"
 import { ThemeProvider } from "@/components/theme/theme-provider"
 
 import Header from "@/components/header/HeaderComponent"
-
-import TransactionsFull from "@/components/transactions/TransactionsFull"
+import BudgetTables from "@/components/budgets/BudgetTables"
 
 import { getServerSidePropsDashboard } from "@/utils/getServerSideProps"
 import Head from "next/head"
+import CardsManager from "@/components/cards/CardsManager"
 
 const inter = Inter({ subsets: ["latin"] })
 
-const Transactions = ({
+const Cards = ({
   user,
 }: {
   user?: { nome: string; sobrenome: string; image?: string }
@@ -28,7 +28,7 @@ const Transactions = ({
       </Head>
       <div className={`${inter.className} flex min-h-screen w-full flex-col`}>
         <Header userImage={user?.image} />
-        <TransactionsFull />
+        <CardsManager/>
       </div>
     </ThemeProvider>
   )
@@ -37,4 +37,4 @@ const Transactions = ({
 export const getServerSideProps: GetServerSideProps =
   getServerSidePropsDashboard
 
-export default Transactions
+export default Cards

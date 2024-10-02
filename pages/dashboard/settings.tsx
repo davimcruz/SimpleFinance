@@ -22,7 +22,7 @@ import { Input } from "@/components/ui/input"
 
 import { getServerSidePropsDashboard } from "@/utils/getServerSideProps"
 
-import Header from "@/components/dashboard/header/HeaderComponent"
+import Header from "@/components/header/HeaderComponent"
 import Head from "next/head"
 
 const inter = Inter({ subsets: ["latin"] })

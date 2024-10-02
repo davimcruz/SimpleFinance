@@ -161,7 +161,7 @@ const CreateTransaction = () => {
                     </Label>
                     <Input
                       id="nome"
-                      placeholder="Tênis Nike, Burger King, etc"
+                      placeholder="Burger King, Gasolina, etc"
                       required
                       onChange={(e) => setNome(e.target.value)}
                     />
@@ -207,13 +207,9 @@ const CreateTransaction = () => {
                             </SelectItem>
                           </>
                         )}
-                        <SelectItem value="investimentos">
-                          Investimentos
-                        </SelectItem>
                         <SelectItem value="pix">PIX</SelectItem>
                         <SelectItem value="boleto">Boleto</SelectItem>
-                        <SelectItem value="ted-doc">TED/DOC</SelectItem>
-                        <SelectItem value="cedulas">Cédulas</SelectItem>
+                        <SelectItem value="cedulas">Espécie</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>

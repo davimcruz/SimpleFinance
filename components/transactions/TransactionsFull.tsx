@@ -148,6 +148,10 @@ const TransactionsFull = () => {
         <CardContent>
           {loading ? (
             <Skeleton className="h-[250px]" />
+          ) : transactions.length === 0 ? ( 
+            <div className="text-center justify-center items-center pt-20">
+              <p>Você não possui Transações</p>{" "}
+            </div>
           ) : filteredTransactions.length === 0 ? (
             <div className="text-center justify-center items-center pt-20">
               <p>Nenhuma transação encontrada</p>

@@ -4,7 +4,7 @@ import "../../app/globals.css"
 
 import { ThemeProvider } from "@/components/theme/theme-provider"
 
-import Header from "@/components/dashboard/header/HeaderComponent"
+import Header from "@/components/header/HeaderComponent"
 import BudgetTables from "@/components/budgets/BudgetTables"
 
 import { getServerSidePropsDashboard } from "@/utils/getServerSideProps"
@@ -27,7 +27,7 @@ const Budgets = ({
       </Head>
       <div className={`${inter.className} flex min-h-screen w-full flex-col`}>
         <Header userImage={user?.image} />
-        <BudgetTables/>
+        <BudgetTables />
       </div>
     </ThemeProvider>
   )

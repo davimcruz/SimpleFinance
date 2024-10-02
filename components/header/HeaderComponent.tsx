@@ -1,7 +1,7 @@
 import { useRouter } from "next/router"
 import Link from "next/link"
 import { Menu, Wallet } from "lucide-react"
-import "../../../app/globals.css"
+import "../../app/globals.css"
 import { ModeToggle } from "@/components/theme/toggleTheme"
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
@@ -17,7 +17,7 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import ProgressBar from "./ProgressBar"
 
 interface HeaderProps {
-  userImage?: string 
+  userImage?: string
 }
 
 const Header: React.FC<HeaderProps> = ({ userImage }) => {
@@ -75,6 +75,14 @@ const Header: React.FC<HeaderProps> = ({ userImage }) => {
         >
           Orçamentos
         </Link>
+        {/* <Link
+          href="/dashboard/cards"
+          className={`${linkClassName(
+            "/dashboard/cards"
+          )} transition-colors hover:text-foreground`}
+        >
+          Cartões
+        </Link> */}
       </nav>
       <Sheet>
         <SheetTrigger asChild>
@@ -112,21 +120,29 @@ const Header: React.FC<HeaderProps> = ({ userImage }) => {
             >
               Transações
             </Link>
-        <Link
-          href="/dashboard/budgets"
-          className={`${linkClassName(
-            "/dashboard/budgets"
-          )} transition-colors hover:text-foreground`}
-        >
-          Orçamentos
-        </Link>
+            <Link
+              href="/dashboard/budgets"
+              className={`${linkClassName(
+                "/dashboard/budgets"
+              )} transition-colors hover:text-foreground`}
+            >
+              Orçamentos
+            </Link>
+            {/* <Link
+              href="/dashboard/cards"
+              className={`${linkClassName(
+                "/dashboard/cards"
+              )} transition-colors hover:text-foreground`}
+            >
+              Cartões
+            </Link> */}
           </nav>
         </SheetContent>
       </Sheet>
 
       <div className="flex w-full items-center gap-4 md:ml-auto md:gap-2 lg:gap-4">
         <div className="ml-auto flex-1 sm:flex-initial">
-          {/* <ProgressBar /> */}
+          {/* <ProgressBar /> DESATIVADO TEMPORARIAMENTE*/}
         </div>
         <ModeToggle />
         <DropdownMenu>
