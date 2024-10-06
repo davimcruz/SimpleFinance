@@ -1,8 +1,8 @@
 import { NextApiRequest, NextApiResponse } from "next"
-import { PrismaClient } from "@prisma/client"
+
 import { verifyToken } from "@/pages/api/Auth/jwtAuth"
 
-const prisma = new PrismaClient()
+import prisma from "@/lib/prisma"
 
 const monthNames: { [key: number]: string } = {
   1: "Janeiro",
@@ -68,7 +68,7 @@ export default async function handler(
           data: {
             contains: `-${currentMonth
               .toString()
-              .padStart(2, "0")}-${currentYear}`, 
+              .padStart(2, "0")}-${currentYear}`,
           },
         },
         select: { valor: true },

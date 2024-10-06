@@ -1,8 +1,8 @@
 import { NextApiRequest, NextApiResponse } from "next"
-import { PrismaClient } from "@prisma/client"
+
 import { verifyToken } from "../../../Auth/jwtAuth"
 
-const prisma = new PrismaClient()
+import prisma from "@/lib/prisma"
 
 export default async function handler(
   req: NextApiRequest,
@@ -115,7 +115,6 @@ export default async function handler(
         ? "Saldo suficiente para o orçamento"
         : "Saldo insuficiente para o orçamento"
 
-    // Cálculo da diferença percentual entre orçamento e saldo
     const budgetValue = parseFloat(budget.valor.toString())
     const percentDifference = ((balance - budgetValue) / budgetValue) * 100
     const formattedPercentDifference =

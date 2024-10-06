@@ -7,9 +7,16 @@ const FinancesGraph = () => {
   const [loading, setLoading] = useState(true)
   const [transactionsExist, setTransactionsExist] = useState(true)
 
+  function getCurrentYear() {
+    const currentYear = new Date().getFullYear()
+    return currentYear
+  }
+
+  const year = getCurrentYear()
+
   useEffect(() => {
     const fetchTransactions = async () => {
-      const response = await fetch("/api/Queries/queryMethods")
+      const response = await fetch("/api/Queries/queryTransactions")
       const data = await response.json()
       setTransactionsExist(data && data.length > 0)
       setLoading(false)
@@ -21,7 +28,7 @@ const FinancesGraph = () => {
   return (
     <Card x-chunk="dashboard-01-chunk-5">
       <CardHeader>
-        <CardTitle>Resumo Gráfico Comparativo</CardTitle>
+        <CardTitle>Resumo Gráfico Comparativo ({year})</CardTitle>
       </CardHeader>
       <CardContent className="flex flex-col justify-center items-center max-w-[22rem] md:max-w-none">
         <div className="hidden sm:hidden md:flex lg:flex xl:flex">

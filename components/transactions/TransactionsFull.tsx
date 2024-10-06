@@ -1,7 +1,5 @@
 import { useEffect, useState } from "react"
-
 import "../../app/globals.css"
-
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import {
@@ -16,7 +14,6 @@ import { Input } from "@/components/ui/input"
 import { Skeleton } from "../ui/skeleton"
 import CreateTransaction from "./CreateTransactions"
 import TransactionsDetails from "../dashboard/table/TransactionDetails"
-
 import { Transactions } from "@/types/types"
 
 type FonteKey =
@@ -148,9 +145,9 @@ const TransactionsFull = () => {
         <CardContent>
           {loading ? (
             <Skeleton className="h-[250px]" />
-          ) : transactions.length === 0 ? ( 
+          ) : transactions.length === 0 ? (
             <div className="text-center justify-center items-center pt-20">
-              <p>Você não possui Transações</p>{" "}
+              <p>Você não possui Transações</p>
             </div>
           ) : filteredTransactions.length === 0 ? (
             <div className="text-center justify-center items-center pt-20">
@@ -205,9 +202,12 @@ const TransactionsFull = () => {
                       {formatFonte(transaction.fonte)}
                       <br />
                       <div className="hidden text-sm text-muted-foreground md:inline">
-                        {transaction.detalhesFonte}
+                        {transaction.fonte === "cartao-credito"
+                          ? transaction.detalhesFonte || "Cartão de Crédito"
+                          : transaction.detalhesFonte}
                       </div>
                     </TableCell>
+
                     <TableCell className="hidden lg:table-cell">
                       {transaction.data.replace(/-/g, "/")}
                     </TableCell>

@@ -3,7 +3,7 @@ import { PrismaClient, transacoes } from "@prisma/client"
 import { verifyToken } from "../Auth/jwtAuth"
 import { parseCookies } from "nookies"
 
-const prisma = new PrismaClient()
+import prisma from "@/lib/prisma"
 
 export default async function transactionsSummary(
   req: NextApiRequest,
@@ -132,8 +132,6 @@ export default async function transactionsSummary(
       expenseDifferenceString,
       balanceDifferenceString,
     })
-
-
   } catch (error) {
     console.error("Erro ao buscar transações:", error)
     res.status(500).json({ error: "Erro ao buscar transações" })

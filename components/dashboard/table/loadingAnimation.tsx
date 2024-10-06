@@ -10,7 +10,7 @@ const LottieAnimation = ({ animationPath }: { animationPath: string }) => {
       renderer: "svg",
       loop: true,
       autoplay: true,
-      path: '/fill.json'
+      path: '/loading.json'
     })
 
     return () => {

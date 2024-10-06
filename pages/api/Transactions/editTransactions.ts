@@ -1,12 +1,34 @@
 import { NextApiRequest, NextApiResponse } from "next"
-import { PrismaClient } from "@prisma/client"
 import { verifyToken } from "../Auth/jwtAuth"
+import prisma from "@/lib/prisma"
+import Redis from "ioredis"
 
-const prisma = new PrismaClient()
+const redisUrl = process.env.REDIS_URL
+const redisToken = process.env.REDIS_TOKEN
+
+if (!redisUrl || !redisToken) {
+  throw new Error(
+    "Variáveis de Ambiente REDIS_URL e REDIS_TOKEN não estão definidas."
+  )
+}
+
+const redis = new Redis(redisUrl, {
+  password: redisToken,
+  maxRetriesPerRequest: 5,
+  retryStrategy: (times) => {
+    const delay = Math.min(times * 100, 3000)
+    return delay
+  },
+  reconnectOnError: (err) => {
+    const targetErrors = ["READONLY", "ECONNRESET", "ETIMEDOUT"]
+    if (targetErrors.some((targetError) => err.message.includes(targetError))) {
+      return true
+    }
+    return false
+  },
+})
 
 const realocarSaldo = async (userId: number, anoAtual: number) => {
-  console.log("Iniciando realocação de saldo...")
-
   const orcamentos = await prisma.orcamento.findMany({
     where: { userId, ano: anoAtual },
     orderBy: { mes: "asc" },
@@ -23,7 +45,6 @@ const realocarSaldo = async (userId: number, anoAtual: number) => {
 
   const transacoesPorMes = transacoes.reduce((acc, transacao) => {
     const mes = parseInt(transacao.data?.split("-")[1] || "0", 10)
-
     const valor = parseFloat(
       String(transacao.valor)?.replace("R$", "").replace(",", ".").trim() || "0"
     )
@@ -41,10 +62,11 @@ const realocarSaldo = async (userId: number, anoAtual: number) => {
     return acc
   }, {} as Record<number, { receita: number; despesa: number }>)
 
+
   let saldoRealocadoAnterior = 0
   const mesAtualNumero = new Date().getMonth() + 1
 
-  const updates = orcamentos.map((mesAtual) => {
+  const updates = orcamentos.map(async (mesAtual) => {
     const transacoesMes = transacoesPorMes[mesAtual.mes] || {
       receita: 0,
       despesa: 0,
@@ -63,11 +85,11 @@ const realocarSaldo = async (userId: number, anoAtual: number) => {
 
     let saldoRealocado = saldoRealocadoAnterior
 
-    if (saldoMes < 0) {
-      saldoRealocado += saldoMes 
-    } else {
-      saldoRealocado += saldoMes 
-    }
+    saldoRealocado += saldoMes
+
+    console.log(
+      `Mês ${mesAtual.mes}: Receita: ${transacoesMes.receita}, Despesa: ${transacoesMes.despesa}, Saldo Mês: ${saldoMes}, Saldo Realocado Anterior: ${saldoRealocadoAnterior}, Saldo Realocado Atual: ${saldoRealocado}`
+    )
 
     saldoRealocadoAnterior = saldoRealocado
 
@@ -88,10 +110,9 @@ const realocarSaldo = async (userId: number, anoAtual: number) => {
     })
   })
 
-  await prisma.$transaction(updates)
+  await Promise.all(updates)
   console.log("Realocação de saldo concluída.")
 }
-
 
 export default async function handler(
   req: NextApiRequest,
@@ -111,33 +132,110 @@ export default async function handler(
   const { nome, tipo, fonte, detalhesFonte, data, valor, transactionId } =
     req.body
 
-  if (!transactionId || !nome || !tipo || !fonte || !data || !valor) {
-    return res.status(400).json({ error: "Dados obrigatórios estão faltando" })
+  if (!transactionId) {
+    return res.status(400).json({ error: "transactionId é obrigatório" })
   }
 
-  console.log("Transaction ID recebido:", transactionId)
-
   try {
-    const valorFloat = typeof valor === "number" ? valor : parseFloat(valor)
+    const currentTransaction = await prisma.transacoes.findUnique({
+      where: { transactionId },
+      include: {
+        parcelas: true,
+      },
+    })
 
-    const extractedDate = data.split("T")[0]
-    const formattedDate = extractedDate.split("-").reverse().join("-")
+    if (!currentTransaction) {
+      return res.status(404).json({ error: "Transação não encontrada" })
+    }
+
+    const updates: any = {}
+
+    if (nome && nome !== currentTransaction.nome) {
+      updates.nome = nome
+    }
+
+    if (tipo && tipo !== currentTransaction.tipo) {
+      updates.tipo = tipo
+    }
+
+    if (fonte && fonte !== currentTransaction.fonte) {
+      updates.fonte = fonte
+    }
+
+    if (
+      detalhesFonte !== undefined &&
+      detalhesFonte !== currentTransaction.detalhesFonte
+    ) {
+      updates.detalhesFonte = detalhesFonte || null
+    }
+
+    if (data && data !== currentTransaction.data) {
+      const extractedDate = data.split("T")[0]
+      const formattedDate = extractedDate.split("-").reverse().join("-")
+      updates.data = formattedDate || null
+    }
+
+    if (
+      valor !== undefined &&
+      valor !== null &&
+      valor !== currentTransaction.valor
+    ) {
+      const valorFloat = typeof valor === "number" ? valor : parseFloat(valor)
+      updates.valor = valorFloat
+
+      if (currentTransaction.numeroParcelas) {
+        const valorParcelaNovo = valorFloat / currentTransaction.numeroParcelas
+
+        await prisma.parcelas.updateMany({
+          where: { transacaoId: transactionId },
+          data: {
+            valorParcela: valorParcelaNovo,
+          },
+        })
+
+        const faturaIds = currentTransaction.parcelas
+          .map((parcela) => parcela.faturaId)
+          .filter((id): id is string => id !== null)
+
+        const faturasAtualizadas = await prisma.faturas.findMany({
+          where: { faturaId: { in: faturaIds } },
+        })
+
+        for (const fatura of faturasAtualizadas) {
+          const totalParcelas = await prisma.parcelas.findMany({
+            where: { faturaId: fatura.faturaId },
+          })
+
+          const novoValorTotal = totalParcelas.reduce(
+            (acc, parcela) => acc + parcela.valorParcela,
+            0
+          )
+
+          await prisma.faturas.update({
+            where: { faturaId: fatura.faturaId },
+            data: { valorTotal: novoValorTotal },
+          })
+        }
+      }
+    }
+
+    if (Object.keys(updates).length === 0) {
+      return res.status(200).json({ message: "Nenhuma alteração detectada" })
+    }
 
     const updatedTransaction = await prisma.transacoes.update({
       where: { transactionId },
-      data: {
-        nome,
-        tipo,
-        fonte,
-        detalhesFonte: detalhesFonte || null,
-        data: formattedDate || null,
-        valor: valorFloat, 
-      },
+      data: updates,
     })
 
     console.log("Transação atualizada com sucesso:", updatedTransaction)
 
-    await realocarSaldo(updatedTransaction.userId, new Date().getFullYear())
+    const cacheKey = `transactions:user:${updatedTransaction.userId}`
+    await redis.del(cacheKey)
+
+    realocarSaldo(updatedTransaction.userId, new Date().getFullYear()).catch(
+      (err) => console.error("Erro ao realocar saldo:", err)
+    )
 
     res.status(200).json({ success: true })
   } catch (error) {
@@ -145,4 +243,3 @@ export default async function handler(
     return res.status(500).json({ error: "Erro ao processar a requisição" })
   }
 }
-

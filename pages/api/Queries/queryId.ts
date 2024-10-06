@@ -1,8 +1,8 @@
 import { NextApiRequest, NextApiResponse } from "next"
-import { PrismaClient } from "@prisma/client"
+
 import { verifyToken } from "../Auth/jwtAuth"
 
-const prisma = new PrismaClient()
+import prisma from "@/lib/prisma"
 
 export default async function handler(
   req: NextApiRequest,
@@ -25,7 +25,7 @@ export default async function handler(
 
   try {
     const user = await prisma.usuarios.findUnique({
-      where: { id: parseInt(id) }, 
+      where: { id: parseInt(id) },
       select: { id: true, nome: true, sobrenome: true, image: true },
     })
 

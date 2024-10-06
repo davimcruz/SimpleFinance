@@ -1,108 +1,63 @@
-import React from "react"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import React, { useEffect, useState } from "react"
+import { parseCookies } from "nookies"
+import CreateCards from "./CreateCards"
+import CardsView from "./CardsView"
 
-const debitCards = [
-  {
-    nome: "Cartão Débito Inter",
-    primeirosDigitos: "1234",
-    instituicao: "Banco Inter",
-    bandeira: "Visa",
-  },
-  {
-    nome: "Cartão Débito Caixa",
-    primeirosDigitos: "4321",
-    instituicao: "Caixa",
-    bandeira: "Elo",
-  },
-  {
-    nome: "Cartão Débito Itaú",
-    primeirosDigitos: "1111",
-    instituicao: "Itaú",
-    bandeira: "Mastercard",
-  },
-]
-
-const creditCards = [
-  {
-    nome: "Cartão Crédito Nubank",
-    primeirosDigitos: "5678",
-    instituicao: "Nubank",
-    bandeira: "Mastercard",
-    vencimento: "15-08",
-  },
-  {
-    nome: "Cartão Crédito Bradesco",
-    primeirosDigitos: "8765",
-    instituicao: "Bradesco",
-    bandeira: "Visa",
-    vencimento: "22-05",
-  },
-  {
-    nome: "Cartão Crédito Santander",
-    primeirosDigitos: "2222",
-    instituicao: "Santander",
-    bandeira: "Visa",
-    vencimento: "10-12",
-  },
-]
+interface CardType {
+  nomeCartao: string
+  bandeira: string
+  limite?: string
+  vencimento?: string
+  tipoCartao: "credito" 
+}
 
 const CardsManager = () => {
+  const [cards, setCards] = useState<CardType[]>([])
+  const [loading, setLoading] = useState(true)
+
+  const cookies = parseCookies()
+  const userId = cookies.userId
+
+  useEffect(() => {
+    const fetchCards = async () => {
+      setLoading(true)
+      try {
+        const response = await fetch(
+          `/api/Queries/queryCards?userId=${userId}`,
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+        )
+
+        const data = await response.json()
+        if (Array.isArray(data.cartoes)) {
+          setCards(data.cartoes)
+        } else {
+          console.error("A resposta da API não é um array.")
+        }
+      } catch (error) {
+        console.error("Erro ao buscar cartões:", error)
+      }
+      setLoading(false)
+    }
+
+    fetchCards()
+  }, [userId])
+
+  if (loading) {
+    return null 
+  }
+
+  if (cards.length === 0) {
+    return <CreateCards />
+  }
+
   return (
-    <div className="flex -mt-14 items-center min-h-screen">
-      <div className="w-[25vw]">
-        <Tabs defaultValue="debit" className="w-full">
-          <TabsList className="mb-4 flex justify-center">
-            <TabsTrigger value="debit" className="w-full">
-              Cartões de Débito
-            </TabsTrigger>
-            <TabsTrigger value="credit" className="w-full">
-              Cartões de Crédito
-            </TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="debit">
-            <div className="flex flex-col gap-4">
-              {debitCards.map((card, index) => (
-                <Card
-                  key={index}
-                  className="dark:bg-zinc-950 bg-white shadow-md"
-                >
-                  <CardHeader>
-                    <CardTitle>{card.nome}</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p>Instituição: {card.instituicao}</p>
-                    <p>4 Primeiros Dígitos: {card.primeirosDigitos}</p>
-                    <p>Bandeira: {card.bandeira}</p>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </TabsContent>
-
-          <TabsContent value="credit">
-            <div className="flex flex-col gap-4">
-              {creditCards.map((card, index) => (
-                <Card
-                  key={index}
-                  className="dark:bg-zinc-950 bg-white shadow-md"
-                >
-                  <CardHeader>
-                    <CardTitle>{card.nome}</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p>Instituição: {card.instituicao}</p>
-                    <p>4 Primeiros Dígitos: {card.primeirosDigitos}</p>
-                    <p>Vencimento: {card.vencimento}</p>
-                    <p>Bandeira: {card.bandeira}</p>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </TabsContent>
-        </Tabs>
-      </div>
+    <div className="flex justify-center items-center max-h-[100vh] min-h-[90vh]">
+      <CardsView  />
     </div>
   )
 }

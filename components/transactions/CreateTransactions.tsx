@@ -1,8 +1,9 @@
-import React, { useState } from "react"
+import React, { useState, useEffect } from "react"
 import { format } from "date-fns"
 import { cn } from "@/lib/utils"
 import { ptBR } from "date-fns/locale"
 import { useRouter } from "next/router"
+import { parseCookies } from "nookies"
 
 import {
   Dialog,
@@ -29,16 +30,22 @@ import {
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { ChevronRight } from "lucide-react"
-import { Calendar as CalendarIcon } from "lucide-react"
+import { ChevronRight, Calendar as CalendarIcon } from "lucide-react"
 
 import formatadorValor from "@/utils/valueFormatter"
 import LottieAnimation from "../dashboard/table/loadingAnimation"
 
+interface CardType {
+  cardId: string
+  nomeCartao: string
+  bandeira: string
+  tipoCartao: "credito" | "debito"
+}
+
 const CreateTransaction = () => {
   const router = useRouter()
   const [open, setOpen] = useState(false)
-  const [date, setDate] = React.useState<Date>()
+  const [date, setDate] = useState<Date>()
   const [valorEditado, setValor] = useState<string>("")
   const [nome, setNome] = useState<string>("")
   const [tipoTransacao, setTipoTransacao] = useState<string>("")
@@ -46,12 +53,46 @@ const CreateTransaction = () => {
   const [detalhesFonte, setDetalhesFonte] = useState<string>("")
   const [dataTransacao, setDataTransacao] = useState<Date | undefined>()
   const [isLoading, setIsLoading] = useState(false)
+  const [cards, setCards] = useState<CardType[]>([])
+  const [selectedCardId, setSelectedCardId] = useState<string | null>(null)
+  const [isCardSelectVisible, setIsCardSelectVisible] = useState(false)
+  const [parcelas, setParcelas] = useState<number>(1)
+  const [parcelamento, setParcelamento] = useState<string>("a-vista")
+
+  const cookies = parseCookies()
+  const userId = cookies.userId
+
+  useEffect(() => {
+    const fetchCards = async () => {
+      try {
+        const response = await fetch(`/api/Queries/queryCards?userId=${userId}`)
+        const data = await response.json()
+        if (Array.isArray(data.cartoes)) {
+          setCards(data.cartoes)
+        }
+      } catch (error) {
+        console.error("Erro ao buscar cartões:", error)
+      }
+    }
+
+    if (userId) {
+      fetchCards()
+    }
+  }, [userId])
+
+  const handleDialogClose = () => {
+    setOpen(false)
+    setTipoTransacao("")
+    setFonteTransacao("")
+    setSelectedCardId(null)
+    setIsCardSelectVisible(false)
+    setParcelas(1)
+    setParcelamento("a-vista")
+  }
 
   const handleValorChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const novoValor = event.target.value
-
     const valorValidado = novoValor.replace(/[^0-9.,]/g, "")
-
     const valorFormatado = "R$ " + formatadorValor(valorValidado)
     setValor(valorFormatado)
   }
@@ -59,18 +100,25 @@ const CreateTransaction = () => {
   const handleTipoTransacaoChange = (value: string) => {
     setTipoTransacao(value)
     setFonteTransacao("")
+    setIsCardSelectVisible(false)
+    setParcelas(1)
+  }
+
+  const handleFonteTransacaoChange = (value: string) => {
+    setFonteTransacao(value)
+    if (value === "cartao-credito") {
+      setIsCardSelectVisible(true)
+    } else {
+      setIsCardSelectVisible(false)
+      setParcelamento("a-vista")
+    }
   }
 
   const converterValorParaFloat = (valor: string): number => {
     const valorValidado = valor.replace(/[^0-9,]/g, "")
-
-    if (!valorValidado) {
-      return NaN
-    }
-
+    if (!valorValidado) return NaN
     const valorSemPontos = valorValidado.replace(/\./g, "")
     const valorComPonto = valorSemPontos.replace(",", ".")
-
     return parseFloat(valorComPonto)
   }
 
@@ -92,7 +140,6 @@ const CreateTransaction = () => {
     emailFromCookie = decodeURIComponent(emailFromCookie)
 
     const valorFloat = converterValorParaFloat(valorEditado)
-
     if (isNaN(valorFloat) || valorFloat <= 0) {
       console.error("Valor inválido")
       setIsLoading(false)
@@ -107,14 +154,19 @@ const CreateTransaction = () => {
       detalhesFonte,
       data: dataTransacao,
       valor: valorFloat,
+      cardId: selectedCardId,
+      numeroParcelas: parcelamento === "a-vista" ? 1 : parcelas,
     }
 
     try {
-      const response = await fetch("/api/Transactions/saveTransactions", {
+      const apiUrl =
+        fonteTransacao === "cartao-credito" && parcelamento === "a-prazo"
+          ? "/api/Cards/CreditCard/createParcelTransaction"
+          : "/api/Transactions/saveTransactions"
+
+      const response = await fetch(apiUrl, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(transactionData),
       })
 
@@ -132,7 +184,7 @@ const CreateTransaction = () => {
   }
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={(isOpen) => setOpen(isOpen)}>
       <DialogTrigger asChild>
         <Button
           variant="secondary"
@@ -149,7 +201,6 @@ const CreateTransaction = () => {
           {isLoading ? (
             <div className="flex flex-col items-center justify-center">
               <LottieAnimation animationPath="/loadingAnimation.json" />
-              <p className="text-lg font-bold">Salvando transação...</p>
             </div>
           ) : (
             <div className="pt-8 pb-4">
@@ -161,7 +212,7 @@ const CreateTransaction = () => {
                     </Label>
                     <Input
                       id="nome"
-                      placeholder="Tênis Nike, Burger King, etc"
+                      placeholder="Burger King, Gasolina, etc"
                       required
                       onChange={(e) => setNome(e.target.value)}
                     />
@@ -170,33 +221,26 @@ const CreateTransaction = () => {
                     <Label className="text-left" htmlFor="type-transaction">
                       Tipo
                     </Label>
-                    <Select
-                      onValueChange={(value) =>
-                        handleTipoTransacaoChange(value)
-                      }
-                      required
-                    >
+                    <Select onValueChange={handleTipoTransacaoChange} required>
                       <SelectTrigger className="w-full text-muted-foreground focus:text-foreground">
                         <SelectValue placeholder="Receita ou Despesa"></SelectValue>
                       </SelectTrigger>
-                      <SelectContent id="select-type">
+                      <SelectContent>
                         <SelectItem value="receita">Receita</SelectItem>
                         <SelectItem value="despesa">Despesa</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
+
                   <div className="grid gap-2">
                     <Label className="text-left" htmlFor="select-fonte">
                       Meio de Pagamento
                     </Label>
-                    <Select
-                      onValueChange={(value) => setFonteTransacao(value)}
-                      required
-                    >
+                    <Select onValueChange={handleFonteTransacaoChange} required>
                       <SelectTrigger className="w-full text-muted-foreground focus:text-foreground">
-                        <SelectValue placeholder="Onde saiu ou entrou?"></SelectValue>
+                        <SelectValue placeholder="Selecione uma opção" />
                       </SelectTrigger>
-                      <SelectContent id="select-fonte">
+                      <SelectContent>
                         {tipoTransacao === "despesa" && (
                           <>
                             <SelectItem value="cartao-credito">
@@ -207,32 +251,111 @@ const CreateTransaction = () => {
                             </SelectItem>
                           </>
                         )}
-                        <SelectItem value="investimentos">
-                          Investimentos
-                        </SelectItem>
                         <SelectItem value="pix">PIX</SelectItem>
                         <SelectItem value="boleto">Boleto</SelectItem>
-                        <SelectItem value="ted-doc">TED/DOC</SelectItem>
-                        <SelectItem value="cedulas">Cédulas</SelectItem>
+                        <SelectItem value="cedulas">Espécie</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
-                  <div className="grid gap-2">
-                    <Label className="text-left" htmlFor="detalhes-fonte">
-                      Origem
-                    </Label>
-                    <Input
-                      id="detalhes-fonte"
-                      placeholder="De qual Conta/Instituição"
-                      required
-                      onChange={(e) => setDetalhesFonte(e.target.value)}
-                    />
-                  </div>
+
+                  {!isCardSelectVisible && (
+                    <div className="grid gap-2">
+                      <Label className="text-left" htmlFor="detalhes-fonte">
+                        Origem
+                      </Label>
+                      <Input
+                        id="detalhes-fonte"
+                        placeholder="De qual Conta/Instituição"
+                        required
+                        onChange={(e) => setDetalhesFonte(e.target.value)}
+                      />
+                    </div>
+                  )}
+
+                  {isCardSelectVisible && (
+                    <>
+                      <div className="grid gap-2">
+                        <Label className="text-left">Selecionar Cartão</Label>
+                        <Select onValueChange={setSelectedCardId}>
+                          <SelectTrigger className="w-full text-muted-foreground focus:text-foreground">
+                            <SelectValue placeholder="Selecione um cartão" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {cards
+                              .filter(
+                                (card) =>
+                                  card.tipoCartao ===
+                                  fonteTransacao.split("-")[1]
+                              )
+                              .map((card) => (
+                                <SelectItem
+                                  key={card.cardId}
+                                  value={card.cardId}
+                                >
+                                  {card.nomeCartao} ({card.bandeira})
+                                </SelectItem>
+                              ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      <div className="grid gap-2">
+                        <Label className="text-left" htmlFor="parcelamento">
+                          Parcelamento
+                        </Label>
+                        <Select
+                          onValueChange={(value) => {
+                            setParcelamento(value)
+                            if (value === "a-vista") {
+                              setParcelas(1)
+                            }
+                          }}
+                          value={parcelamento}
+                          required
+                        >
+                          <SelectTrigger className="w-full text-muted-foreground focus:text-foreground">
+                            <SelectValue placeholder="Selecione o parcelamento" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="a-vista">A Vista</SelectItem>
+                            <SelectItem value="a-prazo">A Prazo</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      {parcelamento === "a-prazo" && (
+                        <div className="grid gap-2">
+                          <Label className="text-left" htmlFor="parcelas">
+                            Número de Parcelas
+                          </Label>
+                          <Input
+                            id="parcelas"
+                            type="number"
+                            placeholder="1x"
+                            value={parcelas}
+                            onChange={(e) =>
+                              setParcelas(
+                                Math.min(
+                                  12,
+                                  Math.max(1, parseInt(e.target.value, 10))
+                                )
+                              )
+                            }
+                            required
+                            min={1}
+                            max={12}
+                          />
+                        </div>
+                      )}
+                    </>
+                  )}
+
                   <div className="grid gap-2">
                     <Label className="text-left" htmlFor="data">
                       Data
                     </Label>
-                    <Popover>
+
+                    <Popover modal={false}>
                       <PopoverTrigger asChild>
                         <Button
                           variant={"outline"}
@@ -249,28 +372,37 @@ const CreateTransaction = () => {
                           )}
                         </Button>
                       </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0">
-                        <Calendar
-                          locale={ptBR}
-                          mode="single"
-                          selected={date}
-                          onSelect={(selectedDate) => {
-                            setDate(selectedDate)
-                            setDataTransacao(selectedDate)
-                          }}
-                          initialFocus
-                          required
-                        />
+                      <PopoverContent
+                        className="w-auto p-0"
+                        style={{ zIndex: 9999, pointerEvents: "auto" }}
+                      >
+                        <div style={{ pointerEvents: "auto" }}>
+                          <Calendar
+                            locale={ptBR}
+                            mode="single"
+                            selected={date}
+                            onSelect={(selectedDate) => {
+                              setDate(selectedDate)
+                              setDataTransacao(selectedDate)
+                            }}
+                            initialFocus
+                          />
+                        </div>
                       </PopoverContent>
                     </Popover>
                   </div>
+
                   <div className="grid gap-2">
                     <Label className="text-left" htmlFor="valor">
-                      Valor
+                      {parcelamento === "a-prazo" ? "Valor Total" : "Valor"}
                     </Label>
                     <Input
                       id="valor"
-                      placeholder="Exemplo: 199,90"
+                      placeholder={
+                        parcelamento === "a-prazo"
+                          ? "Exemplo: 499,90"
+                          : "Exemplo: 199,90"
+                      }
                       value={valorEditado}
                       onChange={handleValorChange}
                       required

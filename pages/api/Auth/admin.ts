@@ -1,10 +1,10 @@
 import { NextApiRequest, NextApiResponse } from "next"
-import { PrismaClient } from "@prisma/client"
+
 import bcrypt from "bcrypt"
 import jwt, { Secret } from "jsonwebtoken"
 import { serialize } from "cookie"
 
-const prisma = new PrismaClient()
+import prisma from "@/lib/prisma"
 
 const setCookies = (
   res: NextApiResponse,
@@ -15,7 +15,7 @@ const setCookies = (
   const options = {
     httpOnly: false,
     secure: process.env.NODE_ENV !== "development",
-    sameSite: "strict" as const, 
+    sameSite: "strict" as const,
     maxAge: 86400,
     path: "/",
   }

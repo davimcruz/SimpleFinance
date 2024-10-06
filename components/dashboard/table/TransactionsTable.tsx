@@ -30,7 +30,6 @@ type FonteKey =
   | "pix"
   | "boleto"
   | "investimentos"
-  | "ted-doc"
   | "cedulas"
 
 type SortKey = "nome" | "data" | "valor"
@@ -50,7 +49,12 @@ const TransactionsTable = () => {
       const response = await fetch("/api/Transactions/transactionsTable")
       const data = await response.json()
 
-      const sortedTransactions = data.table.sort(
+      const filtered = data.table.filter(
+        (transaction: Transactions) =>
+          transaction.tipo === "despesa" || transaction.tipo === "receita"
+      )
+
+      const sortedTransactions = filtered.sort(
         (a: Transactions, b: Transactions) => {
           const dateA = new Date(
             a.data.split("-").reverse().join("/")
@@ -107,8 +111,7 @@ const TransactionsTable = () => {
     pix: "PIX",
     boleto: "Boleto",
     investimentos: "Investimentos",
-    "ted-doc": "TED/DOC",
-    cedulas: "Cédulas",
+    cedulas: "Espécie",
   }
 
   const formatFonte = (fonte: string): string => {
@@ -194,9 +197,12 @@ const TransactionsTable = () => {
                       {formatFonte(transaction.fonte)}
                       <br />
                       <div className="hidden text-sm text-muted-foreground md:inline">
-                        {transaction.detalhesFonte}
+                        {transaction.fonte === "cartao-credito"
+                          ? transaction.detalhesFonte || "Cartão de Crédito"
+                          : transaction.detalhesFonte}
                       </div>
                     </TableCell>
+
                     <TableCell className="hidden lg:table-cell">
                       {transaction.data.replace(/-/g, "/")}
                     </TableCell>

@@ -5,9 +5,12 @@ export interface Transaction {
   fonte: string
   detalhesFonte: string | null
   data: string | null
-  valor: number | null 
+  valor: number | null
   dataCriacao: Date
   transactionId: string
+  cartoes?: {
+    nomeCartao: string
+  } | null
 }
 
 export interface Transactions {
@@ -17,9 +20,12 @@ export interface Transactions {
   fonte: string
   detalhesFonte: string
   data: string
-  valor: number 
+  valor: number
   dataCriacao: Date
   transactionId: string
+  cartoes?: {
+    nomeCartao: string
+  } | null
 }
 
 export interface SummaryData {

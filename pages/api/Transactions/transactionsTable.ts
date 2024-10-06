@@ -3,7 +3,7 @@ import { PrismaClient, transacoes } from "@prisma/client"
 import { parseCookies } from "nookies"
 import { verifyToken } from "../Auth/jwtAuth"
 
-const prisma = new PrismaClient()
+import prisma from "@/lib/prisma"
 
 export default async function transactionsTable(
   req: NextApiRequest,
@@ -22,16 +22,27 @@ export default async function transactionsTable(
       return res.status(400).json({ error: "ID de usuário inválido" })
     }
 
-    const transactions: transacoes[] = await prisma.transacoes.findMany({
+    const transactions = await prisma.transacoes.findMany({
       where: { userId },
+      include: {
+        cartoes: {
+          select: {
+            nomeCartao: true, 
+          },
+        },
+      },
     })
+
 
     const table = transactions.map((transaction) => ({
       transactionId: transaction.transactionId,
       nome: transaction.nome,
       tipo: transaction.tipo,
       fonte: transaction.fonte,
-      detalhesFonte: transaction.detalhesFonte || null,
+      detalhesFonte:
+        transaction.fonte === "cartao-credito"
+          ? transaction.cartoes?.nomeCartao || null
+          : transaction.detalhesFonte || null,
       data: transaction.data || null,
       valor: transaction.valor ? Number(transaction.valor) : 0,
     }))

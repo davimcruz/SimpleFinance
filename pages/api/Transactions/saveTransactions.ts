@@ -1,13 +1,35 @@
 import { NextApiRequest, NextApiResponse } from "next"
-import { PrismaClient } from "@prisma/client"
 import { v4 as uuidv4 } from "uuid"
 import { verifyToken } from "../Auth/jwtAuth"
+import Redis from "ioredis"
+import prisma from "@/lib/prisma"
 
-const prisma = new PrismaClient()
+const redisUrl = process.env.REDIS_URL
+const redisToken = process.env.REDIS_TOKEN
+
+if (!redisUrl || !redisToken) {
+  throw new Error(
+    "Variáveis de Ambiente REDIS_URL e REDIS_TOKEN não estão definidas."
+  )
+}
+
+const redis = new Redis(redisUrl, {
+  password: redisToken,
+  maxRetriesPerRequest: 5,
+  retryStrategy: (times) => {
+    const delay = Math.min(times * 100, 3000)
+    return delay
+  },
+  reconnectOnError: (err) => {
+    const targetErrors = ["READONLY", "ECONNRESET", "ETIMEDOUT"]
+    if (targetErrors.some((targetError) => err.message.includes(targetError))) {
+      return true
+    }
+    return false
+  },
+})
 
 const realocarSaldo = async (userId: number, anoAtual: number) => {
-  console.log("Iniciando realocação de saldo...")
-
   const orcamentos = await prisma.orcamento.findMany({
     where: { userId, ano: anoAtual },
     orderBy: { mes: "asc" },
@@ -24,7 +46,6 @@ const realocarSaldo = async (userId: number, anoAtual: number) => {
 
   const transacoesPorMes = transacoes.reduce((acc, transacao) => {
     const mes = parseInt(transacao.data?.split("-")[1] || "0", 10)
-
     const valor = parseFloat(
       String(transacao.valor)?.replace("R$", "").replace(",", ".").trim() || "0"
     )
@@ -64,15 +85,8 @@ const realocarSaldo = async (userId: number, anoAtual: number) => {
 
     let saldoRealocado = saldoRealocadoAnterior
 
-    if (saldoMes < 0) {
-      saldoRealocado += saldoMes
-    } else {
-      saldoRealocado += saldoMes
-    }
-
+    saldoRealocado += saldoMes
     saldoRealocadoAnterior = saldoRealocado
-
-    console.log(`Atualizando saldo realocado para o mês ${mesAtual.mes}...`)
 
     return prisma.orcamento.update({
       where: {
@@ -109,28 +123,28 @@ export default async function handler(
     return res.status(405).json({ error: "Método não permitido" })
   }
 
- const { email, nome, tipo, fonte, detalhesFonte, data, valor } = req.body
+  const { email, nome, tipo, fonte, detalhesFonte, data, valor, cardId } =
+    req.body
 
- if (
-   !email ||
-   !nome ||
-   !tipo ||
-   !fonte ||
-   !data ||
-   valor === null ||
-   valor === undefined
- ) {
-   console.log("Dados obrigatórios estão faltando:", req.body)
-   return res.status(400).json({ error: "Dados obrigatórios estão faltando" })
- }
+  if (
+    !email ||
+    !nome ||
+    !tipo ||
+    !fonte ||
+    !data ||
+    valor === null ||
+    valor === undefined
+  ) {
+    console.log("Dados obrigatórios estão faltando:", req.body)
+    return res.status(400).json({ error: "Dados obrigatórios estão faltando" })
+  }
 
- const valorFloat = parseFloat(valor)
+  const valorFloat = parseFloat(valor)
 
- if (isNaN(valorFloat)) {
-   console.log("Valor inválido:", valor)
-   return res.status(400).json({ error: "Valor inválido" })
- }
-
+  if (isNaN(valorFloat)) {
+    console.log("Valor inválido:", valor)
+    return res.status(400).json({ error: "Valor inválido" })
+  }
 
   console.log("Email recebido:", email)
 
@@ -150,29 +164,36 @@ export default async function handler(
     const extractedDate = data.split("T")[0]
     const formattedDate = extractedDate.split("-").reverse().join("-")
 
-    const valorFloat = valor
-
     console.log("Salvando transação no banco de dados...")
 
-    await Promise.all([
-      prisma.transacoes.create({
-        data: {
-          transactionId,
-          nome,
-          tipo,
-          fonte,
-          detalhesFonte: detalhesFonte || null,
-          data: formattedDate || null,
-          valor: valorFloat,
-          usuarios: {
-            connect: { id: user.id }, 
-          },
+    const createTransactionPromise = prisma.transacoes.create({
+      data: {
+        transactionId,
+        nome,
+        tipo,
+        fonte,
+        detalhesFonte: detalhesFonte || null,
+        data: formattedDate || null,
+        valor: valorFloat,
+        usuarios: {
+          connect: { id: user.id },
         },
-      }),
-      realocarSaldo(user.id, new Date().getFullYear()),
-    ])
+        cartoes: cardId ? { connect: { cardId } } : undefined,
+      },
+    })
+
+    const realocarSaldoPromise = realocarSaldo(
+      user.id,
+      new Date().getFullYear()
+    )
+
+    await Promise.all([createTransactionPromise, realocarSaldoPromise])
 
     console.log("Transação salva com sucesso.")
+
+    const cacheKey = `transactions:user:${user.id}`
+    await redis.del(cacheKey)
+
     res.status(200).json({ success: true })
   } catch (error) {
     console.error("Erro ao processar a requisição:", error)

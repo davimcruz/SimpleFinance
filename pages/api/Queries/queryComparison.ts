@@ -1,7 +1,8 @@
 import { NextApiRequest, NextApiResponse } from "next"
-import queryTransactions from "./queryTransactions"
+import { getTransactions } from "./queryTransactions"
 import { Transaction } from "@/types/types"
 import { verifyToken } from "../Auth/jwtAuth"
+import { parseCookies } from "nookies"
 
 export default async function queryComparison(
   req: NextApiRequest,
@@ -13,9 +14,19 @@ export default async function queryComparison(
       return res.status(401).json({ error: "Não autorizado" })
     }
 
-    const currentYear = new Date().getFullYear().toString()
+    const cookies = parseCookies({ req })
+    const userId = Number(cookies.userId)
 
-    const transactions = await queryTransactions(req, res)
+    if (!userId || isNaN(userId)) {
+      return res.status(400).json({ error: "ID de usuário inválido" })
+    }
+
+    const currentYear = new Date().getFullYear().toString()
+    const transactions = await getTransactions(userId)
+
+    if (!transactions) {
+      return res.status(500).json({ error: "Erro ao buscar transações" })
+    }
 
     const monthlyTransactions: Record<
       string,

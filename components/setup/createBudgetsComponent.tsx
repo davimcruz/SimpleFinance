@@ -51,7 +51,7 @@ const CreateBudgetsComponent = () => {
 
     setBudgetError(null)
     setBudgetSuccessMessage(null)
-    setIsLoading(true) // Inicia a animação de carregamento
+    setIsLoading(true) 
 
     const values = customizing
       ? monthlyValues

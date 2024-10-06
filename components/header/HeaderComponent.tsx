@@ -75,14 +75,14 @@ const Header: React.FC<HeaderProps> = ({ userImage }) => {
         >
           Orçamentos
         </Link>
-        {/* <Link
+        <Link
           href="/dashboard/cards"
           className={`${linkClassName(
             "/dashboard/cards"
           )} transition-colors hover:text-foreground`}
         >
           Cartões
-        </Link> */}
+        </Link>
       </nav>
       <Sheet>
         <SheetTrigger asChild>
@@ -128,14 +128,14 @@ const Header: React.FC<HeaderProps> = ({ userImage }) => {
             >
               Orçamentos
             </Link>
-            {/* <Link
+           <Link
               href="/dashboard/cards"
               className={`${linkClassName(
                 "/dashboard/cards"
               )} transition-colors hover:text-foreground`}
             >
               Cartões
-            </Link> */}
+            </Link> 
           </nav>
         </SheetContent>
       </Sheet>

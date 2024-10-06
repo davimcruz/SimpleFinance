@@ -1,8 +1,8 @@
 import { NextApiRequest, NextApiResponse } from "next"
-import { PrismaClient } from "@prisma/client"
+
 import { verifyToken } from "../Auth/jwtAuth"
 
-const prisma = new PrismaClient()
+import prisma from "@/lib/prisma"
 
 const getMonthName = (monthNumber: number) => {
   const monthNames = [

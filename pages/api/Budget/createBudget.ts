@@ -1,8 +1,7 @@
 import { NextApiRequest, NextApiResponse } from "next"
 import { verifyToken } from "../Auth/jwtAuth"
-import { PrismaClient } from "@prisma/client"
 
-const prisma = new PrismaClient()
+import prisma from "@/lib/prisma"
 
 export default async function handler(
   req: NextApiRequest,
@@ -55,7 +54,7 @@ export default async function handler(
       const orcamentoData = orcamentoAnualPorMes.map(
         (valor: number, index: number) => ({
           userId: userIdNumber,
-          mes: index + 1, 
+          mes: index + 1,
           valor,
           ano: anoAtual,
         })

@@ -1,8 +1,8 @@
 import { NextApiRequest, NextApiResponse } from "next"
-import { PrismaClient } from "@prisma/client"
+
 import { verifyToken } from "../Auth/jwtAuth"
 
-const prisma = new PrismaClient()
+import prisma from "@/lib/prisma"
 
 export default async function viewTransactions(
   req: NextApiRequest,
@@ -28,6 +28,10 @@ export default async function viewTransactions(
   try {
     const transaction = await prisma.transacoes.findUnique({
       where: { transactionId },
+      include: {
+        cartoes: true,
+        parcelas: true,
+      },
     })
 
     if (!transaction) {
@@ -36,7 +40,10 @@ export default async function viewTransactions(
 
     const transactionData = {
       ...transaction,
-      valor: parseFloat(transaction.valor as unknown as string), 
+      valor: parseFloat(transaction.valor as unknown as string),
+      numeroParcelas: transaction.numeroParcelas || null,
+      parcelas: transaction.parcelas.length > 0 ? transaction.parcelas : null,
+      cartao: transaction.cartoes || null,
     }
 
     res.status(200).json(transactionData)

@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from "react"
+import React, { useState, useEffect, useCallback } from "react"
 import { format } from "date-fns"
 import { cn } from "@/lib/utils"
 import { ptBR } from "date-fns/locale"
 import { useRouter } from "next/router"
-import LottieAnimation from "./fillAnimation"
+import LottieAnimation from "./loadingAnimation"
 
 import {
   Dialog,
@@ -37,20 +37,32 @@ interface TransactionsDetailsProps {
 }
 
 const TransactionsDetails = ({ transactionId }: TransactionsDetailsProps) => {
-  const [date, setDate] = React.useState<Date>()
+  const [date, setDate] = useState<Date>()
   const [valorEditado, setValorEditado] = useState<string>("")
   const [erro, setErro] = useState(false)
   const [nome, setNome] = useState("")
   const [tipoTransacao, setTipoTransacao] = useState("")
   const [fonteTransacao, setFonteTransacao] = useState("")
   const [detalhesFonte, setDetalhesFonte] = useState("")
+  const [cartaoNome, setCartaoNome] = useState("") 
   const [valorTransacao, setValorTransacao] = useState<number | null>(null)
   const [dataTransacao, setDataTransacao] = useState<Date | undefined>()
+  const [numeroParcelas, setNumeroParcelas] = useState<number | null>(null)
+  const [valorParcela, setValorParcela] = useState<number | null>(null) 
+  const [cartaoCredito, setCartaoCredito] = useState(false)
   const [submitSuccess, setSubmitSuccess] = useState(false)
   const [dialogOpen, setDialogOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
-  const [isDataLoading, setIsDataLoading] = useState(false) 
+  const [isDataLoading, setIsDataLoading] = useState(false)
   const router = useRouter()
+
+  const [originalData, setOriginalData] = useState({
+    nome: "",
+    fonteTransacao: "",
+    detalhesFonte: "",
+    valorTransacao: 0,
+    dataTransacao: null as Date | null,
+  })
 
   const formatarValor = (valor: number): string => {
     return valor
@@ -71,9 +83,8 @@ const TransactionsDetails = ({ transactionId }: TransactionsDetailsProps) => {
     setFonteTransacao("")
   }
 
-  const handleTransactionsDetails = async () => {
-    console.log("Id recebido:", transactionId)
-    setIsDataLoading(true) 
+  const handleTransactionsDetails = useCallback(async () => {
+    setIsDataLoading(true)
 
     try {
       const response = await fetch("/api/Transactions/viewTransactions", {
@@ -107,27 +118,65 @@ const TransactionsDetails = ({ transactionId }: TransactionsDetailsProps) => {
         setValorTransacao(data.valor)
         setValorEditado(formatarValor(data.valor))
 
+        if (data.cartao) {
+          setCartaoCredito(true)
+          setCartaoNome(data.cartao.nomeCartao)
+          setNumeroParcelas(data.numeroParcelas || null)
+          setValorParcela(data.valor / (data.numeroParcelas || 1))
+        } else {
+          setCartaoCredito(false)
+        }
+
+        setOriginalData({
+          nome: data.nome || "",
+          fonteTransacao: data.fonte || "",
+          detalhesFonte: data.detalhesFonte || "",
+          valorTransacao: data.valor || 0,
+          dataTransacao: formattedDate || null,
+        })
+
         setDialogOpen(true)
       }
     } catch (error) {
       console.error("Erro na requisição:", error)
     } finally {
-      setIsDataLoading(false) 
+      setIsDataLoading(false)
     }
-  }
+  }, [transactionId])
 
-  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault()
-    setIsLoading(true)
+  const handleSubmit = useCallback(
+    async (event: React.FormEvent<HTMLFormElement>) => {
+      event.preventDefault()
+      setIsLoading(true)
 
-    if (
-      nome &&
-      tipoTransacao &&
-      fonteTransacao &&
-      detalhesFonte &&
-      valorTransacao !== null &&
-      dataTransacao
-    ) {
+      const updates: { [key: string]: any } = {}
+
+      if (nome !== originalData.nome) {
+        updates.nome = nome
+      }
+
+      if (fonteTransacao !== originalData.fonteTransacao) {
+        updates.fonte = fonteTransacao
+      }
+
+      if (detalhesFonte !== originalData.detalhesFonte) {
+        updates.detalhesFonte = detalhesFonte
+      }
+
+      if (valorTransacao !== originalData.valorTransacao) {
+        updates.valor = valorTransacao
+      }
+
+      if (dataTransacao && dataTransacao !== originalData.dataTransacao) {
+        updates.data = dataTransacao
+      }
+
+      if (Object.keys(updates).length === 0) {
+        setErro(true)
+        setIsLoading(false)
+        return
+      }
+
       try {
         const response = await fetch("/api/Transactions/editTransactions", {
           method: "POST",
@@ -136,12 +185,7 @@ const TransactionsDetails = ({ transactionId }: TransactionsDetailsProps) => {
           },
           body: JSON.stringify({
             transactionId,
-            nome,
-            tipo: tipoTransacao,
-            fonte: fonteTransacao,
-            detalhesFonte,
-            valor: valorTransacao,
-            data: dataTransacao,
+            ...updates,
           }),
         })
 
@@ -156,13 +200,20 @@ const TransactionsDetails = ({ transactionId }: TransactionsDetailsProps) => {
         console.error("Erro na requisição:", error)
         setIsLoading(false)
       }
-    } else {
-      setErro(true)
-      setIsLoading(false)
-    }
-  }
+    },
+    [
+      nome,
+      fonteTransacao,
+      detalhesFonte,
+      valorTransacao,
+      dataTransacao,
+      transactionId,
+      originalData,
+      router,
+    ]
+  )
 
-  const handleDeleteTransaction = async () => {
+  const handleDeleteTransaction = useCallback(async () => {
     try {
       const response = await fetch("/api/Transactions/deleteTransactions", {
         method: "POST",
@@ -181,15 +232,7 @@ const TransactionsDetails = ({ transactionId }: TransactionsDetailsProps) => {
     } catch (error) {
       console.error("Erro ao excluir transação:", error)
     }
-  }
-
-  useEffect(() => {
-    if (submitSuccess) {
-      setTimeout(() => {
-        setSubmitSuccess(false)
-      }, 3000)
-    }
-  }, [submitSuccess])
+  }, [transactionId])
 
   return (
     <>
@@ -246,7 +289,7 @@ const TransactionsDetails = ({ transactionId }: TransactionsDetailsProps) => {
                           onValueChange={(value) =>
                             handleTipoTransacaoChange(value)
                           }
-                          required
+                          disabled
                         >
                           <SelectTrigger className="w-full text-muted-foreground focus:text-foreground">
                             <SelectValue placeholder="Receita ou Despesa"></SelectValue>
@@ -258,58 +301,86 @@ const TransactionsDetails = ({ transactionId }: TransactionsDetailsProps) => {
                         </Select>
                       </div>
                     </div>
-                    <div className="grid gap-4 mb-12 sm:grid-cols-2 sm:gap-8">
-                      <div className="grid gap-2">
-                        <Label className="text-left" htmlFor="select-fonte">
-                          Fonte da Transação
-                        </Label>
-                        <Select
-                          value={fonteTransacao}
-                          onValueChange={(value) => setFonteTransacao(value)}
-                          required
-                        >
-                          <SelectTrigger className="w-full text-muted-foreground focus:text-foreground">
-                            <SelectValue placeholder="Onde saiu ou entrou?"></SelectValue>
-                          </SelectTrigger>
-                          <SelectContent id="select-fonte">
-                            <SelectItem value="cartao-credito">
-                              Cartão de Crédito
-                            </SelectItem>
-                            <SelectItem value="cartao-debito">
-                              Cartão de Débito
-                            </SelectItem>
-                            <SelectItem value="investimentos">
-                              Investimentos
-                            </SelectItem>
-                            <SelectItem value="pix">PIX</SelectItem>
-                            <SelectItem value="boleto">Boleto</SelectItem>
-                            <SelectItem value="ted-doc">TED/DOC</SelectItem>
-                            <SelectItem value="cedulas">Cédulas</SelectItem>
-                          </SelectContent>
-                        </Select>
+
+                    {cartaoCredito && (
+                      <div className="grid gap-4 mb-12 sm:grid-cols-2 sm:gap-8">
+                        <div className="grid gap-2">
+                          <Label className="text-left">Cartão Utilizado</Label>
+                          <Input
+                            value={cartaoNome}
+                            disabled
+                            className="cursor-not-allowed"
+                          />
+                        </div>
+
+                        <div className="grid gap-2">
+                          <Label className="text-left">Parcelas</Label>
+                          <Input
+                            value={`${numeroParcelas}x de R$ ${formatarValor(
+                              valorParcela || 0
+                            )}`}
+                            disabled
+                            className="cursor-not-allowed"
+                          />
+                        </div>
                       </div>
-                      <div className="grid gap-2">
-                        <Label className="text-left" htmlFor="detalhes-fonte">
-                          Detalhes da Fonte
-                        </Label>
-                        <Input
-                          id="detalhes-fonte"
-                          placeholder="De qual Conta/Instituição"
-                          value={detalhesFonte}
-                          required
-                          onChange={(e) => setDetalhesFonte(e.target.value)}
-                        />
+                    )}
+
+                    {!cartaoCredito && (
+                      <div className="grid gap-4 mb-12 sm:grid-cols-2 sm:gap-8">
+                        <div className="grid gap-2">
+                          <Label className="text-left" htmlFor="select-fonte">
+                            Fonte da Transação
+                          </Label>
+                          <Select
+                            value={fonteTransacao}
+                            onValueChange={(value) => setFonteTransacao(value)}
+                            required
+                          >
+                            <SelectTrigger className="w-full text-muted-foreground focus:text-foreground">
+                              <SelectValue placeholder="Onde saiu ou entrou?"></SelectValue>
+                            </SelectTrigger>
+                            <SelectContent id="select-fonte">
+                              <SelectItem value="cartao-credito">
+                                Cartão de Crédito
+                              </SelectItem>
+                              <SelectItem value="cartao-debito">
+                                Cartão de Débito
+                              </SelectItem>
+                              <SelectItem value="pix">PIX</SelectItem>
+                              <SelectItem value="boleto">Boleto</SelectItem>
+                              <SelectItem value="cedulas">Espécie</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="grid gap-2">
+                          <Label className="text-left" htmlFor="detalhes-fonte">
+                            Detalhes da Fonte
+                          </Label>
+                          <Input
+                            id="detalhes-fonte"
+                            placeholder="De qual Conta/Instituição"
+                            value={detalhesFonte}
+                            required
+                            onChange={(e) => setDetalhesFonte(e.target.value)}
+                          />
+                        </div>
                       </div>
-                    </div>
+                    )}
+
                     <div className="grid gap-4 mb-12 sm:grid-cols-2 sm:gap-8">
                       <div className="grid gap-2">
                         <Label className="text-left" htmlFor="data">
                           Data da Transação
                         </Label>
                         <Popover>
-                          <PopoverTrigger asChild>
+                          <PopoverTrigger
+                            asChild
+                            className="cursor-not-allowed"
+                          >
                             <Button
                               variant={"outline"}
+                              disabled
                               className={cn(
                                 "w-full justify-start text-left font-normal",
                                 !date && "text-muted-foreground"
@@ -351,11 +422,6 @@ const TransactionsDetails = ({ transactionId }: TransactionsDetailsProps) => {
                         />
                       </div>
                     </div>
-                    {erro && (
-                      <div className="text-red-500">
-                        Por favor, preencha todos os campos!
-                      </div>
-                    )}
                     <DialogFooter className="lg:flex lg:justify-end lg:items-end flex-col gap-4">
                       <DialogClose asChild>
                         <Button variant="outline">Cancelar</Button>

@@ -1,14 +1,13 @@
 import { NextApiRequest, NextApiResponse } from "next"
-import { PrismaClient } from "@prisma/client"
+
 import { verifyToken } from "@/pages/api/Auth/jwtAuth"
 
-const prisma = new PrismaClient()
+import prisma from "@/lib/prisma"
 
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
-
   if (req.method !== "GET") {
     return res.status(405).json({ message: "Método não permitido" })
   }
@@ -40,13 +39,13 @@ export default async function handler(
           ano: currentYear,
           status: { in: ["excedente", "deficit", "futuro", "padrao"] },
         },
-        select: { mes: true, valor: true }, 
+        select: { mes: true, valor: true },
         orderBy: { mes: "asc" },
       }),
       prisma.transacoes.findMany({
         where: {
           userId: userIdNumber,
-          tipo: "despesa", 
+          tipo: "despesa",
           data: { contains: `-${currentYear}` },
         },
         select: { valor: true, data: true },

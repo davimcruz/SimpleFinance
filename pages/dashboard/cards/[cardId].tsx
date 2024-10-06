@@ -1,23 +1,30 @@
+import React from "react"
+import { useRouter } from "next/router"
 import { GetServerSideProps } from "next"
 import { Inter } from "next/font/google"
-import "../../app/globals.css"
+import "../../../app/globals.css"
 
 import { ThemeProvider } from "@/components/theme/theme-provider"
-
 import Header from "@/components/header/HeaderComponent"
-import BudgetTables from "@/components/budgets/BudgetTables"
-
 import { getServerSidePropsDashboard } from "@/utils/getServerSideProps"
 import Head from "next/head"
-import CardsManager from "@/components/cards/CardsManager"
+import BillsTable from "@/components/cards/cardsTable.tsx/Bills/BillsTable"
 
 const inter = Inter({ subsets: ["latin"] })
 
-const Cards = ({
+const CardDetailsPage = ({
   user,
 }: {
   user?: { nome: string; sobrenome: string; image?: string }
 }) => {
+  const router = useRouter()
+  const { cardId } = router.query 
+
+
+  if (!cardId) {
+    return <div>Carregando...</div>
+  }
+
   return (
     <ThemeProvider defaultTheme="dark" attribute="class">
       <Head>
@@ -28,7 +35,9 @@ const Cards = ({
       </Head>
       <div className={`${inter.className} flex min-h-screen w-full flex-col`}>
         <Header userImage={user?.image} />
-        <CardsManager/>
+        <div className="p-6">
+          <BillsTable cardId={cardId as string} />
+        </div>
       </div>
     </ThemeProvider>
   )
@@ -37,4 +46,4 @@ const Cards = ({
 export const getServerSideProps: GetServerSideProps =
   getServerSidePropsDashboard
 
-export default Cards
+export default CardDetailsPage

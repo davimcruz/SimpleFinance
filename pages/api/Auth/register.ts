@@ -1,10 +1,10 @@
 import type { NextApiRequest, NextApiResponse } from "next"
-import { PrismaClient } from "@prisma/client"
+
 import bcrypt from "bcrypt"
 import jwt, { Secret } from "jsonwebtoken"
 import { serialize } from "cookie"
 
-const prisma = new PrismaClient()
+import prisma from "@/lib/prisma"
 
 const isValidEmail = (email: string): boolean => {
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/

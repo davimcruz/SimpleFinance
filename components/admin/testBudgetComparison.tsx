@@ -7,8 +7,8 @@ import { parseCookies } from "nookies"
 
 const TestBudgetComparison = () => {
   const [userId, setUserId] = useState<number | null>(null)
-  const [year, setYear] = useState<number>(new Date().getFullYear()) // Ano atual por padrão
-  const [budgetData, setBudgetData] = useState<any[]>([]) // Para armazenar a resposta da API
+  const [year, setYear] = useState<number>(new Date().getFullYear()) 
+  const [budgetData, setBudgetData] = useState<any[]>([]) 
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
