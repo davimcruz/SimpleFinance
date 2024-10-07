@@ -35,6 +35,7 @@ import formatadorValor from "@/utils/valueFormatter"
 import LottieAnimation from "../ui/loadingAnimation"
 
 import { z } from "zod"
+import { Separator } from "@/components/ui/separator"
 
 const transactionSchema = z
   .object({
@@ -58,18 +59,8 @@ const transactionSchema = z
       }
     ),
     valor: z
-      .string()
-      .min(1, { message: "Valor é obrigatório" })
-      .refine(
-        (val) => {
-          const valorValidado = val.replace(/[^0-9,]/g, "")
-          const valorSemPontos = valorValidado.replace(/\./g, "")
-          const valorComPonto = valorSemPontos.replace(",", ".")
-          const valorFloat = parseFloat(valorComPonto)
-          return !isNaN(valorFloat) && valorFloat > 0
-        },
-        { message: "Valor deve ser um número positivo" }
-      ),
+      .number({ invalid_type_error: "Valor deve ser um número" })
+      .positive({ message: "Valor deve ser um número positivo" }),
     cardId: z
       .string()
       .uuid({ message: "Card ID deve ser um UUID válido" })
@@ -180,7 +171,7 @@ const CreateTransaction = () => {
       fonteTransacao,
       detalhesFonte,
       dataTransacao,
-      valor: valorEditado,
+      valor: converterValorParaFloat(valorEditado),
       cardId: selectedCardId || undefined,
       parcelas: parcelas,
       parcelamento: parcelamento as "a-vista" | "a-prazo",
@@ -354,6 +345,7 @@ const CreateTransaction = () => {
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="receita">Receita</SelectItem>
+                      <Separator className="w-full" />
                       <SelectItem value="despesa">Despesa</SelectItem>
                     </SelectContent>
                   </Select>
@@ -383,13 +375,17 @@ const CreateTransaction = () => {
                           <SelectItem value="cartao-credito">
                             Cartão de Crédito
                           </SelectItem>
+                          <Separator className="w-full" />
                           <SelectItem value="cartao-debito">
                             Cartão de Débito
                           </SelectItem>
+                          <Separator className="w-full" />
                         </>
                       )}
                       <SelectItem value="pix">PIX</SelectItem>
+                      <Separator className="w-full" />
                       <SelectItem value="boleto">Boleto</SelectItem>
+                      <Separator className="w-full" />
                       <SelectItem value="cedulas">Espécie</SelectItem>
                     </SelectContent>
                   </Select>
@@ -442,9 +438,14 @@ const CreateTransaction = () => {
                                 card.tipoCartao === fonteTransacao.split("-")[1]
                             )
                             .map((card) => (
-                              <SelectItem key={card.cardId} value={card.cardId}>
-                                {card.nomeCartao} ({card.bandeira})
-                              </SelectItem>
+                              <>
+                                <SelectItem
+                                  key={card.cardId}
+                                  value={card.cardId}
+                                >
+                                  {card.nomeCartao} ({card.bandeira})
+                                </SelectItem>
+                              </>
                             ))}
                         </SelectContent>
                       </Select>
@@ -472,6 +473,7 @@ const CreateTransaction = () => {
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="a-vista">À Vista</SelectItem>
+                          <Separator className="w-full" />
                           <SelectItem value="a-prazo">À Prazo</SelectItem>
                         </SelectContent>
                       </Select>

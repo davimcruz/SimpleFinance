@@ -35,6 +35,7 @@ import formatadorValor from "@/utils/valueFormatter"
 import LottieAnimation from "../../ui/loadingAnimation"
 
 import { z } from "zod"
+import { Separator } from "@/components/ui/separator"
 
 const transactionSchema = z
   .object({
@@ -345,6 +346,7 @@ const CreateTransaction = () => {
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="receita">Receita</SelectItem>
+                      <Separator className="w-full" />
                       <SelectItem value="despesa">Despesa</SelectItem>
                     </SelectContent>
                   </Select>
@@ -374,13 +376,17 @@ const CreateTransaction = () => {
                           <SelectItem value="cartao-credito">
                             Cartão de Crédito
                           </SelectItem>
+                          <Separator className="w-full" />
                           <SelectItem value="cartao-debito">
                             Cartão de Débito
                           </SelectItem>
+                          <Separator className="w-full" />
                         </>
                       )}
                       <SelectItem value="pix">PIX</SelectItem>
+                      <Separator className="w-full" />
                       <SelectItem value="boleto">Boleto</SelectItem>
+                      <Separator className="w-full" />
                       <SelectItem value="cedulas">Espécie</SelectItem>
                     </SelectContent>
                   </Select>
@@ -433,9 +439,15 @@ const CreateTransaction = () => {
                                 card.tipoCartao === fonteTransacao.split("-")[1]
                             )
                             .map((card) => (
-                              <SelectItem key={card.cardId} value={card.cardId}>
-                                {card.nomeCartao} ({card.bandeira})
-                              </SelectItem>
+                              <>
+                                <SelectItem
+                                  key={card.cardId}
+                                  value={card.cardId}
+                                >
+                                  {card.nomeCartao} ({card.bandeira})
+                                </SelectItem>
+                                
+                              </>
                             ))}
                         </SelectContent>
                       </Select>
@@ -463,6 +475,7 @@ const CreateTransaction = () => {
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="a-vista">À Vista</SelectItem>
+                          <Separator className="w-full"/>
                           <SelectItem value="a-prazo">À Prazo</SelectItem>
                         </SelectContent>
                       </Select>
