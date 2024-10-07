@@ -39,10 +39,12 @@ export default function LoginPage() {
   })
 
   const onSubmit = async (data: LoginInput) => {
+    console.log("Formulário submetido com dados:", data)
     setLoading(true)
     setError(null)
 
     try {
+      console.log("Enviando requisição de login para /api/auth/login")
       const response = await fetch("/api/auth/login", {
         method: "POST",
         headers: {
@@ -51,17 +53,25 @@ export default function LoginPage() {
         body: JSON.stringify(data),
       })
 
+      console.log("Resposta recebida da API:", response)
+
       const result = await response.json()
+      console.log("Dados da resposta JSON:", result)
 
       if (response.ok) {
+        console.log("Login bem-sucedido, redirecionando para /dashboard")
         router.push("/dashboard")
       } else {
+        console.warn("Erro no login:", result.error || "Credenciais inválidas.")
         setError(result.error || "Credenciais inválidas.")
       }
     } catch (err) {
       console.error("Erro na requisição:", err)
       setError("Erro ao tentar fazer login.")
     } finally {
+      console.log(
+        "Finalizando processo de login, atualizando estado de loading para false"
+      )
       setLoading(false)
     }
   }

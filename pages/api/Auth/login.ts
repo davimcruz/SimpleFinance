@@ -11,7 +11,7 @@ interface LoginResponse {
 }
 
 const COOKIE_OPTIONS = {
-  secure: process.env.NODE_ENV !== "development",
+  secure: process.env.NODE_ENV !== "development", 
   sameSite: "strict" as const,
   maxAge: 86400, 
   path: "/",
@@ -25,7 +25,7 @@ const setCookies = (
 ) => {
   const cookieToken = serialize("token", token, {
     ...COOKIE_OPTIONS,
-    httpOnly: true,
+    httpOnly: true, 
   })
   const cookieEmail = serialize("email", email, COOKIE_OPTIONS)
   const cookieUserId = serialize("userId", userId.toString(), COOKIE_OPTIONS)
@@ -39,6 +39,7 @@ export default async function handler(
 ) {
   if (req.method !== "POST") {
     res.setHeader("Allow", ["POST"])
+    console.warn(`Método ${req.method} não permitido para /api/auth/login`)
     return res
       .status(405)
       .json({ error: "Método não permitido. Utilize POST." })
@@ -49,6 +50,7 @@ export default async function handler(
   if (!parseResult.success) {
     const { errors } = parseResult.error
     const errorMessages = errors.map((err) => err.message).join(", ")
+    console.warn(`Validação falhou: ${errorMessages}`)
     return res.status(400).json({ error: errorMessages })
   }
 
@@ -61,11 +63,13 @@ export default async function handler(
     })
 
     if (!user) {
+      console.warn(`Usuário não encontrado: ${email}`)
       return res.status(401).json({ error: "Email não registrado." })
     }
 
     const isPasswordValid = await bcrypt.compare(password, user.senha)
     if (!isPasswordValid) {
+      console.warn(`Senha incorreta para usuário: ${email}`)
       return res.status(401).json({ error: "Senha incorreta." })
     }
 
@@ -83,6 +87,7 @@ export default async function handler(
 
     setCookies(res, token, user.email, user.id)
 
+    console.log(`Usuário autenticado: ${email}`)
     return res.status(200).json({ message: "Login bem-sucedido." })
   } catch (error) {
     console.error("Erro ao processar a requisição:", error)
