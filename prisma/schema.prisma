@@ -7,41 +7,6 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model orcamento {
-  userId         Int
-  mes            Int
-  valor          Float
-  ano            Int
-  saldoRealocado Float?
-  status         String?
-
-  @@id([userId, mes, ano])
-  @@index([userId], map: "userId")
-}
-
-model transacoes {
-  userId             Int
-  nome               String    @db.VarChar(40)
-  tipo               String    @db.VarChar(40)
-  fonte              String    @db.VarChar(40)
-  detalhesFonte      String?   @db.VarChar(255)
-  data               String?   @db.VarChar(10)
-  valor              Float
-  dataCriacao        DateTime  @default(now()) @db.Timestamp(0)
-  transactionId      String    @id @default(uuid()) @db.Char(36)
-  cardId             String?   @db.Char(36)
-  numeroParcelas     Int?     
-  grupoParcelamentoId String?  @db.Char(36) 
-  parcelas           parcelas[]
-  usuarios           usuarios  @relation(fields: [userId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "transacoes_ibfk_1")
-  cartoes            cartoes?  @relation(fields: [cardId], references: [cardId], onDelete: SetNull)
-
-  @@index([userId], map: "userId")
-  @@index([cardId], map: "cardId")
-}
-
-
-
 model usuarios {
   id         Int          @id @default(autoincrement())
   email      String       @unique(map: "email") @db.VarChar(255)
@@ -54,6 +19,39 @@ model usuarios {
   cartoes    cartoes[]
 }
 
+model transacoes {
+  userId              Int
+  nome                String     @db.VarChar(40)
+  tipo                String     @db.VarChar(40)
+  fonte               String     @db.VarChar(40)
+  detalhesFonte       String?    @db.VarChar(255)
+  data                String?    @db.VarChar(10)
+  valor               Float
+  dataCriacao         DateTime   @default(now()) @db.Timestamp(0)
+  transactionId       String     @id @default(uuid()) @db.Char(36)
+  cardId              String?    @db.Char(36)
+  numeroParcelas      Int?
+  grupoParcelamentoId String?    @db.Char(36)
+  parcelas            parcelas[]
+  usuarios            usuarios   @relation(fields: [userId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "transacoes_ibfk_1")
+  cartoes             cartoes?   @relation(fields: [cardId], references: [cardId], onDelete: SetNull)
+
+  @@index([userId], map: "userId")
+  @@index([cardId], map: "cardId")
+}
+
+model orcamento {
+  userId         Int
+  mes            Int
+  valor          Float
+  ano            Int
+  saldoRealocado Float?
+  status         String?
+
+  @@id([userId, mes, ano])
+  @@index([userId], map: "userId")
+}
+
 model cartoes {
   cardId      String       @id @default(uuid()) @db.Char(36)
   userId      Int
@@ -63,41 +61,40 @@ model cartoes {
   tipoCartao  String       @db.VarChar(10)
   vencimento  Int?
   limite      Float?
-  parcelas    parcelas[]   
-  faturas     faturas[]   
+  parcelas    parcelas[]
+  faturas     faturas[]
   usuarios    usuarios     @relation(fields: [userId], references: [id], onDelete: Cascade)
   transacoes  transacoes[]
 
   @@index([userId], map: "userId")
 }
 
-model parcelas {
-  parcelaId     String    @id @default(uuid()) @db.Char(36)
-  transacaoId   String    @db.Char(36)
-  cardId        String    @db.Char(36)
-  faturaId      String?  
-  valorParcela  Float
-  mes           Int
-  ano           Int
-  pago          Boolean   @default(false)
-
-  transacao     transacoes  @relation(fields: [transacaoId], references: [transactionId])
-  cartoes       cartoes     @relation(fields: [cardId], references: [cardId])
-  faturas       faturas?    @relation(fields: [faturaId], references: [faturaId])
-}
-
 model faturas {
-  faturaId   String    @id @default(uuid()) @db.Char(36)
-  cardId     String    @db.Char(36) 
-  mes        Int      
-  ano        Int     
-  valorTotal Float    
-  vencimento DateTime  
-  pago       Boolean   @default(false)       
+  faturaId   String   @id @default(uuid()) @db.Char(36)
+  cardId     String   @db.Char(36)
+  mes        Int
+  ano        Int
+  valorTotal Float
+  vencimento DateTime
+  pago       Boolean  @default(false)
 
-  parcelas   parcelas[] 
-  cartoes    cartoes   @relation(fields: [cardId], references: [cardId])
+  parcelas parcelas[]
+  cartoes  cartoes    @relation(fields: [cardId], references: [cardId])
 
-  @@unique([cardId, mes, ano]) 
+  @@unique([cardId, mes, ano])
 }
 
+model parcelas {
+  parcelaId    String  @id @default(uuid()) @db.Char(36)
+  transacaoId  String  @db.Char(36)
+  cardId       String  @db.Char(36)
+  faturaId     String?
+  valorParcela Float
+  mes          Int
+  ano          Int
+  pago         Boolean @default(false)
+
+  transacao transacoes @relation(fields: [transacaoId], references: [transactionId])
+  cartoes   cartoes    @relation(fields: [cardId], references: [cardId])
+  faturas   faturas?   @relation(fields: [faturaId], references: [faturaId])
+}
