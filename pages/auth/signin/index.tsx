@@ -1,6 +1,7 @@
 import { Inter } from "next/font/google"
 import { useState } from "react"
 import { useRouter } from "next/router"
+import Link from "next/link" 
 import {
   Card,
   CardContent,
@@ -135,12 +136,12 @@ export default function LoginPage() {
           </CardContent>
           <CardFooter className="text-center justify-center mt-auto py-4">
             <div className="text-center justify-center mt-auto">
-              <a
+              <Link
                 href="/auth/signup"
                 className="text-center text-sm mb-2 hover:text-sky-400 text-slate-500 transition duration-300"
               >
                 Não possuo uma conta
-              </a>
+              </Link>
             </div>
           </CardFooter>
         </Card>
