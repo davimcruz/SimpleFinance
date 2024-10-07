@@ -4,11 +4,11 @@ export const loginSchema = z.object({
   email: z
     .string()
     .email({ message: "Formato de email inválido." })
-    .max(255, { message: "O email excede o tamanho máximo permitido." }),
+    .max(100, { message: "O email excede o tamanho máximo permitido." }),
   password: z
     .string()
     .min(6, { message: "A senha deve ter pelo menos 6 caracteres." })
-    .max(255, { message: "A senha excede o tamanho máximo permitido." }),
+    .max(100, { message: "A senha excede o tamanho máximo permitido." }),
 })
 
 export type LoginInput = z.infer<typeof loginSchema>
@@ -25,11 +25,11 @@ export const registerSchema = z.object({
   email: z
     .string()
     .email({ message: "Formato de email inválido." })
-    .max(255, { message: "O email excede o tamanho máximo permitido." }),
+    .max(100, { message: "O email excede o tamanho máximo permitido." }),
   password: z
     .string()
     .min(8, { message: "A senha deve ter pelo menos 8 caracteres." })
-    .max(255, { message: "A senha excede o tamanho máximo permitido." }),
+    .max(100, { message: "A senha excede o tamanho máximo permitido." }),
 })
 
 export type RegisterInput = z.infer<typeof registerSchema>
