@@ -10,6 +10,8 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Separator } from "@/components/ui/separator"
 import { useRouter } from "next/router"
+import { monthNames } from "@/utils/monthNames"
+
 
 interface BillType {
   faturaId: string
@@ -18,21 +20,6 @@ interface BillType {
   valorTotal: number
   vencimento: string
 }
-
-const monthNames = [
-  "Janeiro",
-  "Fevereiro",
-  "Março",
-  "Abril",
-  "Maio",
-  "Junho",
-  "Julho",
-  "Agosto",
-  "Setembro",
-  "Outubro",
-  "Novembro",
-  "Dezembro",
-]
 
 export const columns = (
   handleBillClick: (faturaId: string) => void

@@ -7,21 +7,7 @@ import { Input } from "../ui/input"
 import { Button } from "../ui/button"
 import { parseCookies } from "nookies"
 import LottieAnimation from "../ui/loadingAnimation"
-
-const monthNames = [
-  "Janeiro",
-  "Fevereiro",
-  "Março",
-  "Abril",
-  "Maio",
-  "Junho",
-  "Julho",
-  "Agosto",
-  "Setembro",
-  "Outubro",
-  "Novembro",
-  "Dezembro",
-]
+import { monthNames } from "@/utils/monthNames"
 
 const CreateBudgetsComponent = () => {
   const [monthlyValue, setMonthlyValue] = useState("")

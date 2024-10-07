@@ -4,21 +4,9 @@ import { verifyToken } from "../middleware/jwt-auth"
 
 import prisma from "@/lib/prisma"
 
+import { monthNames } from "@/utils/monthNames"
+
 const getMonthName = (monthNumber: number) => {
-  const monthNames = [
-    "Janeiro",
-    "Fevereiro",
-    "Março",
-    "Abril",
-    "Maio",
-    "Junho",
-    "Julho",
-    "Agosto",
-    "Setembro",
-    "Outubro",
-    "Novembro",
-    "Dezembro",
-  ]
   return monthNames[monthNumber - 1]
 }
 
