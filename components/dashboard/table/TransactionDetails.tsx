@@ -44,11 +44,11 @@ const TransactionsDetails = ({ transactionId }: TransactionsDetailsProps) => {
   const [tipoTransacao, setTipoTransacao] = useState("")
   const [fonteTransacao, setFonteTransacao] = useState("")
   const [detalhesFonte, setDetalhesFonte] = useState("")
-  const [cartaoNome, setCartaoNome] = useState("") 
+  const [cartaoNome, setCartaoNome] = useState("")
   const [valorTransacao, setValorTransacao] = useState<number | null>(null)
   const [dataTransacao, setDataTransacao] = useState<Date | undefined>()
   const [numeroParcelas, setNumeroParcelas] = useState<number | null>(null)
-  const [valorParcela, setValorParcela] = useState<number | null>(null) 
+  const [valorParcela, setValorParcela] = useState<number | null>(null)
   const [cartaoCredito, setCartaoCredito] = useState(false)
   const [submitSuccess, setSubmitSuccess] = useState(false)
   const [dialogOpen, setDialogOpen] = useState(false)
@@ -87,7 +87,7 @@ const TransactionsDetails = ({ transactionId }: TransactionsDetailsProps) => {
     setIsDataLoading(true)
 
     try {
-      const response = await fetch("/api/Transactions/viewTransactions", {
+      const response = await fetch("/api/transactions/view-transactions", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -178,7 +178,7 @@ const TransactionsDetails = ({ transactionId }: TransactionsDetailsProps) => {
       }
 
       try {
-        const response = await fetch("/api/Transactions/editTransactions", {
+        const response = await fetch("/api/transactions/edit-transactions", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -215,7 +215,7 @@ const TransactionsDetails = ({ transactionId }: TransactionsDetailsProps) => {
 
   const handleDeleteTransaction = useCallback(async () => {
     try {
-      const response = await fetch("/api/Transactions/deleteTransactions", {
+      const response = await fetch("/api/transactions/delete-transactions", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

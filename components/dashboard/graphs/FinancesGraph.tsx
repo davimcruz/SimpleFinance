@@ -16,7 +16,7 @@ const FinancesGraph = () => {
 
   useEffect(() => {
     const fetchTransactions = async () => {
-      const response = await fetch("/api/Queries/queryTransactions")
+      const response = await fetch("/api/transactions/get-transactions")
       const data = await response.json()
       setTransactionsExist(data && data.length > 0)
       setLoading(false)

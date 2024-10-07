@@ -56,7 +56,7 @@ const CreateTransaction = () => {
   const [cards, setCards] = useState<CardType[]>([])
   const [selectedCardId, setSelectedCardId] = useState<string | null>(null)
   const [isCardSelectVisible, setIsCardSelectVisible] = useState(false)
-  const [parcelas, setParcelas] = useState<number>(1) 
+  const [parcelas, setParcelas] = useState<number>(1)
   const [parcelamento, setParcelamento] = useState<string>("a-vista")
 
   const cookies = parseCookies()
@@ -85,9 +85,9 @@ const CreateTransaction = () => {
     setTipoTransacao("")
     setFonteTransacao("")
     setSelectedCardId(null)
-    setIsCardSelectVisible(false) 
-    setParcelas(1) 
-    setParcelamento("a-vista") 
+    setIsCardSelectVisible(false)
+    setParcelas(1)
+    setParcelamento("a-vista")
   }
 
   const handleValorChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -101,7 +101,7 @@ const CreateTransaction = () => {
     setTipoTransacao(value)
     setFonteTransacao("")
     setIsCardSelectVisible(false)
-    setParcelas(1) 
+    setParcelas(1)
   }
 
   const handleFonteTransacaoChange = (value: string) => {
@@ -110,7 +110,7 @@ const CreateTransaction = () => {
       setIsCardSelectVisible(true)
     } else {
       setIsCardSelectVisible(false)
-      setParcelamento("a-vista") 
+      setParcelamento("a-vista")
     }
   }
 
@@ -162,7 +162,7 @@ const CreateTransaction = () => {
       const apiUrl =
         fonteTransacao === "cartao-credito" && parcelamento === "a-prazo"
           ? "/api/Cards/CreditCard/createParcelTransaction"
-          : "/api/Transactions/saveTransactions"
+          : "/api/transactions/save-transactions"
 
       const response = await fetch(apiUrl, {
         method: "POST",

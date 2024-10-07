@@ -12,7 +12,7 @@ export const formatCurrency = (value: number): string => {
 export const fetchSummaryData = async () => {
   try {
     const response = await fetch(
-      `${process.env.NEXT_PUBLIC_BASE_URL}/api/Transactions/transactionsSummary`
+      `${process.env.NEXT_PUBLIC_BASE_URL}/api/transactions/transactions-summary`
     )
 
     if (!response.ok) {
@@ -28,7 +28,7 @@ export const fetchSummaryData = async () => {
       ),
       totalIncomeThisMonth: formatCurrency(data.totalIncomeThisMonth ?? 0),
       totalExpenseThisMonth: formatCurrency(data.totalExpenseThisMonth ?? 0),
-      balanceThisMonth: formatCurrency(data.balanceThisMonth ?? 0), 
+      balanceThisMonth: formatCurrency(data.balanceThisMonth ?? 0),
       balanceDifference:
         data.balanceDifferenceString === "+Infinity%" ||
         data.balanceDifferenceString === "NaN%" ||
@@ -53,7 +53,7 @@ export const fetchSummaryData = async () => {
     return {
       totalIncomeThisMonth: formatCurrency(0),
       totalExpenseThisMonth: formatCurrency(0),
-      balanceThisMonth: formatCurrency(0), 
+      balanceThisMonth: formatCurrency(0),
       balanceDifference: "0%",
       incomeDifference: "0%",
       expenseDifference: "0%",

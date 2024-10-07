@@ -162,7 +162,7 @@ const CreateTransaction = () => {
       const apiUrl =
         fonteTransacao === "cartao-credito" && parcelamento === "a-prazo"
           ? "/api/Cards/CreditCard/createParcelTransaction"
-          : "/api/Transactions/saveTransactions"
+          : "/api/transactions/save-transactions"
 
       const response = await fetch(apiUrl, {
         method: "POST",

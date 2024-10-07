@@ -46,7 +46,7 @@ const TransactionsTable = () => {
   useEffect(() => {
     const fetchTransactions = async () => {
       setLoading(true)
-      const response = await fetch("/api/Transactions/transactionsTable")
+      const response = await fetch("/api/transactions/transactions-table")
       const data = await response.json()
 
       const filtered = data.table.filter(
