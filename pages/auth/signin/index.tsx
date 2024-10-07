@@ -45,7 +45,7 @@ export default function LoginPage() {
 
     try {
       console.log("Enviando requisição de login para /api/auth/login")
-      const response = await fetch("/api/auth/login", {
+      const response = await fetch("https://simplefinance.cloud/api/auth/login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

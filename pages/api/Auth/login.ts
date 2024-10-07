@@ -1,3 +1,4 @@
+// pages/api/auth/login.ts
 import type { NextApiRequest, NextApiResponse } from "next"
 import bcrypt from "bcrypt"
 import jwt from "jsonwebtoken"
@@ -13,7 +14,7 @@ interface LoginResponse {
 const COOKIE_OPTIONS = {
   secure: process.env.NODE_ENV !== "development",
   sameSite: "strict" as const,
-  maxAge: 86400, 
+  maxAge: 86400, // 1 dia
   path: "/",
 }
 
