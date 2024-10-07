@@ -35,7 +35,7 @@ const ManageUsersComponent = () => {
       for (const id of formattedIds) {
         const responseUser = await fetch(`/api/users/get-userid?id=${id}`)
         const responseBudget = await fetch(
-          `/api/Queries/queryCurrentBudget?userId=${id}`
+          `/api/budget/get-budget?userId=${id}`
         )
 
         if (!responseUser.ok) {

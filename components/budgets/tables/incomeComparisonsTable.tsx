@@ -90,7 +90,7 @@ const IncomeComparisonTable = () => {
 
       try {
         const response = await fetch(
-          `/api/Budget/Comparisons/Anual/budgetIncome?userId=${userId}`
+          `/api/budget/comparisons/annual/get-income?userId=${userId}`
         )
         if (!response.ok) {
           throw new Error("Erro ao buscar dados")

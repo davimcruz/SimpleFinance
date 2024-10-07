@@ -67,7 +67,7 @@ const CreateBudgetsComponent = () => {
     try {
       const orderedValues = [...values]
 
-      const response = await fetch("/api/Budget/createBudget", {
+      const response = await fetch("/api/budget/create-budget", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

@@ -96,7 +96,7 @@ const BalanceComparisonTable = () => {
 
       try {
         const response = await fetch(
-          `/api/Budget/Comparisons/Anual/budgetBalance?userId=${userId}`
+          `/api/budget/comparisons/annual/get-balance?userId=${userId}`
         )
         if (!response.ok) {
           throw new Error("Erro ao buscar dados")

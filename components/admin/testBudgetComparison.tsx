@@ -28,7 +28,7 @@ const TestBudgetComparison = () => {
 
     try {
       const response = await fetch(
-        `/api/Budget/Comparisons/Anual/budgetBalance?userId=${userId}`,
+        `/api/budget/comparisons/annual/get-balance?userId=${userId}`,
         { method: "GET" }
       )
       if (!response.ok) {
