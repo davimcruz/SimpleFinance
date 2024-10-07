@@ -33,7 +33,7 @@ const ManageUsersComponent = () => {
       const users = []
 
       for (const id of formattedIds) {
-        const responseUser = await fetch(`/api/Queries/queryId?id=${id}`)
+        const responseUser = await fetch(`/api/users/get-userid?id=${id}`)
         const responseBudget = await fetch(
           `/api/Queries/queryCurrentBudget?userId=${id}`
         )
@@ -83,7 +83,7 @@ const ManageUsersComponent = () => {
     }
 
     try {
-      const response = await fetch("/api/Users/deleteUsers", {
+      const response = await fetch("/api/users/delete-users", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -123,7 +123,7 @@ const ManageUsersComponent = () => {
     }
 
     try {
-      const response = await fetch("/api/Users/deleteUsersTransactions", {
+      const response = await fetch("/api/users/delete-transactions", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -161,7 +161,7 @@ const ManageUsersComponent = () => {
     }
 
     try {
-      const response = await fetch("/api/Users/deleteUsersBudgets", {
+      const response = await fetch("/api/users/delete-budgets", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

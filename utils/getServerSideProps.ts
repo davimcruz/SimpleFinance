@@ -29,7 +29,7 @@ export const getServerSidePropsDashboard = async (
 
   try {
     const response = await fetch(
-      `${process.env.NEXT_PUBLIC_BASE_URL}/api/Queries/query?userId=${userIdCookie}`
+      `${process.env.NEXT_PUBLIC_BASE_URL}/api/users/get-user?userId=${userIdCookie}`
     )
     const userData = await response.json()
 

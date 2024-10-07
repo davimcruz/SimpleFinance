@@ -63,7 +63,7 @@ export default async function handler(
       return res.status(404).json({ error: "Usuário não encontrado" })
     }
 
-    await redis.set(cacheKey, JSON.stringify(user), "EX", 60 * 60) 
+    await redis.set(cacheKey, JSON.stringify(user), "EX", 60 * 60)
     return res.status(200).json(user)
   } catch (error) {
     console.error("Erro ao processar a requisição:", error)
