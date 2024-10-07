@@ -2,8 +2,8 @@ import type { NextApiRequest, NextApiResponse } from "next"
 import bcrypt from "bcrypt"
 import jwt from "jsonwebtoken"
 import { serialize } from "cookie"
-import { registerSchema, RegisterInput } from "@lib/validation"
-import prisma from "@lib/prisma"
+import { registerSchema, RegisterInput } from "@/lib/validation"
+import prisma from "@/lib/prisma"
 
 interface RegisterResponse {
   message?: string

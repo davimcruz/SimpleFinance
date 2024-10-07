@@ -21,7 +21,7 @@ import Head from "next/head"
 
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { registerSchema, RegisterInput } from "@lib/validation"
+import { registerSchema, RegisterInput } from "@/lib/validation"
 
 const inter = Inter({ subsets: ["latin"] })
 

@@ -2,7 +2,7 @@ import type { NextApiRequest, NextApiResponse } from "next"
 import bcrypt from "bcrypt"
 import jwt from "jsonwebtoken"
 import { serialize } from "cookie"
-import { loginSchema } from "@lib/validation"
+import { loginSchema } from "@/lib/validation"
 import prisma from "@/lib/prisma"
 
 interface LoginResponse {
