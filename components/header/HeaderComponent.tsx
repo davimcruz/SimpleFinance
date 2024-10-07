@@ -14,7 +14,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
-import ProgressBar from "./ProgressBar"
 
 interface HeaderProps {
   userImage?: string
@@ -142,7 +141,6 @@ const Header: React.FC<HeaderProps> = ({ userImage }) => {
 
       <div className="flex w-full items-center gap-4 md:ml-auto md:gap-2 lg:gap-4">
         <div className="ml-auto flex-1 sm:flex-initial">
-          {/* <ProgressBar /> DESATIVADO TEMPORARIAMENTE*/}
         </div>
         <ModeToggle />
         <DropdownMenu>
