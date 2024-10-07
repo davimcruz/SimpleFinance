@@ -40,7 +40,9 @@ const TransactionsFull = () => {
   useEffect(() => {
     const fetchTransactions = async () => {
       setLoading(true)
-      const response = await fetch("/api/transactions/transactions-table")
+      const response = await fetch(
+        "/api/transactions/api/transactions/get-table"
+      )
       const data = await response.json()
 
       const sortedTransactions = data.table.sort(

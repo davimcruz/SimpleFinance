@@ -12,7 +12,7 @@ export const formatCurrency = (value: number): string => {
 export const fetchSummaryData = async () => {
   try {
     const response = await fetch(
-      `${process.env.NEXT_PUBLIC_BASE_URL}/api/transactions/transactions-summary`
+      `${process.env.NEXT_PUBLIC_BASE_URL}/api/transactions/get-summary`
     )
 
     if (!response.ok) {
