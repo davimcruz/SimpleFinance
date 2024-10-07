@@ -45,8 +45,6 @@ const Summary: React.FC<SummaryProps> = ({ initialData }) => {
         return
       }
 
-      console.log("Iniciando busca de dados para resumo e orçamento...")
-
       const [summaryResponse, budgetResponse] = await Promise.all([
         fetchSummaryData(),
         fetch(`/api/budget/get-budget?userId=${userId}`),
@@ -54,9 +52,6 @@ const Summary: React.FC<SummaryProps> = ({ initialData }) => {
 
       const summaryData = await summaryResponse
       const budgetData = await budgetResponse.json()
-
-      console.log("Dados de resumo recebidos:", summaryData)
-      console.log("Dados de orçamento recebidos:", budgetData)
 
       if (
         summaryData &&
@@ -108,9 +103,7 @@ const Summary: React.FC<SummaryProps> = ({ initialData }) => {
           expenseDifference={summaryData?.expenseDifference || "0%"}
         />
         <BalanceCard
-          balanceThisMonth={
-            summaryData?.balanceThisMonth || "0,00"
-          }
+          balanceThisMonth={summaryData?.balanceThisMonth || "0,00"}
           balanceDifference={summaryData?.balanceDifference || "0%"}
         />
         <BudgetCard

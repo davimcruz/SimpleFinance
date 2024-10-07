@@ -1,5 +1,5 @@
 import { NextApiRequest, NextApiResponse } from "next"
-import { getTransactions } from "../transactions/get-transactions"
+import { getTransactions } from "./get-transactions"
 import { Transaction } from "@/types/types"
 import { verifyToken } from "../middleware/jwt-auth"
 import { parseCookies } from "nookies"
