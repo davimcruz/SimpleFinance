@@ -1,7 +1,7 @@
 import { NextApiRequest, NextApiResponse } from "next"
 import { getTransactions } from "./queryTransactions"
 import { Transaction } from "@/types/types"
-import { verifyToken } from "../auth/jwt-auth"
+import { verifyToken } from "../auth/middleware-jwt-auth"
 import { parseCookies } from "nookies"
 
 export default async function queryComparison(
