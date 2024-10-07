@@ -1,6 +1,7 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+/*Caso estiver com erro nas linhas acima, verifique a pasta .vscode que contém o arquivo settings.json está presente*/
 
 @layer base {
   :root {
