@@ -50,7 +50,7 @@ const CreateCreditCard = () => {
 
     try {
       setIsSubmitting(true)
-      const response = await fetch("/api/Cards/saveCards", {
+      const response = await fetch("/api/cards/create-card", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

@@ -41,15 +41,12 @@ const CardsView = () => {
     const fetchCards = async () => {
       setLoading(true)
       try {
-        const response = await fetch(
-          `/api/Queries/queryCards?userId=${userId}`,
-          {
-            method: "GET",
-            headers: {
-              "Content-Type": "application/json",
-            },
-          }
-        )
+        const response = await fetch(`/api/cards/get-card?userId=${userId}`, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        })
 
         const data = await response.json()
         console.log("Dados recebidos:", data)
@@ -86,7 +83,7 @@ const CardsView = () => {
   const handleDeleteCard = async (cardId: string) => {
     setShowLoadingAnimation(true)
     try {
-      const response = await fetch(`/api/Cards/Functions/deleteCards`, {
+      const response = await fetch(`/api/cards/delete-cards`, {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",

@@ -130,7 +130,7 @@ const CreateTransaction = () => {
   useEffect(() => {
     const fetchCards = async () => {
       try {
-        const response = await fetch(`/queryCards?userId=${userId}`)
+        const response = await fetch(`/api/cards/get-card?userId=${userId}`)
         const data = await response.json()
         if (Array.isArray(data.cartoes)) {
           setCards(data.cartoes)

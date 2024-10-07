@@ -23,7 +23,7 @@ const CardsManager = () => {
       setLoading(true)
       try {
         const response = await fetch(
-          `/api/Queries/queryCards?userId=${userId}`,
+          `/api/cards/get-card?userId=${userId}`,
           {
             method: "GET",
             headers: {

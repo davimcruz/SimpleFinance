@@ -86,7 +86,7 @@ const SettingsPage = ({ user }: { user?: UserData }) => {
         sobrenome: newLastName,
       }
 
-      const response = await fetch("/api/settings/update-name", {
+      const response = await fetch("/api/settings/edit-name", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

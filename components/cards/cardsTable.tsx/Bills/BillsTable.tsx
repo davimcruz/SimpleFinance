@@ -62,7 +62,7 @@ const BillsTable: React.FC<BillsTableProps> = ({ cardId }) => {
   useEffect(() => {
     const fetchCardName = async () => {
       try {
-        const response = await fetch(`/api/Cards/Functions/getCardName`, {
+        const response = await fetch(`/api/cards/get-name`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
