@@ -1,5 +1,5 @@
 import { GetServerSidePropsContext } from "next"
-import { verifyToken } from "@/pages/api/auth/middleware-jwt-auth"
+import { verifyToken } from "@/pages/api/middleware/jwt-auth"
 
 export const getServerSidePropsDashboard = async (
   ctx: GetServerSidePropsContext

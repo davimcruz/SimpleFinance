@@ -1,5 +1,5 @@
 import { NextApiRequest, NextApiResponse } from "next"
-import { verifyToken } from "../auth/middleware-jwt-auth"
+import { verifyToken } from "../middleware/jwt-auth"
 
 import prisma from "@/lib/prisma"
 
