@@ -1,6 +1,6 @@
 import { NextApiRequest, NextApiResponse } from "next"
 import { PrismaClient, transacoes } from "@prisma/client"
-import { verifyToken } from "../middleware/jwt-auth"
+import { verifyToken } from "../auth/jwt-auth"
 import { parseCookies } from "nookies"
 
 import prisma from "@/lib/prisma"

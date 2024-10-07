@@ -1,5 +1,5 @@
 import { NextApiRequest, NextApiResponse } from "next"
-import { verifyToken } from "../../middleware/jwt-auth"
+import { verifyToken } from "../../auth/jwt-auth"
 import prisma from "@/lib/prisma"
 import Redis from "ioredis"
 
