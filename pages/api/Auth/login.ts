@@ -11,7 +11,7 @@ interface LoginResponse {
 }
 
 const COOKIE_OPTIONS = {
-  secure: process.env.NODE_ENV !== "development", 
+  secure: process.env.NODE_ENV !== "development",
   sameSite: "strict" as const,
   maxAge: 86400, 
   path: "/",
@@ -25,7 +25,7 @@ const setCookies = (
 ) => {
   const cookieToken = serialize("token", token, {
     ...COOKIE_OPTIONS,
-    httpOnly: true, 
+    httpOnly: true,
   })
   const cookieEmail = serialize("email", email, COOKIE_OPTIONS)
   const cookieUserId = serialize("userId", userId.toString(), COOKIE_OPTIONS)
@@ -37,6 +37,8 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse<LoginResponse>
 ) {
+  console.log(`Recebido método ${req.method} para /api/auth/login`)
+
   if (req.method !== "POST") {
     res.setHeader("Allow", ["POST"])
     console.warn(`Método ${req.method} não permitido para /api/auth/login`)
@@ -46,6 +48,7 @@ export default async function handler(
   }
 
   const parseResult = loginSchema.safeParse(req.body)
+  console.log(`Resultado da validação: ${parseResult.success}`)
 
   if (!parseResult.success) {
     const { errors } = parseResult.error
@@ -55,6 +58,7 @@ export default async function handler(
   }
 
   const { email, password } = parseResult.data
+  console.log(`Tentando autenticar usuário: ${email}`)
 
   try {
     const user = await prisma.usuarios.findUnique({
@@ -68,6 +72,8 @@ export default async function handler(
     }
 
     const isPasswordValid = await bcrypt.compare(password, user.senha)
+    console.log(`Senha válida: ${isPasswordValid}`)
+
     if (!isPasswordValid) {
       console.warn(`Senha incorreta para usuário: ${email}`)
       return res.status(401).json({ error: "Senha incorreta." })
@@ -84,10 +90,11 @@ export default async function handler(
     const token = jwt.sign({ email: user.email, userId: user.id }, jwtSecret, {
       expiresIn: "24h",
     })
+    console.log(`Token JWT gerado para usuário ${email}: ${token}`)
 
     setCookies(res, token, user.email, user.id)
+    console.log(`Cookies definidos para usuário: ${email}`)
 
-    console.log(`Usuário autenticado: ${email}`)
     return res.status(200).json({ message: "Login bem-sucedido." })
   } catch (error) {
     console.error("Erro ao processar a requisição:", error)
