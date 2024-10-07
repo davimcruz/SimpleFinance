@@ -136,7 +136,7 @@ export default function LoginPage() {
           <CardFooter className="text-center justify-center mt-auto py-4">
             <div className="text-center justify-center mt-auto">
               <a
-                href="/signup"
+                href="/auth/signup"
                 className="text-center text-sm mb-2 hover:text-sky-400 text-slate-500 transition duration-300"
               >
                 Não possuo uma conta
