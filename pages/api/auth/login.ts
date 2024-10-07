@@ -13,7 +13,7 @@ interface LoginResponse {
 const COOKIE_OPTIONS = {
   secure: process.env.NODE_ENV !== "development",
   sameSite: "strict" as const,
-  maxAge: 86400, // 1 dia
+  maxAge: 86400, 
   path: "/",
 }
 
