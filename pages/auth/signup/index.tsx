@@ -1,5 +1,5 @@
 import { Inter } from "next/font/google"
-import { FormEvent, useState } from "react"
+import { useState } from "react"
 import { useRouter } from "next/router"
 import {
   Card,
@@ -19,50 +19,41 @@ import { ThemeProvider } from "@/components/theme/theme-provider"
 import "../../../app/globals.css"
 import Head from "next/head"
 
+import { useForm } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { registerSchema, RegisterInput } from "@lib/validation"
+
 const inter = Inter({ subsets: ["latin"] })
 
 export default function Register() {
   const router = useRouter()
-  const [email, setEmail] = useState("")
-  const [password, setPassword] = useState("")
-  const [nome, setName] = useState("")
-  const [sobrenome, setLastName] = useState("")
   const [error, setError] = useState<string | undefined>(undefined)
   const [loading, setLoading] = useState(false)
 
-  const validateEmail = (email: string) =>
-    /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
-  const validatePassword = (password: string) => password.length >= 8
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<RegisterInput>({
+    resolver: zodResolver(registerSchema),
+  })
 
-  const handleSubmit = async (event: FormEvent) => {
-    event.preventDefault()
-
-    if (!validatePassword(password)) {
-      setError("Sua senha deve conter pelo menos 8 dígitos.")
-      return
-    }
-    if (!validateEmail(email)) {
-      setError("Digite um email válido.")
-      return
-    }
-    if (nome.length < 4) {
-      setError("Seu nome deve conter pelo menos 4 caracteres.")
-      return
-    }
+  const onSubmit = async (data: RegisterInput) => {
+    setLoading(true)
+    setError(undefined)
 
     try {
-      setLoading(true)
-
-      const response = await fetch("/api/Auth/register", {
+      const response = await fetch("/api/auth/register", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ email, password, nome, sobrenome }),
+        body: JSON.stringify(data),
       })
 
+      const result = await response.json()
+
       if (!response.ok) {
-        const result = await response.json()
         throw new Error(result.error || "Erro ao registrar")
       }
 
@@ -97,7 +88,7 @@ export default function Register() {
           </CardDescription>
           <Separator className="mt-10"></Separator>
           <CardContent className="pt-10 pl-4 pb-3">
-            <form onSubmit={handleSubmit}>
+            <form onSubmit={handleSubmit(onSubmit)}>
               <div className="grid gap-4 mb-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div className="grid gap-2">
@@ -105,18 +96,28 @@ export default function Register() {
                     <Input
                       id="nome"
                       placeholder="John"
-                      required
-                      onChange={(e) => setName(e.target.value)}
+                      {...register("nome")}
+                      className={errors.nome ? "border-red-500" : ""}
                     />
+                    {errors.nome && (
+                      <p className="mt-1 text-sm text-red-600">
+                        {errors.nome.message}
+                      </p>
+                    )}
                   </div>
                   <div className="grid gap-2">
                     <Label htmlFor="sobrenome">Sobrenome</Label>
                     <Input
                       id="sobrenome"
                       placeholder="Doe"
-                      required
-                      onChange={(e) => setLastName(e.target.value)}
+                      {...register("sobrenome")}
+                      className={errors.sobrenome ? "border-red-500" : ""}
                     />
+                    {errors.sobrenome && (
+                      <p className="mt-1 text-sm text-red-600">
+                        {errors.sobrenome.message}
+                      </p>
+                    )}
                   </div>
                 </div>
               </div>
@@ -127,9 +128,14 @@ export default function Register() {
                     type="email"
                     id="email"
                     placeholder="simplefinance@example.com"
-                    required
-                    onChange={(e) => setEmail(e.target.value)}
+                    {...register("email")}
+                    className={errors.email ? "border-red-500" : ""}
                   />
+                  {errors.email && (
+                    <p className="mt-1 text-sm text-red-600">
+                      {errors.email.message}
+                    </p>
+                  )}
                 </div>
                 <div>
                   <Label htmlFor="password">Senha:</Label>
@@ -137,9 +143,14 @@ export default function Register() {
                     type="password"
                     id="password"
                     placeholder="No mínimo 8 dígitos"
-                    required
-                    onChange={(e) => setPassword(e.target.value)}
+                    {...register("password")}
+                    className={errors.password ? "border-red-500" : ""}
                   />
+                  {errors.password && (
+                    <p className="mt-1 text-sm text-red-600">
+                      {errors.password.message}
+                    </p>
+                  )}
                 </div>
               </div>
               <Button
@@ -160,7 +171,7 @@ export default function Register() {
             <div className="text-center justify-center mt-auto">
               <a
                 href="./signin"
-                className="text-center text-sm mb-2 hover:text-sky-400 text-slate-500"
+                className="text-center text-sm mb-2 hover:text-sky-400 text-slate-500 transition duration-300"
               >
                 Logar com minha conta
               </a>

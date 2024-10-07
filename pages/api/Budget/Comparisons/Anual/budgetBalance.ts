@@ -1,6 +1,6 @@
 import { NextApiRequest, NextApiResponse } from "next"
 
-import { verifyToken } from "@/pages/api/Auth/jwtAuth"
+import { verifyToken } from "@/pages/api/middleware/jwt-auth"
 
 import prisma from "@/lib/prisma"
 

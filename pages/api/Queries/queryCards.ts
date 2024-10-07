@@ -1,6 +1,6 @@
 import { NextApiRequest, NextApiResponse } from "next"
 
-import { verifyToken } from "@/pages/api/Auth/jwtAuth"
+import { verifyToken } from "@/pages/api/middleware/jwt-auth"
 
 import prisma from "@/lib/prisma"
 
@@ -27,7 +27,7 @@ export default async function handler(
     const cartoes = await prisma.cartoes.findMany({
       where: {
         userId: Number(userId),
-        tipoCartao: "credito", 
+        tipoCartao: "credito",
       },
       select: {
         cardId: true,

@@ -1,7 +1,7 @@
 import { NextApiRequest, NextApiResponse } from "next"
 import { PrismaClient, transacoes } from "@prisma/client"
 import { parseCookies } from "nookies"
-import { verifyToken } from "../Auth/jwtAuth"
+import { verifyToken } from "../middleware/jwt-auth"
 
 import prisma from "@/lib/prisma"
 
@@ -27,12 +27,11 @@ export default async function transactionsTable(
       include: {
         cartoes: {
           select: {
-            nomeCartao: true, 
+            nomeCartao: true,
           },
         },
       },
     })
-
 
     const table = transactions.map((transaction) => ({
       transactionId: transaction.transactionId,

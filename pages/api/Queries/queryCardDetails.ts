@@ -1,6 +1,6 @@
 import { NextApiRequest, NextApiResponse } from "next"
 import { PrismaClient } from "@prisma/client"
-import { verifyToken } from "../Auth/jwtAuth"
+import { verifyToken } from "../middleware/jwt-auth"
 
 const prisma = new PrismaClient()
 
@@ -31,8 +31,8 @@ export default async function handler(
       },
       include: {
         transacoes: true,
-        parcelas: true, 
-        faturas: true, 
+        parcelas: true,
+        faturas: true,
       },
     })
 

@@ -1,5 +1,5 @@
 import { NextApiRequest, NextApiResponse } from "next"
-import { verifyToken } from "../Auth/jwtAuth"
+import { verifyToken } from "../middleware/jwt-auth"
 import prisma from "@/lib/prisma"
 
 export default async function handler(
@@ -26,7 +26,7 @@ export default async function handler(
     const faturas = await prisma.faturas.findMany({
       where: {
         cardId: cardId,
-        pago: false, 
+        pago: false,
       },
       include: {
         parcelas: true,
@@ -35,11 +35,9 @@ export default async function handler(
     })
 
     if (faturas.length === 0) {
-      return res
-        .status(404)
-        .json({
-          error: "Nenhuma fatura em aberto encontrada para o cardId fornecido.",
-        })
+      return res.status(404).json({
+        error: "Nenhuma fatura em aberto encontrada para o cardId fornecido.",
+      })
     }
 
     return res.status(200).json({

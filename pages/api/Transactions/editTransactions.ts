@@ -1,5 +1,5 @@
 import { NextApiRequest, NextApiResponse } from "next"
-import { verifyToken } from "../Auth/jwtAuth"
+import { verifyToken } from "../middleware/jwt-auth"
 import prisma from "@/lib/prisma"
 import Redis from "ioredis"
 
@@ -61,7 +61,6 @@ const realocarSaldo = async (userId: number, anoAtual: number) => {
 
     return acc
   }, {} as Record<number, { receita: number; despesa: number }>)
-
 
   let saldoRealocadoAnterior = 0
   const mesAtualNumero = new Date().getMonth() + 1

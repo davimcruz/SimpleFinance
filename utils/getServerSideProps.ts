@@ -1,5 +1,5 @@
 import { GetServerSidePropsContext } from "next"
-import { verifyToken } from "@/pages/api/Auth/jwtAuth"
+import { verifyToken } from "@/pages/api/middleware/jwt-auth"
 
 export const getServerSidePropsDashboard = async (
   ctx: GetServerSidePropsContext
@@ -35,14 +35,14 @@ export const getServerSidePropsDashboard = async (
 
     return {
       props: {
-        user: userData || null, 
+        user: userData || null,
       },
     }
   } catch (error) {
     console.error("Erro ao buscar os dados do usuário:", error)
     return {
       props: {
-        user: null, 
+        user: null,
       },
     }
   }

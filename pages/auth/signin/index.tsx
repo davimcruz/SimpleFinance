@@ -19,45 +19,48 @@ import { ThemeProvider } from "@/components/theme/theme-provider"
 import "../../../app/globals.css"
 import Head from "next/head"
 
+import { useForm } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { loginSchema, LoginInput } from "@/lib/validation"
+
 const inter = Inter({ subsets: ["latin"] })
 
 export default function LoginPage() {
   const router = useRouter()
-  const [email, setEmail] = useState("")
-  const [password, setPassword] = useState("")
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
 
-  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault()
-    setLoading(true)
-    setError(null) 
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<LoginInput>({
+    resolver: zodResolver(loginSchema),
+  })
 
-    if (!email.includes("@") || password.length < 8) {
-      setError(
-        "Por favor, insira um email válido e uma senha com pelo menos 8 dígitos."
-      )
-      setLoading(false)
-      return
-    }
+  const onSubmit = async (data: LoginInput) => {
+    setLoading(true)
+    setError(null)
 
     try {
-      const response = await fetch("/api/Auth/login", {
+      const response = await fetch("/api/auth/login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify(data),
       })
 
-      if (!response.ok) {
-        const data = await response.json()
-        throw new Error(data.error || "Erro ao tentar fazer login.")
-      }
+      const result = await response.json()
 
-      router.push("/dashboard")
-    } catch (error: any) {
-      setError(error.message)
+      if (response.ok) {
+        router.push("/dashboard")
+      } else {
+        setError(result.error || "Credenciais inválidas.")
+      }
+    } catch (err) {
+      console.error("Erro na requisição:", err)
+      setError("Erro ao tentar fazer login.")
     } finally {
       setLoading(false)
     }
@@ -86,7 +89,7 @@ export default function LoginPage() {
           </CardDescription>
           <Separator className="mt-10" />
           <CardContent className="pt-10 pl-4 pb-3">
-            <form onSubmit={handleSubmit}>
+            <form onSubmit={handleSubmit(onSubmit)}>
               <div className="grid max-w-sm gap-5 mx-auto">
                 <div>
                   <Label htmlFor="email">Email:</Label>
@@ -94,10 +97,14 @@ export default function LoginPage() {
                     type="email"
                     id="email"
                     placeholder="simplefinance@example.com"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
+                    {...register("email")}
+                    className={errors.email ? "border-red-500" : ""}
                   />
+                  {errors.email && (
+                    <p className="mt-1 text-sm text-red-600">
+                      {errors.email.message}
+                    </p>
+                  )}
                 </div>
                 <div>
                   <Label htmlFor="password">Senha:</Label>
@@ -105,10 +112,14 @@ export default function LoginPage() {
                     type="password"
                     id="password"
                     placeholder="Sua senha"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
+                    {...register("password")}
+                    className={errors.password ? "border-red-500" : ""}
                   />
+                  {errors.password && (
+                    <p className="mt-1 text-sm text-red-600">
+                      {errors.password.message}
+                    </p>
+                  )}
                 </div>
               </div>
               <Button
@@ -126,7 +137,7 @@ export default function LoginPage() {
           <CardFooter className="text-center justify-center mt-auto py-4">
             <div className="text-center justify-center mt-auto">
               <a
-                href="./signup"
+                href="/signup"
                 className="text-center text-sm mb-2 hover:text-sky-400 text-slate-500 transition duration-300"
               >
                 Não possuo uma conta

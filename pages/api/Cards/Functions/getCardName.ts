@@ -1,6 +1,6 @@
 import { NextApiRequest, NextApiResponse } from "next"
 import { PrismaClient } from "@prisma/client"
-import { verifyToken } from "../../Auth/jwtAuth"
+import { verifyToken } from "../../middleware/jwt-auth"
 import Redis from "ioredis"
 import prisma from "@/lib/prisma"
 
@@ -8,9 +8,7 @@ const redisUrl = process.env.REDIS_URL
 const redisToken = process.env.REDIS_TOKEN
 
 if (!redisUrl || !redisToken) {
-  throw new Error(
-    "Variáveis de Ambiente não definidas"
-  )
+  throw new Error("Variáveis de Ambiente não definidas")
 }
 
 const redis = new Redis(redisUrl, {
@@ -63,7 +61,7 @@ export default async function handler(
         cardId: cardId,
       },
       select: {
-        nomeCartao: true, 
+        nomeCartao: true,
       },
     })
 

@@ -1,14 +1,26 @@
 import type { NextApiRequest, NextApiResponse } from "next"
-
 import bcrypt from "bcrypt"
-import jwt, { Secret } from "jsonwebtoken"
+import jwt from "jsonwebtoken"
 import { serialize } from "cookie"
+import { registerSchema, RegisterInput } from "@lib/validation"
+import prisma from "@lib/prisma"
 
-import prisma from "@/lib/prisma"
+interface RegisterResponse {
+  message?: string
+  error?: string
+  user?: {
+    id: number
+    nome: string
+    sobrenome: string
+    email: string
+  }
+}
 
-const isValidEmail = (email: string): boolean => {
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-  return emailRegex.test(email)
+const COOKIE_OPTIONS = {
+  secure: process.env.NODE_ENV !== "development",
+  sameSite: "strict" as const,
+  maxAge: 86400, 
+  path: "/",
 }
 
 const setLoginCookies = (
@@ -17,46 +29,36 @@ const setLoginCookies = (
   email: string,
   userId: number
 ) => {
-  const cookieOptions = {
-    httpOnly: false,
-    secure: process.env.NODE_ENV !== "development",
-    sameSite: "strict" as const,
-    maxAge: 86400,
-    path: "/",
-  }
+  const cookieToken = serialize("token", token, {
+    ...COOKIE_OPTIONS,
+    httpOnly: true,
+  })
+  const cookieEmail = serialize("email", email, COOKIE_OPTIONS)
+  const cookieUserId = serialize("userId", userId.toString(), COOKIE_OPTIONS)
 
-  res.setHeader("Set-Cookie", [
-    serialize("token", token, { ...cookieOptions, httpOnly: true }),
-    serialize("email", email, cookieOptions),
-    serialize("userId", userId.toString(), cookieOptions),
-  ])
+  res.setHeader("Set-Cookie", [cookieToken, cookieEmail, cookieUserId])
 }
 
 export default async function handler(
   req: NextApiRequest,
-  res: NextApiResponse
+  res: NextApiResponse<RegisterResponse>
 ) {
   if (req.method !== "POST") {
-    return res.status(405).json({ error: "Método não permitido" })
-  }
-
-  const { nome, sobrenome, email, password } = req.body
-
-  if (!nome || !sobrenome || !email || !password) {
+    res.setHeader("Allow", ["POST"])
     return res
-      .status(400)
-      .json({ error: "Por favor, preencha todos os campos." })
+      .status(405)
+      .json({ error: "Método não permitido. Utilize POST." })
   }
 
-  if (!isValidEmail(email)) {
-    return res.status(400).json({ error: "Endereço de email inválido." })
+  const parseResult = registerSchema.safeParse(req.body)
+
+  if (!parseResult.success) {
+    const { errors } = parseResult.error
+    const errorMessages = errors.map((err) => err.message).join(", ")
+    return res.status(400).json({ error: errorMessages })
   }
 
-  if (password.length < 8) {
-    return res
-      .status(400)
-      .json({ error: "A senha deve ter no mínimo 8 caracteres." })
-  }
+  const { nome, sobrenome, email, password } = parseResult.data
 
   try {
     const existingUser = await prisma.usuarios.findUnique({ where: { email } })
@@ -75,11 +77,25 @@ export default async function handler(
         email,
         senha: hashedPassword,
       },
+      select: {
+        id: true,
+        nome: true,
+        sobrenome: true,
+        email: true,
+      },
     })
+
+    const jwtSecret = process.env.JWT_SECRET
+    if (!jwtSecret) {
+      console.error("JWT_SECRET não está definido.")
+      return res
+        .status(500)
+        .json({ error: "Configuração do servidor inválida." })
+    }
 
     const token = jwt.sign(
       { email: newUser.email, userId: newUser.id },
-      process.env.JWT_SECRET as Secret,
+      jwtSecret,
       { expiresIn: "24h" }
     )
 
@@ -96,6 +112,6 @@ export default async function handler(
     })
   } catch (error) {
     console.error("Erro ao registrar usuário:", error)
-    return res.status(500).json({ error: "Erro ao registrar usuário" })
+    return res.status(500).json({ error: "Erro ao registrar usuário." })
   }
 }

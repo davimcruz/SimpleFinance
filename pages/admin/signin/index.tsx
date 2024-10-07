@@ -13,37 +13,46 @@ import { Separator } from "@/components/ui/separator"
 import { ThemeProvider } from "@/components/theme/theme-provider"
 import "../../../app/globals.css"
 
+import { useForm } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { loginSchema, LoginInput } from "@/lib/validation"
+
 const inter = Inter({ subsets: ["latin"] })
 
 export default function AdminLogin() {
-  const [username, setUsername] = useState("")
-  const [password, setPassword] = useState("")
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
 
-  const handleLogin = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault()
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<LoginInput>({
+    resolver: zodResolver(loginSchema),
+  })
+
+  const onSubmit = async (data: LoginInput) => {
     setLoading(true)
     setError(null)
 
     try {
-      const response = await fetch("/api/Auth/admin", {
+      const response = await fetch("/api/auth/admin", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ email: username, password }),
+        body: JSON.stringify(data),
       })
 
-      const data = await response.json()
+      const result = await response.json()
 
       if (response.ok) {
         window.location.href = "/admin"
       } else {
-        setError(data.error || "Credenciais inválidas.")
+        setError(result.error || "Credenciais inválidas.")
       }
-    } catch (error) {
-      console.error("Erro na requisição:", error)
+    } catch (err) {
+      console.error("Erro na requisição:", err)
       setError("Erro ao tentar fazer login.")
     } finally {
       setLoading(false)
@@ -64,17 +73,21 @@ export default function AdminLogin() {
           </CardDescription>
           <Separator className="mt-10" />
           <CardContent className="p-6">
-            <form onSubmit={handleLogin} className="space-y-4">
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
               <div>
-                <Label htmlFor="username">Usuário:</Label>
+                <Label htmlFor="email">Email:</Label>
                 <Input
-                  type="text"
-                  id="username"
-                  placeholder="Digite seu usuário"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                  required
+                  type="email"
+                  id="email"
+                  placeholder="Digite seu email"
+                  {...register("email")}
+                  className={errors.email ? "border-red-500" : ""}
                 />
+                {errors.email && (
+                  <p className="text-red-600 text-center">
+                    {errors.email.message}
+                  </p>
+                )}
               </div>
               <div>
                 <Label htmlFor="password">Senha:</Label>
@@ -82,10 +95,14 @@ export default function AdminLogin() {
                   type="password"
                   id="password"
                   placeholder="Digite sua senha"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
+                  {...register("password")}
+                  className={errors.password ? "border-red-500" : ""}
                 />
+                {errors.password && (
+                  <p className="text-red-600 text-center">
+                    {errors.password.message}
+                  </p>
+                )}
               </div>
               {error && <p className="text-red-600 text-center">{error}</p>}
               <Button type="submit" className="mt-4 w-full" disabled={loading}>

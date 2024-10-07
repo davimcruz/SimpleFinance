@@ -1,10 +1,21 @@
-import { NextApiRequest, NextApiResponse } from "next"
-
+import type { NextApiRequest, NextApiResponse } from "next"
 import bcrypt from "bcrypt"
-import jwt, { Secret } from "jsonwebtoken"
+import jwt from "jsonwebtoken"
 import { serialize } from "cookie"
-
+import { loginSchema } from "@lib/validation"
 import prisma from "@/lib/prisma"
+
+interface LoginResponse {
+  message?: string
+  error?: string
+}
+
+const COOKIE_OPTIONS = {
+  secure: process.env.NODE_ENV !== "development",
+  sameSite: "strict" as const,
+  maxAge: 86400,
+  path: "/",
+}
 
 const setCookies = (
   res: NextApiResponse,
@@ -12,55 +23,67 @@ const setCookies = (
   email: string,
   userId: number
 ) => {
-  const options = {
-    httpOnly: false,
-    secure: process.env.NODE_ENV !== "development",
-    sameSite: "strict" as const,
-    maxAge: 86400,
-    path: "/",
-  }
-
-  const cookieToken = serialize("token", token, { ...options, httpOnly: true })
-  const cookieEmail = serialize("email", email, options)
-  const cookieUserId = serialize("userId", userId.toString(), options)
+  const cookieToken = serialize("token", token, {
+    ...COOKIE_OPTIONS,
+    httpOnly: true,
+  })
+  const cookieEmail = serialize("email", email, COOKIE_OPTIONS)
+  const cookieUserId = serialize("userId", userId.toString(), COOKIE_OPTIONS)
 
   res.setHeader("Set-Cookie", [cookieToken, cookieEmail, cookieUserId])
 }
 
 export default async function handler(
   req: NextApiRequest,
-  res: NextApiResponse
+  res: NextApiResponse<LoginResponse>
 ) {
   if (req.method !== "POST") {
-    return res.status(405).json({ error: "Método não permitido" })
+    res.setHeader("Allow", ["POST"])
+    return res
+      .status(405)
+      .json({ error: "Método não permitido. Utilize POST." })
   }
 
-  const { email, password } = req.body
-  if (!email || !password) {
-    return res.status(400).json({ error: "Email e senha são obrigatórios" })
+  const parseResult = loginSchema.safeParse(req.body)
+
+  if (!parseResult.success) {
+    const { errors } = parseResult.error
+    const errorMessages = errors.map((err) => err.message).join(", ")
+    return res.status(400).json({ error: errorMessages })
   }
+
+  const { email, password } = parseResult.data
 
   try {
-    const user = await prisma.usuarios.findUnique({ where: { email } })
-    if (!user) return res.status(401).json({ error: "Email não registrado." })
+    const user = await prisma.usuarios.findUnique({
+      where: { email },
+      select: { id: true, email: true, senha: true, permissao: true },
+    })
 
-    const [passwordMatch, token] = await Promise.all([
-      bcrypt.compare(password, user.senha),
-      jwt.sign(
-        { email: user.email, userId: user.id },
-        process.env.JWT_SECRET as Secret,
-        { expiresIn: "24h" }
-      ),
-    ])
+    if (!user) {
+      return res.status(401).json({ error: "Email não registrado." })
+    }
 
-    if (!passwordMatch)
+    const isPasswordValid = await bcrypt.compare(password, user.senha)
+    if (!isPasswordValid) {
       return res.status(401).json({ error: "Senha incorreta." })
-    if (user.permissao !== "admin")
-      return res.status(403).json({ error: "Acesso restrito." })
+    }
+
+    const jwtSecret = process.env.JWT_SECRET
+    if (!jwtSecret) {
+      console.error("JWT_SECRET não está definido.")
+      return res
+        .status(500)
+        .json({ error: "Configuração do servidor inválida." })
+    }
+
+    const token = jwt.sign({ email: user.email, userId: user.id }, jwtSecret, {
+      expiresIn: "24h",
+    })
 
     setCookies(res, token, user.email, user.id)
 
-    return res.status(200).json({ message: "Login de admin bem-sucedido." })
+    return res.status(200).json({ message: "Login bem-sucedido." })
   } catch (error) {
     console.error("Erro ao processar a requisição:", error)
     return res.status(500).json({ error: "Erro ao processar a requisição." })

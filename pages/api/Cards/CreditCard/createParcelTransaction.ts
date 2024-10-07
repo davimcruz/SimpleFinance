@@ -1,6 +1,6 @@
 import { NextApiRequest, NextApiResponse } from "next"
 import { v4 as uuidv4 } from "uuid"
-import { verifyToken } from "../../Auth/jwtAuth"
+import { verifyToken } from "../../middleware/jwt-auth"
 import prisma from "@/lib/prisma"
 import { Prisma } from "@prisma/client"
 import Redis from "ioredis"
