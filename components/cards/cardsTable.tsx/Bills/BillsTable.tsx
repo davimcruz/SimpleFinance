@@ -86,7 +86,7 @@ const BillsTable: React.FC<BillsTableProps> = ({ cardId }) => {
     const fetchBills = async () => {
       setLoading(true)
       try {
-        const response = await fetch("/api/Queries/queryBill", {
+        const response = await fetch("/api/bills/get-bill", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -116,7 +116,7 @@ const BillsTable: React.FC<BillsTableProps> = ({ cardId }) => {
     setLoadingParcelas(true)
     try {
       const response = await fetch(
-        `/api/Queries/queryParcels?faturaId=${faturaId}`,
+        `/api/bills/get-parcels?faturaId=${faturaId}`,
         {
           method: "GET",
           headers: {

@@ -112,7 +112,7 @@ export const columns = (
             onClick={async () => {
               setIsPaying(true)
               try {
-                const response = await fetch("/api/Cards/CreditCard/payBills", {
+                const response = await fetch("/api/bills/pay-bill", {
                   method: "POST",
                   headers: {
                     "Content-Type": "application/json",
@@ -162,7 +162,7 @@ export const columns = (
                   setIsDeleting(true)
                   try {
                     const response = await fetch(
-                      `/api/Cards/CreditCard/deleteBills?faturaId=${row.original.faturaId}`,
+                      `/api/bills/delete-bill?faturaId=${row.original.faturaId}`,
                       {
                         method: "DELETE",
                       }
