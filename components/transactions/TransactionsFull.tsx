@@ -41,7 +41,7 @@ const TransactionsFull = () => {
     const fetchTransactions = async () => {
       setLoading(true)
       const response = await fetch(
-        "/api/transactions/api/transactions/get-table"
+        "/api/transactions/get-table"
       )
       const data = await response.json()
 

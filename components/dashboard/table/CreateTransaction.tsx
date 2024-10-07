@@ -32,7 +32,7 @@ import { Label } from "@/components/ui/label"
 import { ChevronRight, Calendar as CalendarIcon } from "lucide-react"
 
 import formatadorValor from "@/utils/valueFormatter"
-import LottieAnimation from "./loadingAnimation"
+import LottieAnimation from "../../ui/loadingAnimation"
 
 import { z } from "zod"
 

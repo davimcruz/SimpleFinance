@@ -3,7 +3,7 @@ import { format } from "date-fns"
 import { cn } from "@/lib/utils"
 import { ptBR } from "date-fns/locale"
 import { useRouter } from "next/router"
-import LottieAnimation from "./loadingAnimation"
+import LottieAnimation from "../../ui/loadingAnimation"
 
 import {
   Dialog,

@@ -3,7 +3,7 @@ import { useRouter } from "next/router"
 import { Card, CardContent, CardDescription, CardTitle } from "../ui/card"
 import { Separator } from "../ui/separator"
 import { parseCookies } from "nookies"
-import LottieAnimation from "../dashboard/table/loadingAnimation"
+import LottieAnimation from "../ui/loadingAnimation"
 import { Button } from "../ui/button"
 import {
   AlertDialog,
@@ -99,7 +99,7 @@ const CardsView = () => {
         setCards((prevCards) =>
           prevCards.filter((card) => card.cardId !== cardId)
         )
-        setDeletingCardId(null) 
+        setDeletingCardId(null)
       } else {
         console.error("Erro ao deletar cartão:", data.error)
       }

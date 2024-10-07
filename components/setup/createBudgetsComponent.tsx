@@ -6,7 +6,7 @@ import { Label } from "../ui/label"
 import { Input } from "../ui/input"
 import { Button } from "../ui/button"
 import { parseCookies } from "nookies"
-import LottieAnimation from "../dashboard/table/loadingAnimation"
+import LottieAnimation from "../ui/loadingAnimation"
 
 const monthNames = [
   "Janeiro",
@@ -51,7 +51,7 @@ const CreateBudgetsComponent = () => {
 
     setBudgetError(null)
     setBudgetSuccessMessage(null)
-    setIsLoading(true) 
+    setIsLoading(true)
 
     const values = customizing
       ? monthlyValues
@@ -84,7 +84,7 @@ const CreateBudgetsComponent = () => {
       setBudgetSuccessMessage(data.message || "Orçamento criado com sucesso!")
 
       setTimeout(() => {
-        router.push("/dashboard") 
+        router.push("/dashboard")
       }, 2000)
 
       setTimeout(() => {
@@ -92,7 +92,7 @@ const CreateBudgetsComponent = () => {
       }, 3000)
     } catch (error: any) {
       setBudgetError(error.message)
-      setIsLoading(false) 
+      setIsLoading(false)
     }
   }
 
