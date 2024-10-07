@@ -86,7 +86,7 @@ const SettingsPage = ({ user }: { user?: UserData }) => {
         sobrenome: newLastName,
       }
 
-      const response = await fetch("/api/Settings/updateName", {
+      const response = await fetch("/api/settings/update-name", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -121,7 +121,7 @@ const SettingsPage = ({ user }: { user?: UserData }) => {
 
       const emailFromCookie = decodeURIComponent(emailFromCookieEncoded)
 
-      const response = await fetch("/api/Settings/saveImage", {
+      const response = await fetch("/api/settings/save-image", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
