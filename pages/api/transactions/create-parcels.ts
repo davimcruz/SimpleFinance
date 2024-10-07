@@ -1,9 +1,11 @@
 import { NextApiRequest, NextApiResponse } from "next"
 import { v4 as uuidv4 } from "uuid"
-import { verifyToken } from "../../middleware/jwt-auth"
+import { verifyToken } from "../middleware/jwt-auth"
 import prisma from "@/lib/prisma"
 import { Prisma } from "@prisma/client"
 import Redis from "ioredis"
+import { z } from "zod"
+import { parse, format } from "date-fns"
 
 const redisUrl = process.env.REDIS_URL
 const redisToken = process.env.REDIS_TOKEN
@@ -29,6 +31,39 @@ const redis = new Redis(redisUrl, {
     return false
   },
 })
+
+const transactionSchema = z.object({
+  email: z.string().email({ message: "Email inválido" }),
+  nome: z.string().min(1, { message: "Nome é obrigatório" }),
+  tipo: z.literal("despesa", {
+    message: "Tipo deve ser 'despesa' para crédito",
+  }),
+  fonte: z.literal("cartao-credito", {
+    message: "Fonte deve ser 'cartao-credito'",
+  }),
+  detalhesFonte: z.string().optional().nullable(),
+  data: z.string().refine(
+    (date) => {
+      const ddMMyyyy = /^\d{2}-\d{2}-\d{4}$/.test(date)
+      const isoFormat = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/.test(
+        date
+      )
+      return ddMMyyyy || isoFormat
+    },
+    {
+      message:
+        "Data deve estar no formato DD-MM-YYYY ou ISO (yyyy-mm-ddTHH:MM:SS.sssZ)",
+    }
+  ),
+  valor: z.number().positive({ message: "Valor deve ser um número positivo" }),
+  cardId: z.string().uuid({ message: "Card ID inválido" }),
+  numeroParcelas: z
+    .number()
+    .min(1, { message: "Número de parcelas mínimo é 1" })
+    .max(12, { message: "Número de parcelas máximo é 12" }),
+})
+
+type TransactionFormData = z.infer<typeof transactionSchema>
 
 const realocarSaldo = async (userId: number, anoAtual: number) => {
   console.log("Iniciando realocacao de saldo...")
@@ -124,6 +159,20 @@ export default async function handler(
     return res.status(405).json({ error: "Metodo nao permitido" })
   }
 
+  const parseResult = transactionSchema.safeParse(req.body)
+
+  if (!parseResult.success) {
+    const fieldErrors: Record<string, string> = {}
+    parseResult.error.errors.forEach((err) => {
+      const fieldName = err.path[0] as string
+      fieldErrors[fieldName] = err.message
+    })
+    console.log("Erros de validação:", fieldErrors)
+    return res
+      .status(400)
+      .json({ error: "Dados inválidos", details: fieldErrors })
+  }
+
   const {
     email,
     nome,
@@ -134,31 +183,7 @@ export default async function handler(
     valor,
     cardId,
     numeroParcelas,
-  } = req.body
-
-  if (
-    !email ||
-    !nome ||
-    !tipo ||
-    !fonte ||
-    !data ||
-    valor === null ||
-    valor === undefined ||
-    !numeroParcelas ||
-    numeroParcelas > 12
-  ) {
-    console.log("Dados obrigatorios estao faltando:", req.body)
-    return res.status(400).json({ error: "Dados obrigatorios estao faltando" })
-  }
-
-  const valorFloat = parseFloat(valor)
-
-  if (isNaN(valorFloat)) {
-    console.log("Valor invalido:", valor)
-    return res.status(400).json({ error: "Valor invalido" })
-  }
-
-  console.log("Email recebido:", email)
+  } = parseResult.data
 
   try {
     console.log("Buscando ID do usuario no banco...")
@@ -185,11 +210,21 @@ export default async function handler(
 
     const grupoParcelamentoId = uuidv4()
 
-    const extractedDate = data.split("T")[0]
-    const formattedDate = extractedDate.split("-").reverse().join("-")
+    let formattedDate: string
 
-    const valorParcela = valorFloat / numeroParcelas
-    const dataTransacao = new Date(data)
+    if (/^\d{2}-\d{2}-\d{4}$/.test(data)) {
+      const parsedDate = parse(data, "dd-MM-yyyy", new Date())
+      formattedDate = format(parsedDate, "dd-MM-yyyy")
+    } else if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/.test(data)) {
+      const parsedDate = new Date(data)
+      formattedDate = format(parsedDate, "dd-MM-yyyy")
+    } else {
+      console.log("Formato de data invalido:", data)
+      return res.status(400).json({ error: "Formato de data invalido" })
+    }
+
+    const valorParcela = valor / numeroParcelas
+    const dataTransacao = parse(formattedDate, "dd-MM-yyyy", new Date())
     const mesInicial = dataTransacao.getMonth() + 1
     const anoInicial = dataTransacao.getFullYear()
     const hoje = new Date()
@@ -218,12 +253,10 @@ export default async function handler(
       const dataParcela =
         i === 0
           ? formattedDate
-          : new Date(anoParcela, mesParcela - 1, cartao.vencimento as number)
-              .toISOString()
-              .split("T")[0]
-              .split("-")
-              .reverse()
-              .join("-")
+          : format(
+              new Date(anoParcela, mesParcela - 1, cartao.vencimento as number),
+              "dd-MM-yyyy"
+            )
 
       const transacaoCriada = prisma.transacoes.create({
         data: {
@@ -239,7 +272,7 @@ export default async function handler(
           usuarios: {
             connect: { id: user.id },
           },
-          cartoes: cardId ? { connect: { cardId } } : undefined,
+          cartoes: { connect: { cardId } },
         },
       })
 
