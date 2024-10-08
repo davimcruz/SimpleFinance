@@ -96,16 +96,6 @@ export default async function handler(
         where: { faturaId },
         data: { pago: true },
       }),
-      prisma.transacoes.updateMany({
-        where: {
-          parcelas: {
-            some: {
-              faturaId,
-            },
-          },
-        },
-        data: { tipo: "pago" },
-      }),
     ])
 
     console.log("Pagamento realizado com sucesso.")
