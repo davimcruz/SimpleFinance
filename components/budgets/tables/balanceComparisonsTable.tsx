@@ -5,11 +5,12 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip" 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import {
   Table,
   TableBody,
   TableCell,
+  TableFooter,
   TableHead,
   TableHeader,
   TableRow,
@@ -21,6 +22,8 @@ import { parseCookies } from "nookies"
 import { Switch } from "@/components/ui/switch"
 import { Separator } from "@/components/ui/separator"
 import { CircleHelp } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { useRouter } from "next/router"
 
 interface BudgetComparison {
   month: number
@@ -359,6 +362,13 @@ const BalanceComparisonTable = () => {
             </Table>
           )}
         </CardContent>
+        <div className="w-full flex">
+          <CardFooter className="mx-auto">
+            <Button variant={"link"} className="mt-4 -mb-4 text-sm  text-zinc-500">
+              Seu planejamento mudou? Clique aqui para alterar seu orçamento
+            </Button>
+          </CardFooter>
+        </div>
       </Card>
     </div>
   )
