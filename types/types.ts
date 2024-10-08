@@ -13,6 +13,7 @@ export interface Transaction {
   } | null
 }
 
+//Não excluir essa interface abaixo, ambas servem para um objetivo, note que não são iguals.
 export interface Transactions {
   userId: number
   nome: string
