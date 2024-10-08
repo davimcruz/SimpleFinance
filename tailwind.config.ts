@@ -1,3 +1,5 @@
+//Configurações padrões do Tailwind
+
 import { withUt } from "uploadthing/tw"
 
 export default withUt({

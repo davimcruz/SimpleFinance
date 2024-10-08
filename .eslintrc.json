@@ -1,3 +1,4 @@
+//Eslint para o Next
 {
   "extends": "next/core-web-vitals"
 }

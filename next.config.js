@@ -1,4 +1,4 @@
-//Redirecionamento do usuário por padrão para /dashboard
+//Redirecionamento do usuário por padrão para /dashboard usando pages router
 
 module.exports = {
   async redirects() {

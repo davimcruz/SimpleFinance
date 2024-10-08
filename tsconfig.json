@@ -1,3 +1,5 @@
+//Configurações do typescript no contexto da aplicação
+
 {
   "compilerOptions": {
     "target": "es2015",
