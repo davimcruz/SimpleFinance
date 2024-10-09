@@ -1,0 +1,10 @@
+version: '3'
+services:
+  web:
+    command: npm run dev
+    environment:
+      - NODE_ENV=development
+    volumes:
+      - .:/app
+      - /app/node_modules
+      - /app/.next
