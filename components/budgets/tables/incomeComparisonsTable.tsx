@@ -5,7 +5,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import {
   Table,
   TableBody,
@@ -20,6 +20,8 @@ import { Badge } from "@/components/ui/badge"
 import { parseCookies } from "nookies"
 import { Switch } from "@/components/ui/switch"
 import { CircleHelp } from "lucide-react"
+import { useRouter } from "next/router"
+import { Button } from "@/components/ui/button"
 
 interface IncomeComparison {
   month: number
@@ -74,6 +76,7 @@ const IncomeComparisonTable = () => {
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc")
   const [showPadrao, setShowPadrao] = useState(false)
   const [loading, setLoading] = useState(true)
+    const router = useRouter()
 
   useEffect(() => {
     const fetchData = async () => {
@@ -150,6 +153,10 @@ const IncomeComparisonTable = () => {
     setSortKey(key)
     setSortOrder((prevOrder) => (prevOrder === "asc" ? "desc" : "asc"))
   }, [])
+
+      const handleUpdateBudgetClick = () => {
+        router.push("/dashboard/budgets/updateBudget")
+      }
 
   return (
     <div className="flex justify-center items-center">
@@ -285,6 +292,17 @@ const IncomeComparisonTable = () => {
             </Table>
           )}
         </CardContent>
+        <div className="w-full flex">
+          <CardFooter className="mx-auto">
+            <Button
+              variant={"link"}
+              className="mt-4 -mb-4 text-sm text-zinc-500"
+              onClick={handleUpdateBudgetClick}
+            >
+              Clique aqui para alterar seu orçamento
+            </Button>
+          </CardFooter>
+        </div>
       </Card>
     </div>
   )

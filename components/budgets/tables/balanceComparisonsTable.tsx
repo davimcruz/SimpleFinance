@@ -4,8 +4,14 @@ import {
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from "@/components/ui/tooltip" 
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+} from "@/components/ui/tooltip"
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card"
 import {
   Table,
   TableBody,
@@ -83,6 +89,7 @@ const BalanceComparisonTable = () => {
   const [showPadrao, setShowPadrao] = useState(false)
   const [showCarryOver, setShowCarryOver] = useState(true)
   const [loading, setLoading] = useState(true)
+  const router = useRouter()
 
   useEffect(() => {
     const fetchData = async () => {
@@ -175,6 +182,10 @@ const BalanceComparisonTable = () => {
     setSortKey(key)
     setSortOrder((prevOrder) => (prevOrder === "asc" ? "desc" : "asc"))
   }, [])
+
+  const handleUpdateBudgetClick = () => {
+    router.push("/dashboard/budgets/updateBudget")
+  }
 
   return (
     <div className="flex justify-center items-center">
@@ -364,8 +375,12 @@ const BalanceComparisonTable = () => {
         </CardContent>
         <div className="w-full flex">
           <CardFooter className="mx-auto">
-            <Button variant={"link"} className="mt-4 -mb-4 text-sm  text-zinc-500">
-              Seu planejamento mudou? Clique aqui para alterar seu orçamento
+            <Button
+              variant={"link"}
+              className="mt-4 -mb-4 text-sm text-zinc-500"
+              onClick={handleUpdateBudgetClick}
+            >
+              Clique aqui para alterar seu orçamento
             </Button>
           </CardFooter>
         </div>

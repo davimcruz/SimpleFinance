@@ -47,7 +47,7 @@ const Summary: React.FC<SummaryProps> = ({ initialData }) => {
 
       const [summaryResponse, budgetResponse] = await Promise.all([
         fetchSummaryData(),
-        fetch(`/api/budget/get-budget?userId=${userId}`),
+        fetch(`/api/budget/get-monthly?userId=${userId}`),
       ])
 
       const summaryData = await summaryResponse

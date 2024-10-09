@@ -178,7 +178,7 @@ const TransactionsDetails = ({ transactionId }: TransactionsDetailsProps) => {
       }
 
       try {
-        const response = await fetch("/api/transactions/edit-transactions", {
+        const response = await fetch("/api/transactions/update-transactions", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
