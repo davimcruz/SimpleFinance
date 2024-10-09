@@ -1,6 +1,9 @@
 # ignorar arquivos .env em produção (essencial)
 *.env
 
+# ignorar pasta tests para evitar leak de dados sensíveis
+/tests
+
 # dependencies
 /node_modules
 /.pnp
