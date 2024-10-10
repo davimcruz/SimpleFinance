@@ -44,10 +44,10 @@ export const PaymentMethodSelect: React.FC<PaymentMethodSelectProps> = ({
 
   return (
     <div className="grid gap-2">
-      <Label htmlFor="fonteTransacao">Meio de Pagamento</Label>
+      <Label htmlFor="fonteTransacao">Origem</Label>
       <Select value={value} onValueChange={onChange} onOpenChange={onBlur}>
         <SelectTrigger id="fonteTransacao">
-          <SelectValue placeholder="Selecione o meio de pagamento" />
+          <SelectValue placeholder="Selecione a origem da transação" />
         </SelectTrigger>
         <SelectContent>
           {methods.map((method) => (
@@ -57,7 +57,7 @@ export const PaymentMethodSelect: React.FC<PaymentMethodSelectProps> = ({
           ))}
         </SelectContent>
       </Select>
-      {error && <span className="text-red-500 text-sm">{error}</span>}
+      {error && <span className="text-red-500 text-sm">Por favor, selecione a origem da transação.</span>}
     </div>
   )
 }

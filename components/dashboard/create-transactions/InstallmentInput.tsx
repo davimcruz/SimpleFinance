@@ -47,7 +47,7 @@ export const InstallmentInput: React.FC<InstallmentInputProps> = ({
         min={1}
         max={12}
       />
-      {error && <span className="text-red-500 text-sm">{error}</span>}
+      {error && <span className="text-red-500 text-sm">Por favor, informe o número de parcelas (1 a 12).</span>}
     </div>
   )
 }

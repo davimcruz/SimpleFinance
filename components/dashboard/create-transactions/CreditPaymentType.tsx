@@ -37,7 +37,7 @@ export const CreditPaymentTypeSelect: React.FC<CreditPaymentTypeSelectProps> = (
           </SelectContent>
         </Select>
         {error?.paymentType && (
-          <span className="text-red-500 text-sm">{error.paymentType}</span>
+          <span className="text-red-500 text-sm">Por favor, selecione o tipo de pagamento.</span>
         )}
       </div>
 
@@ -46,7 +46,7 @@ export const CreditPaymentTypeSelect: React.FC<CreditPaymentTypeSelectProps> = (
           value={installments}
           onChange={onInstallmentsChange}
           onBlur={onBlur}
-          error={error?.installments}
+          error={error?.installments ? "Por favor, informe o número de parcelas." : undefined}
         />
       )}
     </div>

@@ -23,7 +23,7 @@ export const TransactionTypeSelect: React.FC<TransactionTypeSelectProps> = ({
 }) => {
   return (
     <div className="grid gap-2">
-      <Label htmlFor="tipoTransacao">Tipo de Transação</Label>
+      <Label htmlFor="tipoTransacao">Tipo</Label>
       <Select value={value} onValueChange={onChange} onOpenChange={onBlur}>
         <SelectTrigger id="tipoTransacao">
           <SelectValue placeholder="Selecione o tipo de transação" />
@@ -33,7 +33,7 @@ export const TransactionTypeSelect: React.FC<TransactionTypeSelectProps> = ({
           <SelectItem value="despesa">Despesa</SelectItem>
         </SelectContent>
       </Select>
-      {error && <span className="text-red-500 text-sm">{error}</span>}
+      {error && <span className="text-red-500 text-sm">Por favor, selecione o tipo de transação.</span>}
     </div>
   )
 }

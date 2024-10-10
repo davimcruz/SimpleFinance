@@ -1,4 +1,5 @@
 import { z } from "zod"
+import { parseCurrencyToFloat } from "@/utils/moneyFormatter"
 
 export const loginSchema = z.object({
   email: z
@@ -33,3 +34,26 @@ export const registerSchema = z.object({
 })
 
 export type RegisterInput = z.infer<typeof registerSchema>
+
+export const transactionSchema = z.object({
+  nome: z.string()
+    .min(1, { message: "O nome não pode estar vazio." })
+    .refine((value) => /^[a-zA-Z0-9\s]+$/.test(value), 
+      { message: "O nome deve conter apenas letras, números e espaços." }),
+  tipo: z.enum(["receita", "despesa"], { message: "Tipo deve ser 'receita' ou 'despesa'" }),
+  fonte: z.string().min(1, { message: "Fonte é obrigatória" }),
+  data: z.string().refine(
+    (date) => /^\d{2}-\d{2}-\d{4}$/.test(date) || /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{3}Z$/.test(date),
+    { message: "Data deve estar no formato DD-MM-YYYY ou ISO (yyyy-mm-ddTHH:MM:SS.sssZ)" }
+  ),
+  valor: z.string().refine(
+    (value) => parseCurrencyToFloat(value) >= 1,
+    { message: "O valor mínimo é R$ 1,00" }
+  ),
+  cardId: z.string().uuid({ message: "cardId deve ser um UUID válido" }).optional(),
+  creditPaymentType: z.enum(["a-vista", "a-prazo"]).optional(),
+  parcelas: z.string().optional(),
+  detalhesFonte: z.string().optional(),
+})
+
+export type TransactionFormData = z.infer<typeof transactionSchema>

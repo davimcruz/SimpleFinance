@@ -42,7 +42,7 @@ export default async function handler(
 
     if (cartoes.length === 0) {
       return res
-        .status(404)
+        .status(201)
         .json({ message: "Nenhum cartão de crédito encontrado" })
     }
 

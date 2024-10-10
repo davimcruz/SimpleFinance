@@ -35,9 +35,7 @@ const CardsManager = () => {
         const data = await response.json()
         if (Array.isArray(data.cartoes)) {
           setCards(data.cartoes)
-        } else {
-          console.error("A resposta da API não é um array.")
-        }
+        } 
       } catch (error) {
         console.error("Erro ao buscar cartões:", error)
       }

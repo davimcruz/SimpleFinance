@@ -1,9 +1,7 @@
 import React from "react"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import {
-  parseCurrencyToFloat,
-} from "@/utils/moneyFormatter"
+import { useCurrencyInput } from "@/utils/moneyFormatter"
 
 interface CurrencyInputProps {
   value: string
@@ -22,23 +20,21 @@ export const CurrencyInput: React.FC<CurrencyInputProps> = ({
   label = "Valor",
   placeholder = "Exemplo: 199,90",
 }) => {
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const rawValue = e.target.value.replace(/[^\d]/g, '')
-    const numericValue = parseInt(rawValue, 10) / 100
-    const formattedValue = numericValue.toLocaleString('pt-BR', {
-      style: 'currency',
-      currency: 'BRL',
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    })
+  const { handleChange, handleFocus, handleBlur, initialValue } = useCurrencyInput()
+
+  const onChangeWrapper = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const formattedValue = handleChange(e)
     onChange(formattedValue)
   }
 
-  const handleBlur = () => {
-    const numericValue = parseCurrencyToFloat(value)
-    if (numericValue < 1) {
-      onChange("R$ 1,00")
-    }
+  const onFocusWrapper = (e: React.FocusEvent<HTMLInputElement>) => {
+    const focusedValue = handleFocus(value)
+    onChange(focusedValue)
+  }
+
+  const onBlurWrapper = () => {
+    const blurredValue = handleBlur(value)
+    onChange(blurredValue)
     onBlur()
   }
 
@@ -50,12 +46,13 @@ export const CurrencyInput: React.FC<CurrencyInputProps> = ({
       <Input
         id="valor"
         placeholder={placeholder}
-        value={value}
-        onChange={handleChange}
-        onBlur={handleBlur}
+        value={value || initialValue}
+        onChange={onChangeWrapper}
+        onFocus={onFocusWrapper}
+        onBlur={onBlurWrapper}
         required
       />
-      {error && <span className="text-red-500 text-sm">{error}</span>}
+      {error && <span className="text-red-500 text-sm">Por favor, informe um valor válido para a transação.</span>}
     </div>
   )
 }

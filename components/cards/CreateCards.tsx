@@ -19,17 +19,71 @@ import {
 import { Calendar as CalendarIcon } from "lucide-react"
 import { parseCookies } from "nookies"
 import CardsView from "./CardsView"
+import { useCurrencyInput, parseCurrencyToFloat } from "@/utils/moneyFormatter"
 
 const CreateCreditCard = () => {
   const [nome, setNome] = useState<string>("")
   const [bandeira, setBandeira] = useState<string>("")
   const [instituicao, setInstituicao] = useState<string>("")
-  const [vencimento, setVencimento] = useState<number | undefined>()
-  const [limite, setLimite] = useState<string>("")
+  const [vencimento, setVencimento] = useState<string>("")
+  const [limite, setLimite] = useState<string>("R$ 0,00")
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false)
   const [cardCreated, setCardCreated] = useState<boolean>(false)
 
+  const [errors, setErrors] = useState({
+    nome: "",
+    bandeira: "",
+    instituicao: "",
+    vencimento: "",
+    limite: "",
+  })
+
+  const { handleChange, handleFocus, handleBlur, initialValue } = useCurrencyInput()
+
+  const validateForm = (): boolean => {
+    let isValid = true
+    const newErrors = {
+      nome: "",
+      bandeira: "",
+      instituicao: "",
+      vencimento: "",
+      limite: "",
+    }
+
+    if (!nome.trim()) {
+      newErrors.nome = "Por favor, informe o nome do cartão."
+      isValid = false
+    }
+
+    if (!bandeira) {
+      newErrors.bandeira = "Por favor, selecione a bandeira do cartão."
+      isValid = false
+    }
+
+    if (!instituicao.trim()) {
+      newErrors.instituicao = "Por favor, informe a instituição financeira."
+      isValid = false
+    }
+
+    if (!vencimento || parseInt(vencimento) < 1 || parseInt(vencimento) > 31) {
+      newErrors.vencimento = "Por favor, informe um dia de vencimento válido."
+      isValid = false
+    }
+
+    if (parseCurrencyToFloat(limite) <= 0) {
+      newErrors.limite = "Por favor, informe um limite válido para o cartão."
+      isValid = false
+    }
+
+    setErrors(newErrors)
+    return isValid
+  }
+
   const handleSubmit = async () => {
+    if (!validateForm()) {
+      return
+    }
+
     const cookies = parseCookies()
     const userId = cookies.userId
 
@@ -44,8 +98,8 @@ const CreateCreditCard = () => {
       nome,
       bandeira,
       instituicao,
-      vencimento,
-      limite,
+      vencimento: parseInt(vencimento),
+      limite: parseCurrencyToFloat(limite),
     }
 
     try {
@@ -72,6 +126,14 @@ const CreateCreditCard = () => {
     }
   }
 
+  const handleVencimentoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value
+    if (value === "" || (parseInt(value) >= 1 && parseInt(value) <= 31)) {
+      setVencimento(value)
+      setErrors(prev => ({ ...prev, vencimento: "" }))
+    }
+  }
+
   if (cardCreated) {
     return <CardsView />
   }
@@ -91,14 +153,23 @@ const CreateCreditCard = () => {
               id="card-name"
               placeholder="Ex: Cartão Inter"
               value={nome}
-              onChange={(e) => setNome(e.target.value)}
+              onChange={(e) => {
+                setNome(e.target.value)
+                setErrors(prev => ({ ...prev, nome: "" }))
+              }}
               className="w-full"
             />
+            {errors.nome && <span className="text-red-500 text-sm">{errors.nome}</span>}
           </div>
 
           <div className="mb-4">
             <Label htmlFor="card-bandeira">Bandeira</Label>
-            <Select onValueChange={(value) => setBandeira(value)}>
+            <Select 
+              onValueChange={(value) => {
+                setBandeira(value)
+                setErrors(prev => ({ ...prev, bandeira: "" }))
+              }}
+            >
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="Selecione a bandeira do cartão" />
               </SelectTrigger>
@@ -106,12 +177,11 @@ const CreateCreditCard = () => {
                 <SelectItem value="Mastercard">Mastercard</SelectItem>
                 <SelectItem value="Visa">Visa</SelectItem>
                 <SelectItem value="Elo">Elo</SelectItem>
-                <SelectItem value="American Express">
-                  American Express
-                </SelectItem>
+                <SelectItem value="American Express">American Express</SelectItem>
                 <SelectItem value="Hipercard">Hipercard</SelectItem>
               </SelectContent>
             </Select>
+            {errors.bandeira && <span className="text-red-500 text-sm">{errors.bandeira}</span>}
           </div>
 
           <div className="mb-4">
@@ -120,9 +190,13 @@ const CreateCreditCard = () => {
               id="card-instituicao"
               placeholder="Ex: Banco Inter"
               value={instituicao}
-              onChange={(e) => setInstituicao(e.target.value)}
+              onChange={(e) => {
+                setInstituicao(e.target.value)
+                setErrors(prev => ({ ...prev, instituicao: "" }))
+              }}
               className="w-full"
             />
+            {errors.instituicao && <span className="text-red-500 text-sm">{errors.instituicao}</span>}
           </div>
 
           <div className="mb-4">
@@ -131,9 +205,15 @@ const CreateCreditCard = () => {
               id="card-limite"
               placeholder="Ex: R$ 5.000,00"
               value={limite}
-              onChange={(e) => setLimite(e.target.value)}
+              onChange={(e) => {
+                setLimite(handleChange(e))
+                setErrors(prev => ({ ...prev, limite: "" }))
+              }}
+              onFocus={(e) => setLimite(handleFocus(limite))}
+              onBlur={() => setLimite(handleBlur(limite))}
               className="w-full"
             />
+            {errors.limite && <span className="text-red-500 text-sm">{errors.limite}</span>}
           </div>
 
           <div className="mb-4">
@@ -143,18 +223,15 @@ const CreateCreditCard = () => {
                 id="card-vencimento"
                 type="number"
                 placeholder="Ex: 15"
-                value={vencimento || ""}
-                onChange={(e) =>
-                  setVencimento(
-                    Math.max(1, Math.min(31, Number(e.target.value)))
-                  )
-                }
+                value={vencimento}
+                onChange={handleVencimentoChange}
                 className="pl-10"
                 min={1}
                 max={31}
               />
               <CalendarIcon className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
             </div>
+            {errors.vencimento && <span className="text-red-500 text-sm">{errors.vencimento}</span>}
           </div>
 
           <Button
