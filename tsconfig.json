@@ -1,5 +1,4 @@
-//Configurações do typescript no contexto da aplicação
-
+//configurações do typescript no contexto da aplicação
 {
   "compilerOptions": {
     "target": "es2015",
@@ -35,8 +34,12 @@
     "next-env.d.ts",
     "**/*.ts",
     "**/*.tsx",
-    ".next/types/**/*.ts"
-  ],
+    ".next/types/**/*.ts",
+    "tests/**/*.ts",
+    "tests/**/*.tsx",
+    "tests/setupTests.d.ts",
+     "global.d.ts"
+, "jest.config.ts"  ],
   "exclude": [
     "node_modules"
   ]

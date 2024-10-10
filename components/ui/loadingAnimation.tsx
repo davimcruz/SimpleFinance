@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react"
+import React, { useRef, useEffect } from "react"
 import lottie from "lottie-web"
 
 const LottieAnimation = ({ animationPath }: { animationPath: string }) => {
@@ -10,11 +10,11 @@ const LottieAnimation = ({ animationPath }: { animationPath: string }) => {
       renderer: "svg",
       loop: true,
       autoplay: true,
-      path: '/loading.json'
+      path: "/loading.json",
     })
 
     return () => {
-      lottie.destroy() 
+      lottie.destroy()
     }
   }, [animationPath])
 

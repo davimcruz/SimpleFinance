@@ -1,12 +1,11 @@
 import ManageUsersComponent from "@/components/admin/manageUsersComponent"
-import CreateBudgetsComponent from "@/components/setup/createBudgetsComponent"
 import { ThemeProvider } from "@/components/theme/theme-provider"
 import { GetServerSidePropsContext } from "next"
 import { parseCookies } from "nookies"
 import jwt from "jsonwebtoken"
 import "../../app/globals.css"
-import TestBudgetComparison from "@/components/admin/testBudgetComparison"
 import Head from "next/head"
+import CreateTransactions from "@/components/dashboard/create-transactions/CreateTransactions"
 
 
 async function verifyToken(ctx: GetServerSidePropsContext) {
@@ -63,8 +62,7 @@ export default function AdminPage() {
           <h1 className="text-4xl font-bold">Admin Dashboard</h1>
           <div className="flex flex-col lg:flex-row gap-8">
             <ManageUsersComponent />
-            <CreateBudgetsComponent />
-            <TestBudgetComparison />
+            <CreateTransactions />
           </div>
         </main>
       </div>
