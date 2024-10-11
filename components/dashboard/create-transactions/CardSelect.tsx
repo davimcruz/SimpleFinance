@@ -22,7 +22,7 @@ interface CardSelectProps {
   onChange: (value: string) => void
   onBlur: () => void
   error?: string
-  cards: Card[] | null 
+  cards: Card[] | { cartoes: Card[] } | null 
 }
 
 export const CardSelect: React.FC<CardSelectProps> = ({
@@ -32,7 +32,10 @@ export const CardSelect: React.FC<CardSelectProps> = ({
   error,
   cards,
 }) => {
-  const hasCards = Array.isArray(cards) && cards.length > 0
+
+  const cardsArray = Array.isArray(cards) ? cards : (cards?.cartoes || []);
+  const hasCards = cardsArray.length > 0;
+
 
   return (
     <div className="grid gap-2">
@@ -47,7 +50,7 @@ export const CardSelect: React.FC<CardSelectProps> = ({
             <SelectValue placeholder="Selecione um cartão" />
           </SelectTrigger>
           <SelectContent>
-            {cards.map((card) => (
+            {cardsArray.map((card) => (
               <SelectItem key={card.cardId} value={card.cardId}>
                 {card.nomeCartao}
               </SelectItem>

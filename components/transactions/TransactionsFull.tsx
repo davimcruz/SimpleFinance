@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/table"
 import { Input } from "@/components/ui/input"
 import { Skeleton } from "../ui/skeleton"
-import CreateTransaction from "./CreateTransactions"
+import CreateTransactions from "./CreateTransactions"
 import TransactionsDetails from "../dashboard/table/TransactionDetails"
 import { Transactions } from "@/types/types"
 
@@ -141,7 +141,7 @@ const TransactionsFull = () => {
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full mr-8 max-w-sm py-0 hidden lg:block"
             />
-            <CreateTransaction />
+            <CreateTransactions />
           </div>
         </CardHeader>
         <CardContent>

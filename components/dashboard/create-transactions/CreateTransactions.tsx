@@ -23,6 +23,7 @@ import { parseCookies } from "nookies"
 import LottieAnimation from "@/components/ui/loadingAnimation"
 import { useNameInput } from "@/utils/nameFormatter"
 import { transactionSchema, TransactionFormData } from "@/lib/validation"
+import { ChevronRight } from "lucide-react"
 
 const ERROR_MESSAGES = {
   MIN_VALUE: "O valor mínimo é R$ 1,00",
@@ -140,8 +141,6 @@ const CreateTransaction: React.FC = () => {
         throw new Error(errorData.error || "Falha ao criar transação")
       }
 
-      const responseData = await response.json()
-      console.log("Resposta da API:", responseData)
 
       reset()
       setIsOpen(false)
@@ -160,7 +159,14 @@ const CreateTransaction: React.FC = () => {
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button>Criar Nova Transação</Button>
+        <Button
+          variant="secondary"
+          size="sm"
+          className="ml-auto lg:ml-4 gap-1 border-1"
+        >
+          Adicionar
+          <ChevronRight className="h-4 w-4" />
+        </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
         {isLoading ? (
@@ -171,7 +177,9 @@ const CreateTransaction: React.FC = () => {
           <>
             <DialogHeader>
               <DialogTitle>Criar Nova Transação</DialogTitle>
-              <DialogDescription>Preencha os detalhes abaixo corretamente</DialogDescription>
+              <DialogDescription>
+                Preencha os detalhes abaixo corretamente
+              </DialogDescription>
             </DialogHeader>
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 mt-4">
               <div className="grid gap-4">
@@ -187,7 +195,11 @@ const CreateTransaction: React.FC = () => {
                         {...field}
                         onChange={(e) => handleNameChange(e, field)}
                       />
-                      {errors.nome && <span className="text-red-500 text-sm">{errors.nome.message}</span>}
+                      {errors.nome && (
+                        <span className="text-red-500 text-sm">
+                          {errors.nome.message}
+                        </span>
+                      )}
                     </div>
                   )}
                 />
@@ -246,7 +258,9 @@ const CreateTransaction: React.FC = () => {
                         paymentType={field.value || "a-vista"}
                         onPaymentTypeChange={field.onChange}
                         installments={watch("parcelas") || ""}
-                        onInstallmentsChange={(e) => setValue("parcelas", e.target.value)}
+                        onInstallmentsChange={(e) =>
+                          setValue("parcelas", e.target.value)
+                        }
                         onBlur={field.onBlur}
                         error={{
                           paymentType: errors.creditPaymentType?.message,
@@ -270,7 +284,11 @@ const CreateTransaction: React.FC = () => {
                         id="detalhesFonte"
                         placeholder="Detalhes adicionais sobre a origem da transação"
                       />
-                      {errors.detalhesFonte && <span className="text-red-500 text-sm">{errors.detalhesFonte.message}</span>}
+                      {errors.detalhesFonte && (
+                        <span className="text-red-500 text-sm">
+                          {errors.detalhesFonte.message}
+                        </span>
+                      )}
                     </div>
                   )}
                 />
@@ -299,8 +317,16 @@ const CreateTransaction: React.FC = () => {
                       onChange={field.onChange}
                       onBlur={field.onBlur}
                       error={errors.valor?.message}
-                      label={creditPaymentType === "a-prazo" ? "Valor Total" : "Valor"}
-                      placeholder={creditPaymentType === "a-prazo" ? "Exemplo: 499,90" : "Exemplo: 199,90"}
+                      label={
+                        creditPaymentType === "a-prazo"
+                          ? "Valor Total"
+                          : "Valor"
+                      }
+                      placeholder={
+                        creditPaymentType === "a-prazo"
+                          ? "Exemplo: 499,90"
+                          : "Exemplo: 199,90"
+                      }
                     />
                   )}
                 />
@@ -308,7 +334,9 @@ const CreateTransaction: React.FC = () => {
 
               {apiError && <div className="text-red-500">{apiError}</div>}
 
-              <Button type="submit" className="w-full">Criar Transação</Button>
+              <Button type="submit" className="w-full">
+                Criar Transação
+              </Button>
             </form>
           </>
         )}

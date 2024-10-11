@@ -20,6 +20,9 @@ import { Calendar as CalendarIcon } from "lucide-react"
 import { parseCookies } from "nookies"
 import CardsView from "./CardsView"
 import { useCurrencyInput, parseCurrencyToFloat } from "@/utils/moneyFormatter"
+import { useNameInput } from "@/utils/nameFormatter"
+import { createCardSchema, CreateCardInput } from "@/lib/validation"
+import { z } from "zod"
 
 const CreateCreditCard = () => {
   const [nome, setNome] = useState<string>("")
@@ -29,54 +32,36 @@ const CreateCreditCard = () => {
   const [limite, setLimite] = useState<string>("R$ 0,00")
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false)
   const [cardCreated, setCardCreated] = useState<boolean>(false)
+  const [errors, setErrors] = useState<Partial<Record<keyof CreateCardInput, string>>>({})
 
-  const [errors, setErrors] = useState({
-    nome: "",
-    bandeira: "",
-    instituicao: "",
-    vencimento: "",
-    limite: "",
-  })
-
-  const { handleChange, handleFocus, handleBlur, initialValue } = useCurrencyInput()
+  const { handleChange, handleFocus, handleBlur } = useCurrencyInput()
+  const { handleNameChange } = useNameInput()
 
   const validateForm = (): boolean => {
-    let isValid = true
-    const newErrors = {
-      nome: "",
-      bandeira: "",
-      instituicao: "",
-      vencimento: "",
-      limite: "",
+    try {
+      const parsedData: CreateCardInput = createCardSchema.parse({
+        userId: Number(parseCookies().userId),
+        nome,
+        bandeira,
+        instituicao,
+        tipo: "credito",
+        vencimento: parseInt(vencimento),
+        limite: parseCurrencyToFloat(limite),
+      })
+      setErrors({})
+      return true
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        const newErrors: Partial<Record<keyof CreateCardInput, string>> = {}
+        error.errors.forEach((err) => {
+          if (err.path) {
+            newErrors[err.path[0] as keyof CreateCardInput] = err.message
+          }
+        })
+        setErrors(newErrors)
+      }
+      return false
     }
-
-    if (!nome.trim()) {
-      newErrors.nome = "Por favor, informe o nome do cartão."
-      isValid = false
-    }
-
-    if (!bandeira) {
-      newErrors.bandeira = "Por favor, selecione a bandeira do cartão."
-      isValid = false
-    }
-
-    if (!instituicao.trim()) {
-      newErrors.instituicao = "Por favor, informe a instituição financeira."
-      isValid = false
-    }
-
-    if (!vencimento || parseInt(vencimento) < 1 || parseInt(vencimento) > 31) {
-      newErrors.vencimento = "Por favor, informe um dia de vencimento válido."
-      isValid = false
-    }
-
-    if (parseCurrencyToFloat(limite) <= 0) {
-      newErrors.limite = "Por favor, informe um limite válido para o cartão."
-      isValid = false
-    }
-
-    setErrors(newErrors)
-    return isValid
   }
 
   const handleSubmit = async () => {
@@ -92,11 +77,11 @@ const CreateCreditCard = () => {
       return
     }
 
-    const cardData = {
+    const cardData: CreateCardInput = {
       userId: Number(userId),
       tipo: "credito",
       nome,
-      bandeira,
+      bandeira: bandeira as CreateCardInput["bandeira"],
       instituicao,
       vencimento: parseInt(vencimento),
       limite: parseCurrencyToFloat(limite),
@@ -153,10 +138,7 @@ const CreateCreditCard = () => {
               id="card-name"
               placeholder="Ex: Cartão Inter"
               value={nome}
-              onChange={(e) => {
-                setNome(e.target.value)
-                setErrors(prev => ({ ...prev, nome: "" }))
-              }}
+              onChange={(e) => handleNameChange(e, { onChange: setNome })}
               className="w-full"
             />
             {errors.nome && <span className="text-red-500 text-sm">{errors.nome}</span>}
@@ -190,10 +172,7 @@ const CreateCreditCard = () => {
               id="card-instituicao"
               placeholder="Ex: Banco Inter"
               value={instituicao}
-              onChange={(e) => {
-                setInstituicao(e.target.value)
-                setErrors(prev => ({ ...prev, instituicao: "" }))
-              }}
+              onChange={(e) => handleNameChange(e, { onChange: setInstituicao })}
               className="w-full"
             />
             {errors.instituicao && <span className="text-red-500 text-sm">{errors.instituicao}</span>}

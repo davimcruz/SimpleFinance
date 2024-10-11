@@ -1,29 +1,30 @@
 import { NextApiRequest, NextApiResponse } from "next"
-
 import { verifyToken } from "@/pages/api/middleware/jwt-auth"
-import * as z from "zod"
-
 import prisma from "@/lib/prisma"
+import { createCardSchema } from "@/lib/validation"
+import Redis from "ioredis"
 
-const cardSchema = z.object({
-  userId: z.number().positive(),
-  nome: z.string().min(1, { message: "Nome do cartão é obrigatório" }),
-  bandeira: z.enum([
-    "Mastercard",
-    "Visa",
-    "Elo",
-    "American Express",
-    "Hipercard",
-  ]),
-  instituicao: z.string().min(1, { message: "Instituição é obrigatória" }),
-  tipo: z.enum(["credito", "debito"]),
-  vencimento: z.number().optional(),
-  limite: z
-    .string()
-    .regex(/^\d+(\.\d{1,2})?$/, {
-      message: "Limite deve ser um valor numérico",
-    })
-    .optional(),
+const redisUrl = process.env.REDIS_URL
+const redisToken = process.env.REDIS_TOKEN
+
+if (!redisUrl || !redisToken) {
+  throw new Error("Variáveis de Ambiente não definidas")
+}
+
+const redis = new Redis(redisUrl, {
+  password: redisToken,
+  maxRetriesPerRequest: 10,
+  retryStrategy: (times) => {
+    const delay = Math.min(times * 50, 2000)
+    return delay
+  },
+  reconnectOnError: (err) => {
+    const targetErrors = ["READONLY", "ECONNRESET", "ETIMEDOUT"]
+    if (targetErrors.some((targetError) => err.message.includes(targetError))) {
+      return true
+    }
+    return false
+  },
 })
 
 export default async function handler(
@@ -44,7 +45,7 @@ export default async function handler(
       return res.status(401).json({ message: "Não autorizado" })
     }
 
-    const parsedBody = cardSchema.safeParse(req.body)
+    const parsedBody = createCardSchema.safeParse(req.body)
 
     if (!parsedBody.success) {
       console.log("Erro de validação:", parsedBody.error.flatten().fieldErrors)
@@ -88,12 +89,16 @@ export default async function handler(
         bandeira: bandeira,
         instituicao: instituicao,
         tipoCartao: tipo,
-        vencimento: tipo === "credito" ? vencimento ?? null : null,
-        limite: tipo === "credito" ? parseFloat(limite as string) : null,
+        vencimento: vencimento ?? null,
+        limite: limite,
       },
     })
 
     console.log("Cartão criado com sucesso:", novoCartao)
+
+    const cacheKey = `userCards:${userId}`
+    await redis.del(cacheKey)
+    console.log(`Cache invalidado para a chave: ${cacheKey}`)
 
     return res
       .status(201)

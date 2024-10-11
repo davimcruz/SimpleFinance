@@ -20,7 +20,7 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { Skeleton } from "../../ui/skeleton"
-import CreateTransaction from "./CreateTransaction"
+import CreateTransactions from "../create-transactions/CreateTransactions"
 import TransactionsDetails from "./TransactionDetails"
 import { Transactions } from "@/types/types"
 
@@ -145,7 +145,7 @@ const TransactionsTable = () => {
             <ArrowUpRight className="h-4 w-4" />
           </Link>
         </Button>
-        <CreateTransaction />
+        <CreateTransactions />
       </CardHeader>
       <CardContent>
         {loading ? (
