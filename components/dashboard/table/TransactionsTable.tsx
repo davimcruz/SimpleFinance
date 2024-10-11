@@ -1,5 +1,5 @@
+import React, { useEffect, useState } from "react"
 import Link from "next/link"
-import { useEffect, useState } from "react"
 import { ArrowUpRight } from "lucide-react"
 import "../../../app/globals.css"
 import { Badge } from "@/components/ui/badge"
@@ -21,7 +21,7 @@ import {
 } from "@/components/ui/table"
 import { Skeleton } from "../../ui/skeleton"
 import CreateTransactions from "../create-transactions/CreateTransactions"
-import TransactionsDetails from "./TransactionDetails"
+import ViewTransaction from "../view-transactions/ViewTransactions"
 import { Transactions } from "@/types/types"
 
 type FonteKey =
@@ -42,6 +42,7 @@ const TransactionsTable = () => {
   const [loading, setLoading] = useState(true)
   const [sortKey, setSortKey] = useState<SortKey>("data")
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc")
+  const [viewingTransactionId, setViewingTransactionId] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchTransactions = async () => {
@@ -127,6 +128,14 @@ const TransactionsTable = () => {
     }).format(valor)
   }
 
+  const openViewTransaction = (transactionId: string) => {
+    setViewingTransactionId(transactionId);
+  };
+
+  const closeViewTransaction = () => {
+    setViewingTransactionId(null);
+  };
+
   return (
     <Card className="lg:col-span-2">
       <CardHeader className="flex flex-row items-center">
@@ -183,8 +192,8 @@ const TransactionsTable = () => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredTransactions.map((transaction, index) => (
-                  <TableRow key={index}>
+                {filteredTransactions.map((transaction) => (
+                  <TableRow key={transaction.transactionId}>
                     <TableCell>
                       <div className="font-medium">{transaction.nome}</div>
                     </TableCell>
@@ -210,9 +219,7 @@ const TransactionsTable = () => {
                       {formatValor(transaction.valor)}
                     </TableCell>
                     <TableCell className="text-right">
-                      <TransactionsDetails
-                        transactionId={transaction.transactionId}
-                      />
+                      <ViewTransaction transactionId={transaction.transactionId} />
                     </TableCell>
                   </TableRow>
                 ))}

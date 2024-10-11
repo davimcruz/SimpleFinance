@@ -13,7 +13,7 @@ import {
 import { Input } from "@/components/ui/input"
 import { Skeleton } from "../ui/skeleton"
 import CreateTransactions from "./CreateTransactions"
-import TransactionsDetails from "../dashboard/table/TransactionDetails"
+import TransactionsDetails from "../dashboard/table/TransactionDetailsTest"
 import { Transactions } from "@/types/types"
 
 type FonteKey =

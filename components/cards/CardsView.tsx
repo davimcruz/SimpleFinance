@@ -12,7 +12,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "../ui/alert-dialog"
-import { Trash2 } from "lucide-react"
+import { Trash2, PencilLine } from "lucide-react"
 import CreateCreditCard from "./CreateCards"
 
 interface CardType {
@@ -110,50 +110,64 @@ const CardsView = () => {
   }
 
   return (
-    <div className="flex justify-center items-center min-h-[90vh]">
-      <Card className="w-[400px]">
+    <div className="flex justify-center items-center min-h-[90vh] p-4">
+      <Card className="w-full max-w-[800px]">
         <CardTitle className="px-6 pt-6">Cartões de Crédito</CardTitle>
         <CardDescription className="px-6 mt-2">
           Clique no cartão que deseja visualizar
         </CardDescription>
         <Separator className="w-full mt-6" />
-        <CardContent className="flex-col mt-8">
+        <CardContent className="flex flex-col mt-8">
           {loading ? (
             <div className="flex justify-center items-center">
               <LottieAnimation animationPath="/loading.json" />
             </div>
           ) : (
             <>
-              <div>
+              <div className="space-y-4">
                 {creditCards.map((card) => (
                   <div
                     key={card.cardId}
-                    className={`flex justify-between p-4 m-4 border-[1px] rounded-lg cursor-pointer relative ${
-                      showManageCards ? "text-end" : ""
-                    }`}
+                    className="flex w-[400px] items-center justify-between p-4 border rounded-lg cursor-pointer hover:bg-gray-50 transition-colors"
                     onClick={() => handleCardClick(card.cardId)}
                   >
-                    {showManageCards && (
-                      <Button
-                        variant="outline"
-                        className=""
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          setDeletingCardId(card.cardId)
-                        }}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    )}
-                    <div className="flex-col">
-                      <p className="text-sm font-semibold">{card.nomeCartao}</p>
-                      <p className="text-sm">{card.bandeira}</p>
+                    <div className="flex items-center space-x-4">
+                      {showManageCards && (
+                        <div className="flex space-x-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              console.log("Editar cartão:", card.cardId)
+                            }}
+                          >
+                            <PencilLine className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              setDeletingCardId(card.cardId)
+                            }}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      )}
+                      <div>
+                        <p className="font-semibold  ">{card.nomeCartao}</p>
+                        <p className="text-sm  text-gray-500">{card.bandeira}</p>
+                      </div>
                     </div>
-
                     {!showManageCards && (
-                      <p className="text-sm text-end">
+                      <div className="flex flex-col">
+                      <p className="text-sm font-medium text-end">
                         {formatCurrency(card.limite)}
                       </p>
+                      <p className="text-sm text-end text-gray-500">Vencimento: {card.vencimento}</p>
+                      </div>
                     )}
                   </div>
                 ))}

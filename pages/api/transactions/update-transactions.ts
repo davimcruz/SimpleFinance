@@ -128,8 +128,7 @@ export default async function handler(
     return res.status(405).json({ error: "Método não permitido" })
   }
 
-  const { nome, tipo, fonte, detalhesFonte, data, valor, transactionId } =
-    req.body
+  const { transactionId, ...updateFields } = req.body
 
   if (!transactionId) {
     return res.status(400).json({ error: "transactionId é obrigatório" })
@@ -149,37 +148,23 @@ export default async function handler(
 
     const updates: any = {}
 
-    if (nome && nome !== currentTransaction.nome) {
-      updates.nome = nome
+    if ('nome' in updateFields) {
+      updates.nome = updateFields.nome
     }
-
-    if (tipo && tipo !== currentTransaction.tipo) {
-      updates.tipo = tipo
+    if ('tipo' in updateFields) {
+      updates.tipo = updateFields.tipo
     }
-
-    if (fonte && fonte !== currentTransaction.fonte) {
-      updates.fonte = fonte
+    if ('fonte' in updateFields) {
+      updates.fonte = updateFields.fonte
     }
-
-    if (
-      detalhesFonte !== undefined &&
-      detalhesFonte !== currentTransaction.detalhesFonte
-    ) {
-      updates.detalhesFonte = detalhesFonte || null
+    if ('detalhesFonte' in updateFields) {
+      updates.detalhesFonte = updateFields.detalhesFonte || null
     }
-
-    if (data && data !== currentTransaction.data) {
-      const extractedDate = data.split("T")[0]
-      const formattedDate = extractedDate.split("-").reverse().join("-")
-      updates.data = formattedDate || null
+    if ('data' in updateFields) {
+      updates.data = updateFields.data;
     }
-
-    if (
-      valor !== undefined &&
-      valor !== null &&
-      valor !== currentTransaction.valor
-    ) {
-      const valorFloat = typeof valor === "number" ? valor : parseFloat(valor)
+    if ('valor' in updateFields) {
+      const valorFloat = typeof updateFields.valor === "number" ? updateFields.valor : parseFloat(updateFields.valor)
       updates.valor = valorFloat
 
       if (currentTransaction.numeroParcelas) {
@@ -216,6 +201,15 @@ export default async function handler(
           })
         }
       }
+    }
+    if ('cardId' in updateFields) {
+      const cartao = await prisma.cartoes.findUnique({
+        where: { cardId: updateFields.cardId },
+      })
+      if (!cartao) {
+        return res.status(400).json({ error: "Cartão não encontrado" })
+      }
+      updates.cardId = updateFields.cardId
     }
 
     if (Object.keys(updates).length === 0) {
