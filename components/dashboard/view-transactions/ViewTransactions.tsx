@@ -8,7 +8,7 @@ import { DatePicker } from "./DatePicker"
 import { CurrencyInput } from "./CurrencyInput"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Button } from "@/components/ui/button" 
+import { Button } from "@/components/ui/button"
 import { parseCurrencyToFloat, formatToCurrency } from "@/utils/moneyFormatter"
 import {
   Dialog,
@@ -95,7 +95,7 @@ const ViewTransaction: React.FC<ViewTransactionProps> = ({ transactionId }) => {
       }
 
       const data = await response.json()
-      
+
       const formattedData = {
         nome: data.nome,
         tipo: data.tipo,
@@ -108,8 +108,9 @@ const ViewTransaction: React.FC<ViewTransactionProps> = ({ transactionId }) => {
 
       reset(formattedData)
     } catch (error) {
-      console.error("Erro ao buscar detalhes da transação:", error)
-      setApiError("Erro ao carregar detalhes da transação. Por favor, tente novamente.")
+      setApiError(
+        "Erro ao carregar detalhes da transação. Por favor, tente novamente."
+      )
     } finally {
       setIsLoading(false)
     }
@@ -122,13 +123,11 @@ const ViewTransaction: React.FC<ViewTransactionProps> = ({ transactionId }) => {
   }, [fetchTransactionDetails, fetchCards])
 
   const submitForm = async () => {
-    console.log("Função submitForm chamada")
     setIsSubmitting(true)
     setApiError(null)
 
     try {
       const formData = getValues()
-      console.log("Dados do formulário:", formData)
 
       const updatedData = {
         transactionId,
@@ -138,32 +137,27 @@ const ViewTransaction: React.FC<ViewTransactionProps> = ({ transactionId }) => {
         detalhesFonte: formData.detalhesFonte,
       }
 
-      console.log("Enviando dados para a API:", updatedData)
-
       const response = await fetch(ENDPOINTS.UPDATE_TRANSACTION, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(updatedData),
       })
 
-      console.log("Status da resposta:", response.status)
-
       if (!response.ok) {
         throw new Error(`Erro na resposta da API: ${response.status}`)
       }
 
       const result = await response.json()
-      console.log("Resposta da API:", result)
 
       if (result.success) {
-        console.log("Transação atualizada com sucesso")
         setIsOpen(false)
         router.reload()
       } else {
-        throw new Error(result.error || "Erro desconhecido ao atualizar a transação")
+        throw new Error(
+          result.error || "Erro desconhecido ao atualizar a transação"
+        )
       }
     } catch (error) {
-      console.error("Erro ao atualizar a transação:", error)
       setApiError("Erro ao atualizar a transação. Por favor, tente novamente.")
     } finally {
       setIsSubmitting(false)
@@ -172,11 +166,42 @@ const ViewTransaction: React.FC<ViewTransactionProps> = ({ transactionId }) => {
 
   const handleSubmitClick = (e: React.MouseEvent) => {
     e.preventDefault()
-    console.log("Botão de submissão clicado")
     submitForm()
   }
 
-  const disabledStyle = { pointerEvents: 'none' as const, opacity: 0.6 }
+  const handleDeleteClick = async () => {
+    setIsDeleting(true)
+    setApiError(null)
+
+    try {
+      const response = await fetch(ENDPOINTS.DELETE_TRANSACTION, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ transactionId }),
+      })
+
+      if (!response.ok) {
+        throw new Error(`Erro na resposta da API: ${response.status}`)
+      }
+
+      const result = await response.json()
+
+      if (result.success) {
+        setIsOpen(false)
+        router.reload()
+      } else {
+        throw new Error(
+          result.error || "Erro desconhecido ao excluir a transação"
+        )
+      }
+    } catch (error) {
+      setApiError("Erro ao excluir a transação. Por favor, tente novamente.")
+    } finally {
+      setIsDeleting(false)
+    }
+  }
+
+  const disabledStyle = { pointerEvents: "none" as const, opacity: 0.6 }
 
   return (
     <>
@@ -204,7 +229,7 @@ const ViewTransaction: React.FC<ViewTransactionProps> = ({ transactionId }) => {
               <DialogHeader>
                 <DialogTitle>Editar Transação</DialogTitle>
                 <DialogDescription>
-                  Edite os detalhes da transação para atualizar
+                  Preencha as informações que deseja editar
                 </DialogDescription>
               </DialogHeader>
               {isLoading ? (
@@ -336,14 +361,25 @@ const ViewTransaction: React.FC<ViewTransactionProps> = ({ transactionId }) => {
 
                   {apiError && <div className="text-red-500">{apiError}</div>}
 
-                  <Button
-                    type="button"
-                    className="w-full"
-                    disabled={isSubmitting}
-                    onClick={handleSubmitClick}
-                  >
-                    Atualizar Transação
-                  </Button>
+                  <div className="flex flex-col gap-2">
+                    <Button
+                      type="button"
+                      variant={"outline"}
+                      className="w-full shadow-sm"
+                      disabled={isSubmitting || isDeleting}
+                      onClick={handleDeleteClick}
+                    >
+                      {isDeleting ? "Excluindo..." : "Excluir Transação"}
+                    </Button>
+                    <Button
+                      type="button"
+                      className="w-full"
+                      disabled={isSubmitting}
+                      onClick={handleSubmitClick}
+                    >
+                      Atualizar Transação
+                    </Button>
+                  </div>
                 </form>
               )}
             </>

@@ -13,17 +13,17 @@ import {
 import { Input } from "@/components/ui/input"
 import { Skeleton } from "../ui/skeleton"
 import CreateTransactions from "./CreateTransactions"
-import TransactionsDetails from "../dashboard/table/TransactionDetailsTest"
 import { Transactions } from "@/types/types"
+import ViewTransaction from "../dashboard/view-transactions/ViewTransactions"
 
 type FonteKey =
   | "cartao-credito"
   | "cartao-debito"
   | "pix"
   | "boleto"
-  | "investimentos"
-  | "ted-doc"
-  | "cedulas"
+  | "especie"
+  | "outros"
+
 
 type SortKey = "nome" | "data" | "valor"
 
@@ -111,9 +111,8 @@ const TransactionsFull = () => {
     "cartao-debito": "Cartão de Débito",
     pix: "PIX",
     boleto: "Boleto",
-    investimentos: "Investimentos",
-    "ted-doc": "TED/DOC",
-    cedulas: "Cédulas",
+    especie: "Espécie",
+    outros: "Outros",
   }
 
   const formatFonte = (fonte: string): string => {
@@ -217,7 +216,7 @@ const TransactionsFull = () => {
                       {formatValor(transaction.valor)}
                     </TableCell>
                     <TableCell className="">
-                      <TransactionsDetails
+                      <ViewTransaction
                         transactionId={transaction.transactionId}
                       />
                     </TableCell>

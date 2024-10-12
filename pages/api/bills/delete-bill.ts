@@ -16,22 +16,31 @@ export default async function handler(
   }
 
   try {
-    await prisma.parcelas.deleteMany({
+    const parcelas = await prisma.parcelas.findMany({
       where: { faturaId },
+      select: { transacaoId: true }
+    })
+
+    const transacaoIds = parcelas.map(parcela => parcela.transacaoId)
+
+    await prisma.transacoes.deleteMany({
+      where: { transactionId: { in: transacaoIds } }
+    })
+
+    await prisma.parcelas.deleteMany({
+      where: { faturaId }
     })
 
     await prisma.faturas.delete({
-      where: { faturaId },
+      where: { faturaId }
     })
 
-    res
-      .status(200)
-      .json({
-        success: true,
-        message: "Fatura e parcelas deletadas com sucesso",
-      })
+    res.status(200).json({
+      success: true,
+      message: "Fatura, parcelas e transações associadas deletadas com sucesso"
+    })
   } catch (error) {
-    console.error("Erro ao deletar fatura e parcelas:", error)
-    res.status(500).json({ error: "Erro ao deletar fatura e parcelas" })
+    console.error("Erro ao deletar fatura, parcelas e transações:", error)
+    res.status(500).json({ error: "Erro ao deletar fatura, parcelas e transações" })
   }
 }

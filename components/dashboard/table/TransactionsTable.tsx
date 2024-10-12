@@ -128,14 +128,6 @@ const TransactionsTable = () => {
     }).format(valor)
   }
 
-  const openViewTransaction = (transactionId: string) => {
-    setViewingTransactionId(transactionId);
-  };
-
-  const closeViewTransaction = () => {
-    setViewingTransactionId(null);
-  };
-
   return (
     <Card className="lg:col-span-2">
       <CardHeader className="flex flex-row items-center">

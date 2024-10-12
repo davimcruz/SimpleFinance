@@ -24,6 +24,7 @@ import LottieAnimation from "@/components/ui/loadingAnimation"
 import { useNameInput } from "@/utils/nameFormatter"
 import { transactionSchema, TransactionFormData } from "@/lib/validation"
 import { ChevronRight } from "lucide-react"
+import { useRouter } from "next/router"
 
 const ERROR_MESSAGES = {
   MIN_VALUE: "O valor mínimo é R$ 1,00",
@@ -48,6 +49,7 @@ const CreateTransaction: React.FC = () => {
   const [apiError, setApiError] = useState<string | null>(null)
   const [isOpen, setIsOpen] = useState(false)
   const [cards, setCards] = useState<Card[]>([])
+  const router = useRouter()
 
   const {
     control,
@@ -147,11 +149,9 @@ const CreateTransaction: React.FC = () => {
           throw new Error(errorData.error || "Falha ao criar transação")
         }
 
-        const responseData = await response.json()
-        console.log("Resposta da API:", responseData)
-
         reset()
         setIsOpen(false)
+        router.reload()
       } catch (error) {
         console.error("Erro ao criar transação:", error)
         setApiError(
@@ -163,7 +163,7 @@ const CreateTransaction: React.FC = () => {
         setIsLoading(false)
       }
     },
-    [reset]
+    [reset, router]
   )
 
   const showDetalhesFonte = useMemo(
@@ -183,9 +183,12 @@ const CreateTransaction: React.FC = () => {
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
         {isLoading ? (
-          <div className="flex justify-center items-center h-full">
-            <LottieAnimation animationPath="/loadingAnimation.json" />
-          </div>
+          <>
+            <DialogTitle>Criando transação...</DialogTitle>
+            <div className="flex justify-center items-center h-full">
+              <LottieAnimation animationPath="/loadingAnimation.json" />
+            </div>
+          </>
         ) : (
           <>
             <DialogHeader>

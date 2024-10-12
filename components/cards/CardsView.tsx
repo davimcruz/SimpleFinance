@@ -128,7 +128,7 @@ const CardsView = () => {
                 {creditCards.map((card) => (
                   <div
                     key={card.cardId}
-                    className="flex w-[400px] items-center justify-between p-4 border rounded-lg cursor-pointer hover:bg-gray-50 transition-colors"
+                    className="flex w-[400px] items-center justify-between p-4 border rounded-lg cursor-pointer transition-colors"
                     onClick={() => handleCardClick(card.cardId)}
                   >
                     <div className="flex items-center space-x-4">
