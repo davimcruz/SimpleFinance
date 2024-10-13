@@ -25,6 +25,7 @@ import { useNameInput } from "@/utils/nameFormatter"
 import { transactionSchema, TransactionFormData } from "@/lib/validation"
 import { ChevronRight } from "lucide-react"
 import { useRouter } from "next/router"
+import { format, addMonths } from "date-fns"
 
 const ERROR_MESSAGES = {
   MIN_VALUE: "O valor mínimo é R$ 1,00",
@@ -42,6 +43,7 @@ interface Card {
   nomeCartao: string
   bandeira: string
   tipoCartao: "credito" | "debito"
+  vencimento: number
 }
 
 const CreateTransaction: React.FC = () => {
@@ -72,6 +74,7 @@ const CreateTransaction: React.FC = () => {
   const tipo = watch("tipo")
   const fonte = watch("fonte")
   const creditPaymentType = watch("creditPaymentType")
+  const selectedCardId = watch("cardId")
 
   const fetchCards = useCallback(async () => {
     try {
@@ -91,7 +94,8 @@ const CreateTransaction: React.FC = () => {
       }
 
       const data = await response.json()
-      setCards(data)
+      console.log("Dados dos cartões recebidos:", data)
+      setCards(data.cartoes)
     } catch (error) {
       console.error("Erro ao buscar cartões:", error)
       setCards([])
@@ -101,6 +105,18 @@ const CreateTransaction: React.FC = () => {
   useEffect(() => {
     fetchCards()
   }, [fetchCards])
+
+  useEffect(() => {
+    if (selectedCardId && fonte === "cartao-credito") {
+      const selectedCard = cards.find((card) => card.cardId === selectedCardId)
+      if (selectedCard) {
+        const nextDueDate = calculateNextDueDate(selectedCard.vencimento)
+        const formattedDate = format(nextDueDate, "dd-MM-yyyy")
+        console.log("Próxima data de vencimento calculada:", formattedDate)
+        setValue("data", formattedDate)
+      }
+    }
+  }, [selectedCardId, fonte, cards, setValue])
 
   const onSubmit = useCallback(
     async (data: TransactionFormData) => {
@@ -172,6 +188,21 @@ const CreateTransaction: React.FC = () => {
   )
 
   const { handleNameChange } = useNameInput()
+
+  const calculateNextDueDate = (vencimento: number) => {
+    const today = new Date()
+    const thisMonth = new Date(
+      today.getFullYear(),
+      today.getMonth(),
+      vencimento
+    )
+
+    if (today > thisMonth) {
+      return addMonths(thisMonth, 1)
+    }
+
+    return thisMonth
+  }
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
@@ -320,6 +351,7 @@ const CreateTransaction: React.FC = () => {
                       onChange={field.onChange}
                       onBlur={field.onBlur}
                       error={errors.data?.message}
+                      disabled={fonte === "cartao-credito"}
                     />
                   )}
                 />
