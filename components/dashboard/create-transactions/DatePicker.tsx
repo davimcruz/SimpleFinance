@@ -13,9 +13,10 @@ import { Label } from "@/components/ui/label"
 
 interface DatePickerProps {
   value: string
-  onChange: (value: string) => void
+  onChange: (date: string) => void
   onBlur: () => void
   error?: string
+  disabled?: boolean
 }
 
 export const DatePicker: React.FC<DatePickerProps> = ({
@@ -23,6 +24,7 @@ export const DatePicker: React.FC<DatePickerProps> = ({
   onChange,
   onBlur,
   error,
+  disabled,
 }) => {
   const handleSelect = (selectedDate: Date | undefined) => {
     if (selectedDate) {
@@ -49,6 +51,7 @@ export const DatePicker: React.FC<DatePickerProps> = ({
               !value && "text-muted-foreground"
             }`}
             onClick={onBlur}
+            disabled={disabled}
           >
             <CalendarIcon className="mr-2 h-4 w-4" />
             {value ? (
@@ -68,15 +71,12 @@ export const DatePicker: React.FC<DatePickerProps> = ({
               }
               onSelect={handleSelect}
               initialFocus
+              disabled={disabled}
             />
           </div>
         </PopoverContent>
       </Popover>
-      {error && (
-        <span className="text-red-500 text-sm">
-          Por favor, selecione a data da transação.
-        </span>
-      )}
+      {error && <span className="text-red-500 text-sm">{error}</span>}
     </div>
   )
 }
