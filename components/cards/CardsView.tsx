@@ -129,25 +129,28 @@ const CardsView = () => {
   }
 
   return (
-    <div className="flex justify-center items-center min-h-[90vh] p-4">
-      <Card className="w-full max-w-[800px]">
-        <CardTitle className="px-6 pt-6">Cartões de Crédito</CardTitle>
-        <CardDescription className="px-6 mt-2">
-          Clique no cartão que deseja visualizar
-        </CardDescription>
-        <Separator className="w-full mt-6" />
-        <CardContent className="flex flex-col mt-8">
+    <>
+      {/* Versão Mobile */}
+      <div className="sm:hidden flex flex-col bg-card h-[calc(100vh-64px)]">
+        <div className="p-4">
+          <h1 className="text-2xl font-bold">Cartões de Crédito</h1>
+          <p className="text-muted-foreground mt-2">
+            Clique no cartão que deseja visualizar
+          </p>
+        </div>
+        <Separator />
+        <div className="flex-grow overflow-auto p-4">
           {loading ? (
-            <div className="flex justify-center items-center">
+            <div className="flex justify-center items-center h-full">
               <LottieAnimation animationPath="/loading.json" />
             </div>
           ) : (
-            <>
-              <div className="space-y-4">
+            <div className="flex flex-col h-full">
+              <div className="flex-grow space-y-4 overflow-auto">
                 {creditCards.map((card) => (
                   <div
                     key={card.cardId}
-                    className="flex w-[400px] items-center justify-between p-4 border rounded-lg cursor-pointer hover:bg-gray-50 transition-colors"
+                    className="flex items-center justify-between p-4 border rounded-lg cursor-pointer hover:bg-accent transition-colors"
                     onClick={() => handleCardClick(card.cardId)}
                   >
                     <div className="flex items-center space-x-4">
@@ -191,68 +194,154 @@ const CardsView = () => {
                   </div>
                 ))}
               </div>
-              <Button
-                onClick={() => setShowCreateCard(true)}
-                className="w-full mt-6"
-              >
-                Adicionar Novo Cartão
-              </Button>
-              <Button
-                variant="outline"
-                onClick={() => setShowManageCards((prev) => !prev)}
-                className="w-full mt-2"
-              >
-                {showManageCards
-                  ? "Cancelar Gerenciamento"
-                  : "Gerenciar Cartões"}
-              </Button>
-            </>
+              <div className="mt-4 space-y-2">
+                <Button
+                  onClick={() => setShowCreateCard(true)}
+                  className="w-full"
+                >
+                  Adicionar Novo Cartão
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => setShowManageCards((prev) => !prev)}
+                  className="w-full"
+                >
+                  {showManageCards
+                    ? "Cancelar Gerenciamento"
+                    : "Gerenciar Cartões"}
+                </Button>
+              </div>
+            </div>
           )}
-        </CardContent>
+        </div>
+      </div>
 
-        <AlertDialog
-          open={!!deletingCardId}
-          onOpenChange={(isOpen) => !isOpen && setDeletingCardId(null)}
-        >
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>Confirmar Exclusão</AlertDialogTitle>
-              <p>
-                Tem certeza que deseja excluir este cartão? <br /> <br />
-                Todas as transações, parcelas e faturas vinculadas a ele também
-                serão excluídas.
-              </p>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <Button 
-                variant="outline" 
-                onClick={() => setDeletingCardId(null)}
-                disabled={isDeleting}
-              >
-                Cancelar
-              </Button>
-              <Button
-                variant="destructive"
-                onClick={() => {
-                  if (deletingCardId) {
-                    handleDeleteCard(deletingCardId)
-                  }
-                }}
-                disabled={isDeleting}
-              >
-                {isDeleting ? "Excluindo..." : "Excluir Cartão"}
-              </Button>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
+      {/* Versão Desktop */}
+      <div className="hidden sm:flex justify-center items-center min-h-[90vh] p-4">
+        <Card className="w-full max-w-[800px]">
+          <CardTitle className="px-6 pt-6">Cartões de Crédito</CardTitle>
+          <CardDescription className="px-6 mt-2">
+            Clique no cartão que deseja visualizar
+          </CardDescription>
+          <Separator className="w-full mt-6" />
+          <CardContent className="flex flex-col mt-8">
+            {loading ? (
+              <div className="flex justify-center items-center">
+                <LottieAnimation animationPath="/loading.json" />
+              </div>
+            ) : (
+              <>
+                <div className="space-y-4">
+                  {creditCards.map((card) => (
+                    <div
+                      key={card.cardId}
+                      className="flex w-full sm:w-[400px] items-center justify-between p-4 border rounded-lg cursor-pointer hover:bg-gray-50 transition-colors"
+                      onClick={() => handleCardClick(card.cardId)}
+                    >
+                      <div className="flex items-center space-x-4">
+                        {showManageCards && (
+                          <div className="flex space-x-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                handleEditCard(card.cardId)
+                              }}
+                            >
+                              <PencilLine className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                setDeletingCardId(card.cardId)
+                              }}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        )}
+                        <div>
+                          <p className="font-semibold  ">{card.nomeCartao}</p>
+                          <p className="text-sm  text-gray-500">{card.bandeira}</p>
+                        </div>
+                      </div>
+                      {!showManageCards && (
+                        <div className="flex flex-col">
+                        <p className="text-sm font-medium text-end">
+                          {formatCurrency(card.limite)}
+                        </p>
+                        <p className="text-sm text-end text-gray-500">Vencimento: {card.vencimento}</p>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+                <Button
+                  onClick={() => setShowCreateCard(true)}
+                  className="w-full mt-6"
+                >
+                  Adicionar Novo Cartão
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => setShowManageCards((prev) => !prev)}
+                  className="w-full mt-2"
+                >
+                  {showManageCards
+                    ? "Cancelar Gerenciamento"
+                    : "Gerenciar Cartões"}
+                </Button>
+              </>
+            )}
+          </CardContent>
+        </Card>
+      </div>
 
-        {isDeleting && (
-          <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
-            <LottieAnimation animationPath="./loading.json" />
-          </div>
-        )}
-      </Card>
-    </div>
+      <AlertDialog
+        open={!!deletingCardId}
+        onOpenChange={(isOpen) => !isOpen && setDeletingCardId(null)}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirmar Exclusão</AlertDialogTitle>
+            <p>
+              Tem certeza que deseja excluir este cartão? <br /> <br />
+              Todas as transações, parcelas e faturas vinculadas a ele também
+              serão excluídas.
+            </p>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <Button 
+              variant="outline" 
+              onClick={() => setDeletingCardId(null)}
+              disabled={isDeleting}
+            >
+              Cancelar
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={() => {
+                if (deletingCardId) {
+                  handleDeleteCard(deletingCardId)
+                }
+              }}
+              disabled={isDeleting}
+            >
+              {isDeleting ? "Excluindo..." : "Excluir Cartão"}
+            </Button>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {isDeleting && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+          <LottieAnimation animationPath="./loading.json" />
+        </div>
+      )}
+    </>
   )
 }
 

@@ -214,7 +214,13 @@ const ViewTransaction: React.FC<ViewTransactionProps> = ({ transactionId }) => {
         Detalhes
       </Button>
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
-        <DialogContent className="sm:max-w-[425px]">
+        <DialogContent
+          className="sm:max-w-[425px] max-w-[100vw]
+      md:h-auto
+      h-screen max-h-screen w-screen
+      md:rounded-lg rounded-none
+      flex flex-col"
+        >
           {isSubmitting ? (
             <>
               <DialogHeader>

@@ -130,18 +130,27 @@ const CreateCreditCard: React.FC<CreateCreditCardProps> = ({ onCancel }) => {
   }
 
   return (
-    <div className="flex justify-center items-center min-h-[90vh]">
-      <Card className="w-[400px]">
+    <div className="flex justify-center items-center min-h-[100vh] md:min-h-[90vh]">
+      <Card
+        className="sm:w-[400px] max-w-[100vw]
+      md:h-auto md:max-h-[85vh]
+      md:rounded-lg rounded-none
+      flex flex-col
+      pt-6 md:pt-0
+      "
+      >
         {isSubmitting ? (
           <>
-            <CardTitle className="px-6 pt-6">Criando cartão...</CardTitle>
+            <CardTitle>Criando cartão...</CardTitle>
             <CardContent className="flex justify-center items-center h-[400px]">
               <LottieAnimation animationPath="/loadingAnimation.json" />
             </CardContent>
           </>
         ) : (
           <>
-            <CardTitle className="px-6 pt-6">Registrar Cartão de Crédito</CardTitle>
+            <CardTitle className="px-6 pt-6">
+              Registrar Cartão de Crédito
+            </CardTitle>
             <CardDescription className="px-6 pt-4">
               Preencha o formulário abaixo para registrar seu cartão de crédito
             </CardDescription>
@@ -156,15 +165,17 @@ const CreateCreditCard: React.FC<CreateCreditCardProps> = ({ onCancel }) => {
                   onChange={(e) => handleNameChange(e, { onChange: setNome })}
                   className="w-full"
                 />
-                {errors.nome && <span className="text-red-500 text-sm">{errors.nome}</span>}
+                {errors.nome && (
+                  <span className="text-red-500 text-sm">{errors.nome}</span>
+                )}
               </div>
 
               <div className="mb-4">
                 <Label htmlFor="card-bandeira">Bandeira</Label>
-                <Select 
+                <Select
                   onValueChange={(value) => {
                     setBandeira(value)
-                    setErrors(prev => ({ ...prev, bandeira: "" }))
+                    setErrors((prev) => ({ ...prev, bandeira: "" }))
                   }}
                 >
                   <SelectTrigger className="w-full">
@@ -174,11 +185,17 @@ const CreateCreditCard: React.FC<CreateCreditCardProps> = ({ onCancel }) => {
                     <SelectItem value="Mastercard">Mastercard</SelectItem>
                     <SelectItem value="Visa">Visa</SelectItem>
                     <SelectItem value="Elo">Elo</SelectItem>
-                    <SelectItem value="American Express">American Express</SelectItem>
+                    <SelectItem value="American Express">
+                      American Express
+                    </SelectItem>
                     <SelectItem value="Hipercard">Hipercard</SelectItem>
                   </SelectContent>
                 </Select>
-                {errors.bandeira && <span className="text-red-500 text-sm">{errors.bandeira}</span>}
+                {errors.bandeira && (
+                  <span className="text-red-500 text-sm">
+                    {errors.bandeira}
+                  </span>
+                )}
               </div>
 
               <div className="mb-4">
@@ -187,10 +204,16 @@ const CreateCreditCard: React.FC<CreateCreditCardProps> = ({ onCancel }) => {
                   id="card-instituicao"
                   placeholder="Ex: Banco Inter"
                   value={instituicao}
-                  onChange={(e) => handleNameChange(e, { onChange: setInstituicao })}
+                  onChange={(e) =>
+                    handleNameChange(e, { onChange: setInstituicao })
+                  }
                   className="w-full"
                 />
-                {errors.instituicao && <span className="text-red-500 text-sm">{errors.instituicao}</span>}
+                {errors.instituicao && (
+                  <span className="text-red-500 text-sm">
+                    {errors.instituicao}
+                  </span>
+                )}
               </div>
 
               <div className="mb-4">
@@ -201,17 +224,21 @@ const CreateCreditCard: React.FC<CreateCreditCardProps> = ({ onCancel }) => {
                   value={limite}
                   onChange={(e) => {
                     setLimite(handleChange(e))
-                    setErrors(prev => ({ ...prev, limite: "" }))
+                    setErrors((prev) => ({ ...prev, limite: "" }))
                   }}
                   onFocus={(e) => setLimite(handleFocus(limite))}
                   onBlur={() => setLimite(handleBlur(limite))}
                   className="w-full"
                 />
-                {errors.limite && <span className="text-red-500 text-sm">{errors.limite}</span>}
+                {errors.limite && (
+                  <span className="text-red-500 text-sm">{errors.limite}</span>
+                )}
               </div>
 
               <div className="mb-4">
-                <Label htmlFor="card-vencimento">Vencimento da Fatura (Dia)</Label>
+                <Label htmlFor="card-vencimento">
+                  Vencimento da Fatura (Dia)
+                </Label>
                 <div className="relative">
                   <Input
                     id="card-vencimento"
@@ -225,16 +252,32 @@ const CreateCreditCard: React.FC<CreateCreditCardProps> = ({ onCancel }) => {
                   />
                   <CalendarIcon className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
                 </div>
-                {errors.vencimento && <span className="text-red-500 text-sm">{errors.vencimento}</span>}
+                {errors.vencimento && (
+                  <span className="text-red-500 text-sm">
+                    {errors.vencimento}
+                  </span>
+                )}
               </div>
 
-              <Button onClick={handleSubmit} className="w-full mt-6" disabled={isSubmitting}>
+              <Button
+                onClick={handleSubmit}
+                className="w-full mt-6"
+                disabled={isSubmitting}
+              >
                 Criar Cartão de Crédito
               </Button>
-              <Button onClick={onCancel} className="w-full mt-2" variant="outline">
+              <Button
+                onClick={onCancel}
+                className="w-full mt-2"
+                variant="outline"
+              >
                 Cancelar
               </Button>
-              {errors.general && <span className="text-red-500 text-sm mt-2">{errors.general}</span>}
+              {errors.general && (
+                <span className="text-red-500 text-sm mt-2">
+                  {errors.general}
+                </span>
+              )}
             </CardContent>
           </>
         )}

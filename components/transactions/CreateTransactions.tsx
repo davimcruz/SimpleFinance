@@ -212,7 +212,13 @@ const CreateTransaction: React.FC = () => {
           <ChevronRight className="h-4 w-4" />
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent
+        className="sm:max-w-[425px] max-w-[100vw]
+      md:h-auto
+      h-screen max-h-screen w-screen
+      md:rounded-lg rounded-none
+      flex flex-col"
+      >
         {isLoading ? (
           <>
             <DialogTitle>Criando transação...</DialogTitle>

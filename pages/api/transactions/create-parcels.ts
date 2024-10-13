@@ -4,7 +4,7 @@ import { verifyToken } from "../middleware/jwt-auth"
 import prisma from "@/lib/prisma"
 import { Prisma } from "@prisma/client"
 import Redis from "ioredis"
-import { z } from "zod"
+import { createParcelsSchema, CreateParcelsInput } from "@/lib/validation"
 import { parse, format } from "date-fns"
 
 const redisUrl = process.env.REDIS_URL
@@ -31,39 +31,6 @@ const redis = new Redis(redisUrl, {
     return false
   },
 })
-
-const transactionSchema = z.object({
-  email: z.string().email({ message: "Email inválido" }),
-  nome: z.string().min(1, { message: "Nome é obrigatório" }),
-  tipo: z.literal("despesa", {
-    message: "Tipo deve ser 'despesa' para crédito",
-  }),
-  fonte: z.literal("cartao-credito", {
-    message: "Fonte deve ser 'cartao-credito'",
-  }),
-  detalhesFonte: z.string().optional().nullable(),
-  data: z.string().refine(
-    (date) => {
-      const ddMMyyyy = /^\d{2}-\d{2}-\d{4}$/.test(date)
-      const isoFormat = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/.test(
-        date
-      )
-      return ddMMyyyy || isoFormat
-    },
-    {
-      message:
-        "Data deve estar no formato DD-MM-YYYY ou ISO (yyyy-mm-ddTHH:MM:SS.sssZ)",
-    }
-  ),
-  valor: z.number().positive({ message: "Valor deve ser um número positivo" }),
-  cardId: z.string().uuid({ message: "Card ID inválido" }),
-  numeroParcelas: z
-    .number()
-    .min(1, { message: "Número de parcelas mínimo é 1" })
-    .max(12, { message: "Número de parcelas máximo é 12" }),
-})
-
-type TransactionFormData = z.infer<typeof transactionSchema>
 
 const realocarSaldo = async (userId: number, anoAtual: number) => {
   console.log("Iniciando realocacao de saldo...")
@@ -159,7 +126,7 @@ export default async function handler(
     return res.status(405).json({ error: "Metodo nao permitido" })
   }
 
-  const parseResult = transactionSchema.safeParse(req.body)
+  const parseResult = createParcelsSchema.safeParse(req.body)
 
   if (!parseResult.success) {
     const fieldErrors: Record<string, string> = {}
