@@ -14,6 +14,7 @@ import {
 } from "../ui/alert-dialog"
 import { Trash2, PencilLine } from "lucide-react"
 import CreateCreditCard from "./CreateCards"
+import UpdateCard from "./UpdateCards"
 
 interface CardType {
   cardId: string
@@ -31,6 +32,7 @@ const CardsView = () => {
   const [showManageCards, setShowManageCards] = useState(false)
   const [deletingCardId, setDeletingCardId] = useState<string | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
+  const [editingCardId, setEditingCardId] = useState<string | null>(null)
   const router = useRouter()
 
   const cookies = parseCookies()
@@ -50,7 +52,12 @@ const CardsView = () => {
         const data = await response.json()
 
         if (Array.isArray(data.cartoes)) {
-          setCards(data.cartoes)
+          const sortedCards = data.cartoes.sort((a: CardType, b: CardType) => {
+            const limiteA = a.limite ? parseFloat(a.limite) : 0
+            const limiteB = b.limite ? parseFloat(b.limite) : 0
+            return limiteB - limiteA
+          })
+          setCards(sortedCards)
         } else {
           console.error("A resposta da API não é um array.")
         }
@@ -81,7 +88,7 @@ const CardsView = () => {
   const handleDeleteCard = async (cardId: string) => {
     setIsDeleting(true)
     try {
-      const response = await fetch(`/api/cards/delete-card`, {
+      const response = await fetch(`/api/cards/delete-cards`, {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",
@@ -91,9 +98,9 @@ const CardsView = () => {
 
       const data = await response.json()
       if (response.ok) {
-        setCards((prevCards) =>
-          prevCards.filter((card) => card.cardId !== cardId)
-        )
+        setTimeout(() => {
+          router.reload()
+        }, 500) 
       } else {
         console.error("Erro ao deletar cartão:", data.error)
       }
@@ -105,8 +112,20 @@ const CardsView = () => {
     }
   }
 
+  const handleEditCard = (cardId: string) => {
+    setEditingCardId(cardId)
+  }
+
+  const handleCancelEdit = () => {
+    setEditingCardId(null)
+  }
+
   if (showCreateCard) {
-    return <CreateCreditCard />
+    return <CreateCreditCard onCancel={() => setShowCreateCard(false)} />
+  }
+
+  if (editingCardId) {
+    return <UpdateCard cardId={editingCardId} onCancel={handleCancelEdit} />
   }
 
   return (
@@ -128,7 +147,7 @@ const CardsView = () => {
                 {creditCards.map((card) => (
                   <div
                     key={card.cardId}
-                    className="flex w-[400px] items-center justify-between p-4 border rounded-lg cursor-pointer transition-colors"
+                    className="flex w-[400px] items-center justify-between p-4 border rounded-lg cursor-pointer hover:bg-gray-50 transition-colors"
                     onClick={() => handleCardClick(card.cardId)}
                   >
                     <div className="flex items-center space-x-4">
@@ -139,7 +158,7 @@ const CardsView = () => {
                             size="sm"
                             onClick={(e) => {
                               e.stopPropagation()
-                              console.log("Editar cartão:", card.cardId)
+                              handleEditCard(card.cardId)
                             }}
                           >
                             <PencilLine className="h-4 w-4" />

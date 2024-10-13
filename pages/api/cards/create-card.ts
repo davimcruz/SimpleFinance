@@ -3,6 +3,7 @@ import { verifyToken } from "@/pages/api/middleware/jwt-auth"
 import prisma from "@/lib/prisma"
 import { createCardSchema } from "@/lib/validation"
 import Redis from "ioredis"
+import { z } from "zod"
 
 const redisUrl = process.env.REDIS_URL
 const redisToken = process.env.REDIS_TOKEN
@@ -55,8 +56,7 @@ export default async function handler(
       })
     }
 
-    const { userId, nome, bandeira, instituicao, tipo, vencimento, limite } =
-      parsedBody.data
+    const { userId, nome, bandeira, instituicao, tipo, vencimento, limite } = parsedBody.data
 
     console.log("Dados validados com sucesso:", {
       userId,
@@ -89,7 +89,7 @@ export default async function handler(
         bandeira: bandeira,
         instituicao: instituicao,
         tipoCartao: tipo,
-        vencimento: vencimento ?? null,
+        vencimento: vencimento,
         limite: limite,
       },
     })
@@ -105,6 +105,13 @@ export default async function handler(
       .json({ message: "Cartão criado com sucesso", cartao: novoCartao })
   } catch (error: any) {
     console.error("Erro ao criar cartão:", error)
+
+    if (error instanceof z.ZodError) {
+      return res.status(400).json({
+        message: "Dados inválidos",
+        errors: error.errors,
+      })
+    }
 
     if (error.code === "P2002") {
       console.log("Erro de duplicidade: Cartão já existe")

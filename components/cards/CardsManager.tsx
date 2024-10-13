@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react"
 import { parseCookies } from "nookies"
 import CreateCards from "./CreateCards"
 import CardsView from "./CardsView"
+import CreateCreditCard from "./CreateCards"
 
 interface CardType {
   nomeCartao: string
@@ -14,6 +15,7 @@ interface CardType {
 const CardsManager = () => {
   const [cards, setCards] = useState<CardType[]>([])
   const [loading, setLoading] = useState(true)
+  const [showCreateCard, setShowCreateCard] = useState(false)
 
   const cookies = parseCookies()
   const userId = cookies.userId
@@ -50,12 +52,16 @@ const CardsManager = () => {
   }
 
   if (cards.length === 0) {
-    return <CreateCards />
+    return <CreateCards onCancel={() => setCards([])} />
+  }
+
+  if (showCreateCard) {
+    return <CreateCreditCard onCancel={() => setShowCreateCard(false)} />
   }
 
   return (
     <div className="flex justify-center items-center max-h-[100vh] min-h-[90vh]">
-      <CardsView  />
+      <CardsView />
     </div>
   )
 }

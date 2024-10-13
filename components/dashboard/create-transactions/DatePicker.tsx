@@ -58,9 +58,7 @@ export const DatePicker: React.FC<DatePickerProps> = ({
             )}
           </Button>
         </PopoverTrigger>
-        <PopoverContent
-          className="w-auto p-0 z-[9999] pointer-events-auto"
-        >
+        <PopoverContent className="w-auto p-0 z-[9999] pointer-events-auto">
           <div style={{ pointerEvents: "auto" }}>
             <Calendar
               locale={ptBR}
@@ -74,7 +72,11 @@ export const DatePicker: React.FC<DatePickerProps> = ({
           </div>
         </PopoverContent>
       </Popover>
-      {error && <span className="text-red-500 text-sm">Por favor, selecione a data da transação.</span>}
+      {error && (
+        <span className="text-red-500 text-sm">
+          Por favor, selecione a data da transação.
+        </span>
+      )}
     </div>
   )
 }

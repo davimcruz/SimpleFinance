@@ -1,37 +1,27 @@
-import React, { useState } from "react"
-import { Input } from "@/components/ui/input"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
-import { Label } from "@/components/ui/label"
-import { Button } from "@/components/ui/button"
-import { Separator } from "@/components/ui/separator"
-import {
-  Card,
-  CardTitle,
-  CardDescription,
-  CardContent,
-} from "@/components/ui/card"
+import React, { useState, useEffect } from "react"
+import { Card, CardContent, CardDescription, CardTitle } from "../ui/card"
+import { Separator } from "../ui/separator"
+import { Input } from "../ui/input"
+import { Label } from "../ui/label"
+import { Button } from "../ui/button"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select"
 import { Calendar as CalendarIcon } from "lucide-react"
-import { parseCookies } from "nookies"
-import { useCurrencyInput, parseCurrencyToFloat } from "@/utils/moneyFormatter"
+import { useCurrencyInput, parseCurrencyToFloat, formatToCurrency } from "@/utils/moneyFormatter"
 import { useNameInput } from "@/utils/nameFormatter"
-import { createCardSchema, CreateCardInput } from "@/lib/validation"
+import { updateCardSchema } from "@/lib/validation"
 import { z } from "zod"
+import { parseCookies } from "nookies"
 import { useRouter } from "next/router"
 import LottieAnimation from "@/components/ui/loadingAnimation"
 
-interface CreateCreditCardProps {
+type ErrorType = Partial<Record<keyof z.infer<typeof updateCardSchema>, string>> & { general?: string }
+
+interface UpdateCardProps {
+  cardId: string
   onCancel: () => void
 }
 
-type ErrorType = Partial<Record<keyof CreateCardInput, string>> & { general?: string }
-
-const CreateCreditCard: React.FC<CreateCreditCardProps> = ({ onCancel }) => {
+const UpdateCard: React.FC<UpdateCardProps> = ({ cardId, onCancel }) => {
   const [nome, setNome] = useState<string>("")
   const [bandeira, setBandeira] = useState<string>("")
   const [instituicao, setInstituicao] = useState<string>("")
@@ -45,78 +35,66 @@ const CreateCreditCard: React.FC<CreateCreditCardProps> = ({ onCancel }) => {
   const { handleChange, handleFocus, handleBlur } = useCurrencyInput()
   const { handleNameChange } = useNameInput()
 
-  const validateForm = (): boolean => {
+  useEffect(() => {
+    const fetchCardData = async () => {
+      try {
+        const cookies = parseCookies()
+        const userId = cookies.userId
+
+        if (!userId) {
+          console.error("UserId não encontrado")
+          return
+        }
+
+        const response = await fetch(`/api/cards/get-card?userId=${userId}`)
+        const data = await response.json()
+        if (response.ok && data.cartoes) {
+          const card = data.cartoes.find((c: any) => c.cardId === cardId)
+          if (card) {
+            setNome(card.nomeCartao)
+            setBandeira(card.bandeira)
+            setInstituicao(card.instituicao)
+            setVencimento(card.vencimento?.toString() || "")
+            setLimite(formatToCurrency(card.limite))
+          } else {
+            console.error("Cartão não encontrado")
+          }
+        }
+      } catch (error) {
+        console.error("Erro ao buscar dados do cartão:", error)
+      }
+    }
+    fetchCardData()
+  }, [cardId])
+
+  const handleSubmit = async () => {
+    setIsSubmitting(true)
     try {
-      const parsedData: CreateCardInput = createCardSchema.parse({
-        userId: Number(parseCookies().userId),
+      const updatedCardData = {
+        cardId,
         nome,
         bandeira,
         instituicao,
-        tipo: "credito",
-        vencimento: parseInt(vencimento),
+        vencimento: vencimento ? parseInt(vencimento) : undefined,
         limite: parseCurrencyToFloat(limite),
-      })
-      setErrors({})
-      return true
-    } catch (error) {
-      if (error instanceof z.ZodError) {
-        const newErrors: Partial<Record<keyof CreateCardInput, string>> = {}
-        error.errors.forEach((err) => {
-          if (err.path) {
-            newErrors[err.path[0] as keyof CreateCardInput] = err.message
-          }
-        })
-        setErrors(newErrors)
       }
-      return false
-    }
-  }
-
-  const handleSubmit = async () => {
-    if (!validateForm()) {
-      return
-    }
-
-    const cookies = parseCookies()
-    const userId = cookies.userId
-
-    if (!userId) {
-      alert("Erro: Usuário não autenticado.")
-      return
-    }
-
-    const cardData: CreateCardInput = {
-      userId: Number(userId),
-      tipo: "credito",
-      nome,
-      bandeira: bandeira as CreateCardInput["bandeira"],
-      instituicao,
-      vencimento: parseInt(vencimento),
-      limite: parseCurrencyToFloat(limite),
-    }
-
-    try {
-      setIsSubmitting(true)
-      const response = await fetch("/api/cards/create-card", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(cardData),
+      const response = await fetch('/api/cards/update-cards', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updatedCardData),
       })
-
-      const result = await response.json()
       if (response.ok) {
         setTimeout(() => {
           router.reload()
         }, 500) 
       } else {
-        setErrors({ general: result.message || "Não foi possível criar o cartão." })
+        const errorData = await response.json()
+        setErrors(errorData.details || { general: 'Erro ao atualizar o cartão' })
         setIsSubmitting(false)
       }
     } catch (error) {
-      console.error("Erro ao criar o cartão:", error)
-      setErrors({ general: "Erro ao criar o cartão. Tente novamente mais tarde." })
+      console.error("Erro ao atualizar cartão:", error)
+      setErrors({ general: 'Erro ao atualizar o cartão' })
       setIsSubmitting(false)
     }
   }
@@ -134,16 +112,16 @@ const CreateCreditCard: React.FC<CreateCreditCardProps> = ({ onCancel }) => {
       <Card className="w-[400px]">
         {isSubmitting ? (
           <>
-            <CardTitle className="px-6 pt-6">Criando cartão...</CardTitle>
+            <CardTitle className="px-6 pt-6">Atualizando cartão...</CardTitle>
             <CardContent className="flex justify-center items-center h-[400px]">
               <LottieAnimation animationPath="/loadingAnimation.json" />
             </CardContent>
           </>
         ) : (
           <>
-            <CardTitle className="px-6 pt-6">Registrar Cartão de Crédito</CardTitle>
-            <CardDescription className="px-6 pt-4">
-              Preencha o formulário abaixo para registrar seu cartão de crédito
+            <CardTitle className="px-6 pt-6">Atualizar Cartão</CardTitle>
+            <CardDescription className="px-6 mt-2">
+              Atualize as informações do seu cartão de crédito
             </CardDescription>
             <Separator className="w-full my-6" />
             <CardContent className="flex-col gap-4">
@@ -162,6 +140,7 @@ const CreateCreditCard: React.FC<CreateCreditCardProps> = ({ onCancel }) => {
               <div className="mb-4">
                 <Label htmlFor="card-bandeira">Bandeira</Label>
                 <Select 
+                  value={bandeira}
                   onValueChange={(value) => {
                     setBandeira(value)
                     setErrors(prev => ({ ...prev, bandeira: "" }))
@@ -229,12 +208,11 @@ const CreateCreditCard: React.FC<CreateCreditCardProps> = ({ onCancel }) => {
               </div>
 
               <Button onClick={handleSubmit} className="w-full mt-6" disabled={isSubmitting}>
-                Criar Cartão de Crédito
+                Atualizar Cartão de Crédito
               </Button>
               <Button onClick={onCancel} className="w-full mt-2" variant="outline">
                 Cancelar
               </Button>
-              {errors.general && <span className="text-red-500 text-sm mt-2">{errors.general}</span>}
             </CardContent>
           </>
         )}
@@ -243,4 +221,4 @@ const CreateCreditCard: React.FC<CreateCreditCardProps> = ({ onCancel }) => {
   )
 }
 
-export default CreateCreditCard
+export default UpdateCard
