@@ -41,12 +41,13 @@ model transacoes {
 }
 
 model orcamento {
-  userId         Int
-  mes            Int
-  valor          Float
-  ano            Int
-  saldoRealocado Float?
-  status         String?
+  userId  Int
+  mes     Int
+  ano     Int
+  receita Float?
+  despesa Float?
+  saldo   Float?
+  status  String?
 
   @@id([userId, mes, ano])
   @@index([userId], map: "userId")

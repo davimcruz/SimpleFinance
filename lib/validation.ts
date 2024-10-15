@@ -83,7 +83,7 @@ export const updateCardSchema = z.object({
     errorMap: () => ({ message: "Bandeira inválida" })
   }).optional(),
   instituicao: z.string().min(1, { message: "Instituição é obrigatória" })
-    .regex(/^[a-zA-ZÀ-ÿ0-9\s]+$/, { message: "A instituição deve conter apenas letras (incluindo acentuadas), números e espaços." })
+    .regex(/^[a-zA-ZÀ-ÿ0-9\s]+$/, { message: "A instituição deve conter apenas letras (incluindo acentuadas), números espaços." })
     .optional(),
   vencimento: z.number().min(1).max(31, { message: "Vencimento deve ser entre 1 e 31" }).optional(),
   limite: z.number().min(0.01, { message: "Limite deve ser maior que zero" }).optional(),
@@ -120,3 +120,36 @@ export const createParcelsSchema = z.object({
 })
 
 export type CreateParcelsInput = z.infer<typeof createParcelsSchema>
+
+export const createFlowSchema = z.object({
+  userId: z.number().int().positive({ message: "UserId deve ser um número inteiro positivo" }),
+  flow: z.record(
+    z.string().regex(/^(1[0-2]|[1-9])$/, { message: "Mês deve ser um número entre 1 e 12" }),
+    z.object({
+      receitaOrcada: z.number().nonnegative({ message: "Receita orçada deve ser um número não negativo" }),
+      despesaOrcada: z.number().nonnegative({ message: "Despesa orçada deve ser um número não negativo" })
+    })
+  ).refine(
+    (flow) => {
+      const meses = Object.keys(flow).map(Number);
+      const mesAtual = new Date().getMonth() + 1;
+      return meses.every(mes => mes >= mesAtual && mes <= 12);
+    },
+    { message: "Apenas meses do mês atual até dezembro são permitidos" }
+  )
+})
+
+export type CreateFlowInput = z.infer<typeof createFlowSchema>
+
+export const updateFlowSchema = z.object({
+  userId: z.number().int().positive({ message: "UserId deve ser um número inteiro positivo" }),
+  flow: z.record(
+    z.string().regex(/^(1[0-2]|[1-9])$/, { message: "Mês deve ser um número entre 1 e 12" }),
+    z.object({
+      receitaOrcada: z.number().nonnegative({ message: "Receita orçada deve ser um número não negativo" }),
+      despesaOrcada: z.number().nonnegative({ message: "Despesa orçada deve ser um número não negativo" })
+    })
+  )
+})
+
+export type UpdateFlowInput = z.infer<typeof updateFlowSchema>
