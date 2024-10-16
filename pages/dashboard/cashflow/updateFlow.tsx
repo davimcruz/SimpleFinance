@@ -8,11 +8,10 @@ import Header from "@/components/header/HeaderComponent"
 
 import { getServerSidePropsDashboard } from "@/utils/getServerSideProps"
 import Head from "next/head"
-import UpdateBudget from "@/components/budgets/tables/updateBudget"
-
+import UpdateFlow from "@/components/cashflow/UpdateFlow"
 const inter = Inter({ subsets: ["latin"] })
 
-const Budgets = ({
+const CashFlow = ({
   user,
 }: {
   user?: { nome: string; sobrenome: string; image?: string }
@@ -42,7 +41,7 @@ const Budgets = ({
         <Header userImage={user?.image} />
         <div className="flex min-h-[80vh] flex-col items-center justify-center p-6">
           <main className="flex flex-col items-center justify-center flex-1 gap-8 px-4 py-16 lg:px-0">
-            <UpdateBudget />
+            <UpdateFlow />
           </main>
         </div>
       </div>
@@ -53,4 +52,4 @@ const Budgets = ({
 export const getServerSideProps: GetServerSideProps =
   getServerSidePropsDashboard
 
-export default Budgets
+export default CashFlow

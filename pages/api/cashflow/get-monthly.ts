@@ -6,6 +6,31 @@ import prisma from "@/lib/prisma"
 
 import { monthNames } from "@/utils/monthNames"
 
+import Redis from "ioredis"
+
+const redisUrl = process.env.REDIS_URL
+const redisToken = process.env.REDIS_TOKEN
+
+if (!redisUrl || !redisToken) {
+  throw new Error("Variáveis de Ambiente não definidas")
+}
+
+const redis = new Redis(redisUrl, {
+  password: redisToken,
+  maxRetriesPerRequest: 10,
+  retryStrategy: (times) => {
+    const delay = Math.min(times * 50, 2000)
+    return delay
+  },
+  reconnectOnError: (err) => {
+    const targetErrors = ["READONLY", "ECONNRESET", "ETIMEDOUT"]
+    if (targetErrors.some((targetError) => err.message.includes(targetError))) {
+      return true
+    }
+    return false
+  },
+})
+
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
@@ -25,15 +50,30 @@ export default async function handler(
     }
 
     const { anoAtual, mesAtual } = getCurrentDateInfo()
-    const orcamentoMesAtual = await getOrcamentoMesAtual(userId, anoAtual, mesAtual)
+    
+    const cacheKey = `userMonthly:${userId}:${anoAtual}:${mesAtual}`
+    const cachedSaldo = await redis.get(cacheKey)
 
-    if (!orcamentoMesAtual) {
-      return res.status(404).json({
-        message: "Orçamento não encontrado para o mês atual",
-      })
+    let saldo: number
+    if (cachedSaldo !== null) {
+      saldo = Number(cachedSaldo)
+      console.log(`Saldo obtido do cache para a chave: ${cacheKey}`)
+    } else {
+      const orcamentoMesAtual = await getOrcamentoMesAtual(userId, anoAtual, mesAtual)
+
+      if (!orcamentoMesAtual) {
+        return res.status(404).json({
+          message: "Orçamento não encontrado para o mês atual",
+        })
+      }
+
+      saldo = orcamentoMesAtual.saldo ?? 0
+      
+ 
+      await redis.set(cacheKey, saldo.toString(), 'EX', 3600)
+      console.log(`Cache atualizado para a chave: ${cacheKey}`)
     }
 
-    const saldo = orcamentoMesAtual.saldo ?? 0
     const mesAtualNome = monthNames[mesAtual - 1] ?? 'Desconhecido'
 
     return res.status(200).json({

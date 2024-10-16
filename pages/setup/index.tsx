@@ -13,7 +13,7 @@ import {
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { useState } from "react"
-import CreateBudgetsComponent from "@/components/setup/createBudgetsComponent"
+import CreateFlow from "@/components/setup/CreateFlow"
 import Head from "next/head"
 
 async function verifyToken(ctx: GetServerSidePropsContext) {
@@ -70,7 +70,7 @@ export default function SetupPage() {
       </Head>
       <div className="flex min-h-screen flex-col items-center justify-center p-6">
         <main className="flex flex-col items-center justify-center flex-1 gap-8 px-4 py-16 lg:px-0">
-          <CreateBudgetsComponent />
+          <CreateFlow />
         </main>
       </div>
     </ThemeProvider>

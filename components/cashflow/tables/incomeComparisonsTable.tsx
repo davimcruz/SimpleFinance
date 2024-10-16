@@ -26,16 +26,16 @@ import { Badge } from "@/components/ui/badge"
 import { parseCookies } from "nookies"
 import { Switch } from "@/components/ui/switch"
 import { CircleHelp } from "lucide-react"
-import { Button } from "@/components/ui/button"
 import { useRouter } from "next/router"
+import { Button } from "@/components/ui/button"
 
-interface ExpenseComparison {
+interface IncomeComparison {
   month: number
   budget: number
-  despesaReal: number
-  statusDespesa: string
-  gapMoneyDespesa: number
-  gapPercentageDespesa: string
+  receitaReal: number
+  statusReceita: string
+  gapMoneyReceita: number
+  gapPercentageReceita: string
 }
 
 const monthNames: { [key: number]: string } = {
@@ -54,10 +54,10 @@ const monthNames: { [key: number]: string } = {
 }
 
 const statusTranslations: { [key: string]: string } = {
-  padrao: "Sem despesa",
+  padrao: "Sem receita",
   excedente: "Excedente",
   deficit: "Déficit",
-  futuro: "Ainda sem despesa",
+  futuro: "Ainda sem receita",
 }
 
 const getBadgeClass = (status: string) => {
@@ -75,10 +75,10 @@ const getBadgeClass = (status: string) => {
   }
 }
 
-const ExpenseComparisonTable = () => {
-  const [data, setData] = useState<ExpenseComparison[]>([])
+const IncomeComparisonTable = () => {
+  const [data, setData] = useState<IncomeComparison[]>([])
   const [searchTerm, setSearchTerm] = useState("")
-  const [sortKey, setSortKey] = useState<keyof ExpenseComparison>("month")
+  const [sortKey, setSortKey] = useState<keyof IncomeComparison>("month")
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc")
   const [showPadrao, setShowPadrao] = useState(false)
   const [loading, setLoading] = useState(true)
@@ -99,12 +99,12 @@ const ExpenseComparisonTable = () => {
 
       try {
         const response = await fetch(
-          `/api/budget/comparisons/annual/get-expense?userId=${userId}`
+          `/api/cashflow/comparisons/annual/get-income?userId=${userId}`
         )
         if (!response.ok) {
           throw new Error("Erro ao buscar dados")
         }
-        const result: ExpenseComparison[] = await response.json()
+        const result: IncomeComparison[] = await response.json()
         setData(result)
       } catch (error) {
         console.error("Erro ao buscar dados:", error)
@@ -119,7 +119,7 @@ const ExpenseComparisonTable = () => {
     let filtered = data
 
     if (!showPadrao) {
-      filtered = filtered.filter((item) => item.statusDespesa !== "padrao")
+      filtered = filtered.filter((item) => item.statusReceita !== "padrao")
     }
 
     if (searchTerm !== "") {
@@ -128,7 +128,7 @@ const ExpenseComparisonTable = () => {
           monthNames[item.month]
             .toLowerCase()
             .includes(searchTerm.toLowerCase()) ||
-          statusTranslations[item.statusDespesa]
+          statusTranslations[item.statusReceita]
             ?.toLowerCase()
             .includes(searchTerm.toLowerCase())
       )
@@ -155,20 +155,20 @@ const ExpenseComparisonTable = () => {
     return sorted
   }, [data, searchTerm, showPadrao, sortKey, sortOrder])
 
-  const handleSort = useCallback((key: keyof ExpenseComparison) => {
+  const handleSort = useCallback((key: keyof IncomeComparison) => {
     setSortKey(key)
     setSortOrder((prevOrder) => (prevOrder === "asc" ? "desc" : "asc"))
   }, [])
 
   const handleUpdateBudgetClick = () => {
-    router.push("/dashboard/budgets/updateBudget")
+    router.push("/dashboard/cashflow/updateFlow")
   }
 
   return (
     <div className="flex justify-center items-center">
       <Card className="m-12 w-[90vw]">
         <CardHeader className="flex flex-col md:flex-row md:items-center md:justify-between space-y-4 md:space-y-0 mb-4">
-          <CardTitle>Comparação Orçamento e Despesas</CardTitle>
+          <CardTitle>Comparação Orçamento e Receitas</CardTitle>
           <div className="flex flex-col md:flex-row items-start md:items-center space-y-4 md:space-y-0 md:space-x-4">
             <div className="flex items-center space-x-2">
               <p className="text-xs text-zinc-400 text-nowrap">Mostrar Todos</p>
@@ -180,7 +180,7 @@ const ExpenseComparisonTable = () => {
                     </span>
                   </TooltipTrigger>
                   <TooltipContent className="rounded bg-background p-2 text-primary text-sm">
-                    Ao ativar, mostrará também os meses sem despesa
+                    Ao ativar, mostrará também os meses sem receita
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
@@ -223,27 +223,27 @@ const ExpenseComparisonTable = () => {
                     {sortKey === "budget" && (sortOrder === "asc" ? "↑" : "↓")}
                   </TableHead>
                   <TableHead
-                    onClick={() => handleSort("despesaReal")}
+                    onClick={() => handleSort("receitaReal")}
                     className="cursor-pointer"
                   >
-                    Despesa{" "}
-                    {sortKey === "despesaReal" &&
+                    Receita{" "}
+                    {sortKey === "receitaReal" &&
                       (sortOrder === "asc" ? "↑" : "↓")}
                   </TableHead>
                   <TableHead
-                    onClick={() => handleSort("gapMoneyDespesa")}
+                    onClick={() => handleSort("gapMoneyReceita")}
                     className="cursor-pointer"
                   >
                     Gap (R$){" "}
-                    {sortKey === "gapMoneyDespesa" &&
+                    {sortKey === "gapMoneyReceita" &&
                       (sortOrder === "asc" ? "↑" : "↓")}
                   </TableHead>
                   <TableHead
-                    onClick={() => handleSort("gapPercentageDespesa")}
+                    onClick={() => handleSort("gapPercentageReceita")}
                     className="cursor-pointer"
                   >
                     Gap (%){" "}
-                    {sortKey === "gapPercentageDespesa" &&
+                    {sortKey === "gapPercentageReceita" &&
                       (sortOrder === "asc" ? "↑" : "↓")}
                   </TableHead>
                   <TableHead>Status</TableHead>
@@ -251,10 +251,10 @@ const ExpenseComparisonTable = () => {
               </TableHeader>
               <TableBody>
                 {filteredAndSortedData.map((item, index) => {
-                  const isSemDespesa =
-                    item.statusDespesa === "padrao" ||
-                    item.statusDespesa === "sem despesa"
-                  const isAindaSemDespesa = item.statusDespesa === "futuro"
+                  const isSemReceita =
+                    item.statusReceita === "padrao" ||
+                    item.statusReceita === "sem receita"
+                  const isAindaSemReceita = item.statusReceita === "futuro"
 
                   return (
                     <TableRow key={index}>
@@ -269,26 +269,26 @@ const ExpenseComparisonTable = () => {
                         {new Intl.NumberFormat("pt-BR", {
                           style: "currency",
                           currency: "BRL",
-                        }).format(item.despesaReal)}
+                        }).format(item.receitaReal)}
                       </TableCell>
                       <TableCell>
-                        {isSemDespesa || isAindaSemDespesa
+                        {isSemReceita || isAindaSemReceita
                           ? "-"
                           : new Intl.NumberFormat("pt-BR", {
                               style: "currency",
                               currency: "BRL",
-                            }).format(item.gapMoneyDespesa)}
+                            }).format(item.gapMoneyReceita)}
                       </TableCell>
                       <TableCell>
-                        {isSemDespesa ? "-" : item.gapPercentageDespesa}
+                        {isSemReceita ? "-" : item.gapPercentageReceita}
                       </TableCell>
                       <TableCell>
                         <Badge
                           variant="outline"
-                          className={getBadgeClass(item.statusDespesa)}
+                          className={getBadgeClass(item.statusReceita)}
                         >
-                          {statusTranslations[item.statusDespesa] ||
-                            item.statusDespesa}
+                          {statusTranslations[item.statusReceita] ||
+                            item.statusReceita}
                         </Badge>
                       </TableCell>
                     </TableRow>
@@ -314,4 +314,4 @@ const ExpenseComparisonTable = () => {
   )
 }
 
-export default ExpenseComparisonTable
+export default IncomeComparisonTable

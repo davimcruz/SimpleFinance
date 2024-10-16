@@ -28,7 +28,7 @@ const redis = new Redis(redisUrl, {
   },
 })
 
-//REALOCAR SALDO AQUI
+//realocarSaldo AQUI
 
 export default async function handler(
   req: NextApiRequest,

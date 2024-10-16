@@ -67,9 +67,9 @@ const Header: React.FC<HeaderProps> = ({ userImage }) => {
           Transações
         </Link>
         <Link
-          href="/dashboard/budgets"
+          href="/dashboard/cashflow"
           className={`${linkClassName(
-            "/dashboard/budgets"
+            "/dashboard/cashflow"
           )} transition-colors hover:text-foreground`}
         >
           Orçamentos
@@ -120,28 +120,27 @@ const Header: React.FC<HeaderProps> = ({ userImage }) => {
               Transações
             </Link>
             <Link
-              href="/dashboard/budgets"
+              href="/dashboard/cashflow"
               className={`${linkClassName(
-                "/dashboard/budgets"
+                "/dashboard/cashflow"
               )} transition-colors hover:text-foreground`}
             >
               Orçamentos
             </Link>
-           <Link
+            <Link
               href="/dashboard/cards"
               className={`${linkClassName(
                 "/dashboard/cards"
               )} transition-colors hover:text-foreground`}
             >
               Cartões
-            </Link> 
+            </Link>
           </nav>
         </SheetContent>
       </Sheet>
 
       <div className="flex w-full items-center gap-4 md:ml-auto md:gap-2 lg:gap-4">
-        <div className="ml-auto flex-1 sm:flex-initial">
-        </div>
+        <div className="ml-auto flex-1 sm:flex-initial"></div>
         <ModeToggle />
         <DropdownMenu>
           <DropdownMenuTrigger asChild>

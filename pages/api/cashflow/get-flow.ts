@@ -2,6 +2,30 @@ import { NextApiRequest, NextApiResponse } from "next"
 import { verifyToken } from "../middleware/jwt-auth"
 import prisma from "@/lib/prisma"
 import { monthNames } from "@/utils/monthNames"
+import Redis from "ioredis"
+
+const redisUrl = process.env.REDIS_URL
+const redisToken = process.env.REDIS_TOKEN
+
+if (!redisUrl || !redisToken) {
+  throw new Error("Variáveis de Ambiente não definidas")
+}
+
+const redis = new Redis(redisUrl, {
+  password: redisToken,
+  maxRetriesPerRequest: 10,
+  retryStrategy: (times) => {
+    const delay = Math.min(times * 50, 2000)
+    return delay
+  },
+  reconnectOnError: (err) => {
+    const targetErrors = ["READONLY", "ECONNRESET", "ETIMEDOUT"]
+    if (targetErrors.some((targetError) => err.message.includes(targetError))) {
+      return true
+    }
+    return false
+  },
+})
 
 export default async function handler(
   req: NextApiRequest,
@@ -22,7 +46,20 @@ export default async function handler(
     }
 
     const { anoAtual, mesAtual } = getCurrentDateInfo()
-    const flows = await getFlows(userId, anoAtual, mesAtual)
+    
+    const cacheKey = `userFlow:${userId}:${anoAtual}`
+    const cachedFlow = await redis.get(cacheKey)
+
+    let flows
+    if (cachedFlow) {
+      flows = JSON.parse(cachedFlow)
+      console.log(`Dados obtidos do cache para a chave: ${cacheKey}`)
+    } else {
+      flows = await getFlows(userId, anoAtual, mesAtual)
+      
+      await redis.set(cacheKey, JSON.stringify(flows), 'EX', 3600) 
+      console.log(`Cache atualizado para a chave: ${cacheKey}`)
+    }
 
     const response = formatFlows(flows)
 

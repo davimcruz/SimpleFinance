@@ -5,7 +5,13 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card"
 import {
   Table,
   TableBody,
@@ -20,16 +26,16 @@ import { Badge } from "@/components/ui/badge"
 import { parseCookies } from "nookies"
 import { Switch } from "@/components/ui/switch"
 import { CircleHelp } from "lucide-react"
-import { useRouter } from "next/router"
 import { Button } from "@/components/ui/button"
+import { useRouter } from "next/router"
 
-interface IncomeComparison {
+interface ExpenseComparison {
   month: number
   budget: number
-  receitaReal: number
-  statusReceita: string
-  gapMoneyReceita: number
-  gapPercentageReceita: string
+  despesaReal: number
+  statusDespesa: string
+  gapMoneyDespesa: number
+  gapPercentageDespesa: string
 }
 
 const monthNames: { [key: number]: string } = {
@@ -48,10 +54,10 @@ const monthNames: { [key: number]: string } = {
 }
 
 const statusTranslations: { [key: string]: string } = {
-  padrao: "Sem receita",
+  padrao: "Sem despesa",
   excedente: "Excedente",
   deficit: "Déficit",
-  futuro: "Ainda sem receita",
+  futuro: "Ainda sem despesa",
 }
 
 const getBadgeClass = (status: string) => {
@@ -69,14 +75,14 @@ const getBadgeClass = (status: string) => {
   }
 }
 
-const IncomeComparisonTable = () => {
-  const [data, setData] = useState<IncomeComparison[]>([])
+const ExpenseComparisonTable = () => {
+  const [data, setData] = useState<ExpenseComparison[]>([])
   const [searchTerm, setSearchTerm] = useState("")
-  const [sortKey, setSortKey] = useState<keyof IncomeComparison>("month")
+  const [sortKey, setSortKey] = useState<keyof ExpenseComparison>("month")
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc")
   const [showPadrao, setShowPadrao] = useState(false)
   const [loading, setLoading] = useState(true)
-    const router = useRouter()
+  const router = useRouter()
 
   useEffect(() => {
     const fetchData = async () => {
@@ -93,12 +99,12 @@ const IncomeComparisonTable = () => {
 
       try {
         const response = await fetch(
-          `/api/budget/comparisons/annual/get-income?userId=${userId}`
+          `/api/cashflow/comparisons/annual/get-expense?userId=${userId}`
         )
         if (!response.ok) {
           throw new Error("Erro ao buscar dados")
         }
-        const result: IncomeComparison[] = await response.json()
+        const result: ExpenseComparison[] = await response.json()
         setData(result)
       } catch (error) {
         console.error("Erro ao buscar dados:", error)
@@ -113,7 +119,7 @@ const IncomeComparisonTable = () => {
     let filtered = data
 
     if (!showPadrao) {
-      filtered = filtered.filter((item) => item.statusReceita !== "padrao")
+      filtered = filtered.filter((item) => item.statusDespesa !== "padrao")
     }
 
     if (searchTerm !== "") {
@@ -122,7 +128,7 @@ const IncomeComparisonTable = () => {
           monthNames[item.month]
             .toLowerCase()
             .includes(searchTerm.toLowerCase()) ||
-          statusTranslations[item.statusReceita]
+          statusTranslations[item.statusDespesa]
             ?.toLowerCase()
             .includes(searchTerm.toLowerCase())
       )
@@ -149,20 +155,20 @@ const IncomeComparisonTable = () => {
     return sorted
   }, [data, searchTerm, showPadrao, sortKey, sortOrder])
 
-  const handleSort = useCallback((key: keyof IncomeComparison) => {
+  const handleSort = useCallback((key: keyof ExpenseComparison) => {
     setSortKey(key)
     setSortOrder((prevOrder) => (prevOrder === "asc" ? "desc" : "asc"))
   }, [])
 
-      const handleUpdateBudgetClick = () => {
-        router.push("/dashboard/budgets/updateBudget")
-      }
+  const handleUpdateBudgetClick = () => {
+    router.push("/dashboard/cashflow/updateFlow")
+  }
 
   return (
     <div className="flex justify-center items-center">
       <Card className="m-12 w-[90vw]">
         <CardHeader className="flex flex-col md:flex-row md:items-center md:justify-between space-y-4 md:space-y-0 mb-4">
-          <CardTitle>Comparação Orçamento e Receitas</CardTitle>
+          <CardTitle>Comparação Orçamento e Despesas</CardTitle>
           <div className="flex flex-col md:flex-row items-start md:items-center space-y-4 md:space-y-0 md:space-x-4">
             <div className="flex items-center space-x-2">
               <p className="text-xs text-zinc-400 text-nowrap">Mostrar Todos</p>
@@ -174,7 +180,7 @@ const IncomeComparisonTable = () => {
                     </span>
                   </TooltipTrigger>
                   <TooltipContent className="rounded bg-background p-2 text-primary text-sm">
-                    Ao ativar, mostrará também os meses sem receita
+                    Ao ativar, mostrará também os meses sem despesa
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
@@ -217,27 +223,27 @@ const IncomeComparisonTable = () => {
                     {sortKey === "budget" && (sortOrder === "asc" ? "↑" : "↓")}
                   </TableHead>
                   <TableHead
-                    onClick={() => handleSort("receitaReal")}
+                    onClick={() => handleSort("despesaReal")}
                     className="cursor-pointer"
                   >
-                    Receita{" "}
-                    {sortKey === "receitaReal" &&
+                    Despesa{" "}
+                    {sortKey === "despesaReal" &&
                       (sortOrder === "asc" ? "↑" : "↓")}
                   </TableHead>
                   <TableHead
-                    onClick={() => handleSort("gapMoneyReceita")}
+                    onClick={() => handleSort("gapMoneyDespesa")}
                     className="cursor-pointer"
                   >
                     Gap (R$){" "}
-                    {sortKey === "gapMoneyReceita" &&
+                    {sortKey === "gapMoneyDespesa" &&
                       (sortOrder === "asc" ? "↑" : "↓")}
                   </TableHead>
                   <TableHead
-                    onClick={() => handleSort("gapPercentageReceita")}
+                    onClick={() => handleSort("gapPercentageDespesa")}
                     className="cursor-pointer"
                   >
                     Gap (%){" "}
-                    {sortKey === "gapPercentageReceita" &&
+                    {sortKey === "gapPercentageDespesa" &&
                       (sortOrder === "asc" ? "↑" : "↓")}
                   </TableHead>
                   <TableHead>Status</TableHead>
@@ -245,10 +251,10 @@ const IncomeComparisonTable = () => {
               </TableHeader>
               <TableBody>
                 {filteredAndSortedData.map((item, index) => {
-                  const isSemReceita =
-                    item.statusReceita === "padrao" ||
-                    item.statusReceita === "sem receita"
-                  const isAindaSemReceita = item.statusReceita === "futuro"
+                  const isSemDespesa =
+                    item.statusDespesa === "padrao" ||
+                    item.statusDespesa === "sem despesa"
+                  const isAindaSemDespesa = item.statusDespesa === "futuro"
 
                   return (
                     <TableRow key={index}>
@@ -263,26 +269,26 @@ const IncomeComparisonTable = () => {
                         {new Intl.NumberFormat("pt-BR", {
                           style: "currency",
                           currency: "BRL",
-                        }).format(item.receitaReal)}
+                        }).format(item.despesaReal)}
                       </TableCell>
                       <TableCell>
-                        {isSemReceita || isAindaSemReceita
+                        {isSemDespesa || isAindaSemDespesa
                           ? "-"
                           : new Intl.NumberFormat("pt-BR", {
                               style: "currency",
                               currency: "BRL",
-                            }).format(item.gapMoneyReceita)}
+                            }).format(item.gapMoneyDespesa)}
                       </TableCell>
                       <TableCell>
-                        {isSemReceita ? "-" : item.gapPercentageReceita}
+                        {isSemDespesa ? "-" : item.gapPercentageDespesa}
                       </TableCell>
                       <TableCell>
                         <Badge
                           variant="outline"
-                          className={getBadgeClass(item.statusReceita)}
+                          className={getBadgeClass(item.statusDespesa)}
                         >
-                          {statusTranslations[item.statusReceita] ||
-                            item.statusReceita}
+                          {statusTranslations[item.statusDespesa] ||
+                            item.statusDespesa}
                         </Badge>
                       </TableCell>
                     </TableRow>
@@ -308,4 +314,4 @@ const IncomeComparisonTable = () => {
   )
 }
 
-export default IncomeComparisonTable
+export default ExpenseComparisonTable

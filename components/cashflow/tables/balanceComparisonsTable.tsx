@@ -106,7 +106,7 @@ const BalanceComparisonTable = () => {
 
       try {
         const response = await fetch(
-          `/api/budget/comparisons/annual/get-balance?userId=${userId}`
+          `/api/cashflow/comparisons/annual/get-balance?userId=${userId}`
         )
         if (!response.ok) {
           throw new Error("Erro ao buscar dados")
@@ -184,7 +184,7 @@ const BalanceComparisonTable = () => {
   }, [])
 
   const handleUpdateBudgetClick = () => {
-    router.push("/dashboard/budgets/updateBudget")
+    router.push("/dashboard/cashflow/updateFlow")
   }
 
   return (

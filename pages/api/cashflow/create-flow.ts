@@ -3,6 +3,31 @@ import { verifyToken } from "../middleware/jwt-auth"
 import prisma from "@/lib/prisma"
 import { createFlowSchema } from "@/lib/validation"
 import { realocarFluxo } from "@/utils/flowUtils"
+import Redis from "ioredis"
+import { z } from "zod"
+
+const redisUrl = process.env.REDIS_URL
+const redisToken = process.env.REDIS_TOKEN
+
+if (!redisUrl || !redisToken) {
+  throw new Error("Variáveis de Ambiente não definidas")
+}
+
+const redis = new Redis(redisUrl, {
+  password: redisToken,
+  maxRetriesPerRequest: 10,
+  retryStrategy: (times) => {
+    const delay = Math.min(times * 50, 2000)
+    return delay
+  },
+  reconnectOnError: (err) => {
+    const targetErrors = ["READONLY", "ECONNRESET", "ETIMEDOUT"]
+    if (targetErrors.some((targetError) => err.message.includes(targetError))) {
+      return true
+    }
+    return false
+  },
+})
 
 export default async function handler(
   req: NextApiRequest,
@@ -17,7 +42,17 @@ export default async function handler(
       return res.status(401).json({ message: "Não autorizado" })
     }
 
-    const { userId, flow } = createFlowSchema.parse(req.body)
+    const parsedBody = createFlowSchema.safeParse(req.body)
+
+    if (!parsedBody.success) {
+      console.log("Erro de validação:", parsedBody.error.flatten().fieldErrors)
+      return res.status(400).json({
+        message: "Dados inválidos",
+        errors: parsedBody.error.flatten().fieldErrors,
+      })
+    }
+
+    const { userId, flow } = parsedBody.data
     const anoAtual = new Date().getFullYear()
     const mesAtual = new Date().getMonth() + 1
 
@@ -29,8 +64,11 @@ export default async function handler(
     })
 
     if (existingFlow) {
-      return res.status(400).json({
-        message: "Já existe um cash flow para este usuário neste ano",
+      return res.status(409).json({
+        message: "Fluxo de caixa já existente",
+        error: "Já existe um fluxo de caixa para este usuário neste ano.",
+        code: "EXISTING_FLOW",
+        year: anoAtual,
       })
     }
 
@@ -56,14 +94,26 @@ export default async function handler(
 
     const fluxoRealocado = await realocarFluxo(userId)
 
+    const cacheKey = `userFlow:${userId}:${anoAtual}`
+    await redis.set(cacheKey, JSON.stringify(fluxoRealocado), 'EX', 3600) 
+    console.log(`Cache atualizado para a chave: ${cacheKey}`)
+
     return res.status(201).json({
       message: "Cash flow criado e realocado com sucesso",
       flowPlanejado: fluxoRealocado,
     })
   } catch (error) {
     console.error("Erro ao criar e realocar cash flow:", error)
-    return res.status(error instanceof Error && error.name === 'ZodError' ? 400 : 500).json({
-      message: error instanceof Error && error.name === 'ZodError' ? "Erro de validação" : "Erro ao criar e realocar cash flow",
+    
+    if (error instanceof z.ZodError) {
+      return res.status(400).json({
+        message: "Dados inválidos",
+        errors: error.errors,
+      })
+    }
+
+    return res.status(500).json({
+      message: "Erro ao criar e realocar cash flow",
       error: error instanceof Error ? error.message : "Erro interno do servidor",
     })
   }

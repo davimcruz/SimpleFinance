@@ -17,8 +17,8 @@ const Summary: React.FC<SummaryProps> = ({ initialData }) => {
   const [summaryData, setSummaryData] = useState<SummaryData | null>(
     initialData
   )
-  const [budgetData, setBudgetData] = useState<{
-    totalOrcamento: number
+  const [flowData, setFlowData] = useState<{
+    saldo: number
     mesAtual: string
   } | null>(null)
   const [loading, setLoading] = useState<boolean>(!initialData)
@@ -47,19 +47,19 @@ const Summary: React.FC<SummaryProps> = ({ initialData }) => {
 
       const [summaryResponse, budgetResponse] = await Promise.all([
         fetchSummaryData(),
-        fetch(`/api/budget/get-monthly?userId=${userId}`),
+        fetch(`/api/cashflow/get-monthly?userId=${userId}`),
       ])
 
       const summaryData = await summaryResponse
-      const budgetData = await budgetResponse.json()
+      const flowData = await budgetResponse.json()
 
       if (
         summaryData &&
-        budgetData &&
-        typeof budgetData.totalOrcamento === "number"
+        flowData &&
+        typeof flowData.saldo === "number"
       ) {
         setSummaryData(summaryData)
-        setBudgetData(budgetData)
+        setFlowData(flowData)
       } else {
         console.error("Erro ao carregar os dados")
         setError(true)
@@ -107,8 +107,8 @@ const Summary: React.FC<SummaryProps> = ({ initialData }) => {
           balanceDifference={summaryData?.balanceDifference || "0%"}
         />
         <BudgetCard
-          totalOrcamento={budgetData?.totalOrcamento || 0}
-          mesAtual={budgetData?.mesAtual || ""}
+          totalOrcamento={flowData?.saldo || 0}
+          mesAtual={flowData?.mesAtual || ""}
         />
       </>
     </div>
