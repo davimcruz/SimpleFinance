@@ -16,23 +16,27 @@ export default async function handler(
   }
 
   try {
-    const parcelas = await prisma.parcelas.findMany({
-      where: { faturaId },
-      select: { transacaoId: true }
-    })
+    await prisma.$transaction(async (prisma) => {
+      const parcelas = await prisma.parcelas.findMany({
+        where: { faturaId },
+        select: { transacaoId: true, parcelaId: true }
+      })
 
-    const transacaoIds = parcelas.map(parcela => parcela.transacaoId)
+      const transacaoIds = parcelas.map(parcela => parcela.transacaoId)
+      const parcelaIds = parcelas.map(parcela => parcela.parcelaId)
 
-    await prisma.transacoes.deleteMany({
-      where: { transactionId: { in: transacaoIds } }
-    })
 
-    await prisma.parcelas.deleteMany({
-      where: { faturaId }
-    })
+      await prisma.parcelas.deleteMany({
+        where: { faturaId }
+      })
 
-    await prisma.faturas.delete({
-      where: { faturaId }
+      await prisma.transacoes.deleteMany({
+        where: { transactionId: { in: transacaoIds } }
+      })
+
+      await prisma.faturas.delete({
+        where: { faturaId }
+      })
     })
 
     res.status(200).json({

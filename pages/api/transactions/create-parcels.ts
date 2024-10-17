@@ -158,7 +158,6 @@ export default async function handler(
           detalhesFonte: detalhesFonte || null,
           data: dataParcela,
           valor: valorParcela,
-          numeroParcelas: 1,
           usuarios: {
             connect: { id: user.id },
           },

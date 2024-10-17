@@ -41,7 +41,6 @@ export default async function viewTransactions(
     const transactionData = {
       ...transaction,
       valor: parseFloat(transaction.valor as unknown as string),
-      numeroParcelas: transaction.numeroParcelas || null,
       parcelas: transaction.parcelas.length > 0 ? transaction.parcelas : null,
       cartao: transaction.cartoes || null,
     }
