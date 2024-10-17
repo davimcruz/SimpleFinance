@@ -6,35 +6,43 @@ import Redis from "ioredis"
 const redisUrl = process.env.REDIS_URL
 const redisToken = process.env.REDIS_TOKEN
 
-if (!redisUrl || !redisToken) {
-  throw new Error(
-    "Variáveis de Ambiente REDIS_URL e REDIS_TOKEN não estão definidas."
-  )
+let redis: Redis | null = null
+
+if (process.env.NODE_ENV !== 'test') {
+  if (!redisUrl || !redisToken) {
+    throw new Error(
+      "Variáveis de Ambiente REDIS_URL e REDIS_TOKEN não estão definidas."
+    )
+  }
+
+  redis = new Redis(redisUrl, {
+    password: redisToken,
+    maxRetriesPerRequest: 5,
+    retryStrategy: (times) => {
+      const delay = Math.min(times * 100, 3000)
+      return delay
+    },
+    reconnectOnError: (err) => {
+      const targetErrors = ["READONLY", "ECONNRESET", "ETIMEDOUT"]
+      if (targetErrors.some((targetError) => err.message.includes(targetError))) {
+        return true
+      }
+      return false
+    },
+  })
 }
 
-const redis = new Redis(redisUrl, {
-  password: redisToken,
-  maxRetriesPerRequest: 5,
-  retryStrategy: (times) => {
-    const delay = Math.min(times * 100, 3000)
-    return delay
-  },
-  reconnectOnError: (err) => {
-    const targetErrors = ["READONLY", "ECONNRESET", "ETIMEDOUT"]
-    if (targetErrors.some((targetError) => err.message.includes(targetError))) {
-      return true
-    }
-    return false
-  },
-})
-
 //realocarSaldo AQUI
+
+const isTestEnvironment = process.env.NODE_ENV === 'test'
 
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
-  console.log("Recebendo requisição:", req.method, req.body)
+  if (!isTestEnvironment) {
+    console.log("Recebendo requisição:", req.method, req.body)
+  }
 
   const tokenValid = await verifyToken({ req } as any)
   if (!tokenValid) {
@@ -84,8 +92,8 @@ export default async function handler(
       const valorFloat = typeof updateFields.valor === "number" ? updateFields.valor : parseFloat(updateFields.valor)
       updates.valor = valorFloat
 
-      if (currentTransaction.numeroParcelas) {
-        const valorParcelaNovo = valorFloat / currentTransaction.numeroParcelas
+      if (currentTransaction.parcelas.length > 0) {
+        const valorParcelaNovo = valorFloat / currentTransaction.parcelas.length
 
         await prisma.parcelas.updateMany({
           where: { transacaoId: transactionId },
@@ -94,27 +102,21 @@ export default async function handler(
           },
         })
 
-        const faturaIds = currentTransaction.parcelas
+        const faturaIds = [...new Set(currentTransaction.parcelas
           .map((parcela) => parcela.faturaId)
-          .filter((id): id is string => id !== null)
+          .filter((id): id is string => id !== null))]
 
-        const faturasAtualizadas = await prisma.faturas.findMany({
-          where: { faturaId: { in: faturaIds } },
-        })
-
-        for (const fatura of faturasAtualizadas) {
-          const totalParcelas = await prisma.parcelas.findMany({
-            where: { faturaId: fatura.faturaId },
+        for (const faturaId of faturaIds) {
+          const totalParcelas = await prisma.parcelas.aggregate({
+            where: { faturaId },
+            _sum: {
+              valorParcela: true
+            }
           })
 
-          const novoValorTotal = totalParcelas.reduce(
-            (acc, parcela) => acc + parcela.valorParcela,
-            0
-          )
-
           await prisma.faturas.update({
-            where: { faturaId: fatura.faturaId },
-            data: { valorTotal: novoValorTotal },
+            where: { faturaId },
+            data: { valorTotal: totalParcelas._sum.valorParcela || 0 },
           })
         }
       }
@@ -138,10 +140,14 @@ export default async function handler(
       data: updates,
     })
 
-    console.log("Transação atualizada com sucesso:", updatedTransaction)
+    if (!isTestEnvironment) {
+      console.log("Transação atualizada com sucesso:", updatedTransaction)
+    }
 
     const cacheKey = `transactions:user:${updatedTransaction.userId}`
-    await redis.del(cacheKey)
+    if (redis) {
+      await redis.del(cacheKey)
+    }
 
     {/*realocarSaldo(updatedTransaction.userId, new Date().getFullYear()).catch(
       (err) => console.error("Erro ao realocar saldo:", err)
