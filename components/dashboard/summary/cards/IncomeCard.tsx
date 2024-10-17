@@ -2,11 +2,15 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { MoveUpRight } from "lucide-react"
 
 interface IncomeCardProps {
+  monthlyIncome: string
+  monthlyIncomeMessage: string
   annualIncome: string
   annualIncomeMessage: string
 }
 
 const IncomeCard: React.FC<IncomeCardProps> = ({
+  monthlyIncome,
+  monthlyIncomeMessage,
   annualIncome,
   annualIncomeMessage,
 }) => {
@@ -17,10 +21,14 @@ const IncomeCard: React.FC<IncomeCardProps> = ({
         <MoveUpRight className="h-4 w-4 text-muted-foreground" />
       </CardHeader>
       <CardContent>
-        <div className="text-2xl font-bold">{annualIncome}</div>
+        <div className="text-2xl font-bold">{monthlyIncome}</div>
+        <p className="text-xs text-muted-foreground">
+          {monthlyIncomeMessage}
+        </p>
+        {/* <div className="mt-2 text-sm font-semibold">{annualIncome}</div>
         <p className="text-xs text-muted-foreground">
           {annualIncomeMessage}
-        </p>
+        </p> */}
       </CardContent>
     </Card>
   )

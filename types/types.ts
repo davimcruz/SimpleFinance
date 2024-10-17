@@ -1,7 +1,7 @@
 export interface Transaction {
   userId: number
   nome: string
-  tipo: string
+  tipo: "receita" | "despesa"
   fonte: string
   detalhesFonte: string | null
   data: string | null
@@ -17,7 +17,7 @@ export interface Transaction {
 export interface Transactions {
   userId: number
   nome: string
-  tipo: string
+  tipo: "receita" | "despesa"
   fonte: string
   detalhesFonte: string
   data: string
@@ -36,4 +36,8 @@ export interface SummaryData {
   annualExpenseMessage: string;
   annualBalance: string;
   annualBalanceMessage: string;
+  monthlyIncome: string;
+  monthlyIncomeMessage: string;
+  monthlyExpense: string;
+  monthlyExpenseMessage: string;
 }

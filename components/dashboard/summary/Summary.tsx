@@ -95,10 +95,14 @@ const Summary: React.FC<SummaryProps> = ({ initialData }) => {
     <div className="grid gap-4 md:grid-cols-2 md:gap-8 lg:grid-cols-4">
       <>
         <IncomeCard
+          monthlyIncome={summaryData?.monthlyIncome || "R$ 0,00"}
+          monthlyIncomeMessage={summaryData?.monthlyIncomeMessage || ""}
           annualIncome={summaryData?.annualIncome || "R$ 0,00"}
           annualIncomeMessage={summaryData?.annualIncomeMessage || ""}
         />
         <ExpenseCard
+          monthlyExpense={summaryData?.monthlyExpense || "R$ 0,00"}
+          monthlyExpenseMessage={summaryData?.monthlyExpenseMessage || ""}
           annualExpense={summaryData?.annualExpense || "R$ 0,00"}
           annualExpenseMessage={summaryData?.annualExpenseMessage || ""}
         />

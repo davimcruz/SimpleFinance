@@ -21,7 +21,6 @@ jest.mock('@/lib/prisma', () => ({
   },
 }))
 
-// Mock do Redis
 jest.mock('ioredis', () => {
   return jest.fn().mockImplementation(() => ({
     del: jest.fn(),

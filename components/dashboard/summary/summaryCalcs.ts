@@ -22,6 +22,10 @@ export const fetchSummaryData = async () => {
     const data = await response.json()
 
     return {
+      monthlyIncome: formatCurrency(parseFloat(data.monthlyIncome) ?? 0),
+      monthlyIncomeMessage: data.monthlyIncomeMessage ?? '',
+      monthlyExpense: formatCurrency(parseFloat(data.monthlyExpense) ?? 0),
+      monthlyExpenseMessage: data.monthlyExpenseMessage ?? '',
       annualIncome: formatCurrency(parseFloat(data.annualIncome) ?? 0),
       annualIncomeMessage: data.annualIncomeMessage ?? '',
       annualExpense: formatCurrency(parseFloat(data.annualExpense) ?? 0),
@@ -32,7 +36,12 @@ export const fetchSummaryData = async () => {
   } catch (error) {
     console.error("Erro ao buscar o resumo anual:", error)
     const currentYear = new Date().getFullYear()
+    const currentMonth = new Date().toLocaleString('default', { month: 'long' })
     return {
+      monthlyIncome: formatCurrency(0),
+      monthlyIncomeMessage: `Total de receitas para o mês de ${currentMonth}`,
+      monthlyExpense: formatCurrency(0),
+      monthlyExpenseMessage: `Total de despesas para o mês de ${currentMonth}`,
       annualIncome: formatCurrency(0),
       annualIncomeMessage: `Total de receitas para o ano de ${currentYear}`,
       annualExpense: formatCurrency(0),

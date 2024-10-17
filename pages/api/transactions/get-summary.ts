@@ -29,8 +29,10 @@ export default async function transactionsSummary(
       return res.status(400).json({ error: "ID de usuário inválido" })
     }
 
-    const currentYear = new Date().getFullYear()
-    console.log("Ano atual:", currentYear)
+    const currentDate = new Date()
+    const currentYear = currentDate.getFullYear()
+    const currentMonth = currentDate.getMonth() + 1 
+    console.log("Ano atual:", currentYear, "Mês atual:", currentMonth)
 
     const transactions = await prisma.transacoes.findMany({
       where: {
@@ -50,6 +52,8 @@ export default async function transactionsSummary(
 
     let annualIncome = 0
     let annualExpense = 0
+    let monthlyIncome = 0
+    let monthlyExpense = 0
 
     transactions.forEach((transaction) => {
       const value = parseFloat(transaction.valor.toString())
@@ -57,17 +61,35 @@ export default async function transactionsSummary(
         console.warn(`Valor inválido encontrado: ${transaction.valor}`)
         return
       }
-      if (transaction.tipo === "receita") {
-        annualIncome += value
-      } else if (transaction.tipo === "despesa") {
-        annualExpense += value
+
+      if (transaction.data) {
+        const [day, month, year] = transaction.data.split('-')
+        const transactionDate = new Date(`${year}-${month}-${day}`)
+
+        if (transaction.tipo === "receita") {
+          annualIncome += value
+          if (parseInt(month) === currentMonth && parseInt(year) === currentYear) {
+            monthlyIncome += value
+          }
+        } else if (transaction.tipo === "despesa") {
+          annualExpense += value
+          if (parseInt(month) === currentMonth && parseInt(year) === currentYear) {
+            monthlyExpense += value
+          }
+        } else {
+          console.warn(`Tipo de transação inválido: ${transaction.tipo}`)
+        }
       } else {
-        console.warn(`Tipo de transação inválido: ${transaction.tipo}`)
+        console.warn(`Data inválida encontrada para a transação: ${JSON.stringify(transaction)}`)
       }
     })
 
     const annualBalance = annualIncome - annualExpense
-    console.log("Cálculos finalizados:", { annualIncome, annualExpense, annualBalance })
+    const monthlyBalance = monthlyIncome - monthlyExpense
+    console.log("Cálculos finalizados:", { annualIncome, annualExpense, annualBalance, monthlyIncome, monthlyExpense, monthlyBalance })
+
+    const monthNames = ["janeiro", "fevereiro", "março", "abril", "maio", "junho", "julho", "agosto", "setembro", "outubro", "novembro", "dezembro"]
+    const currentMonthName = monthNames[currentMonth - 1]
 
     res.status(200).json({
       annualIncome: annualIncome.toFixed(2),
@@ -76,6 +98,12 @@ export default async function transactionsSummary(
       annualExpenseMessage: `Total de despesas para o ano de ${currentYear}`,
       annualBalance: annualBalance.toFixed(2),
       annualBalanceMessage: `Saldo total para o ano de ${currentYear}`,
+      monthlyIncome: monthlyIncome.toFixed(2),
+      monthlyIncomeMessage: `Total de receitas para o mês de ${currentMonthName}`,
+      monthlyExpense: monthlyExpense.toFixed(2),
+      monthlyExpenseMessage: `Total de despesas para o mês de ${currentMonthName}`,
+      monthlyBalance: monthlyBalance.toFixed(2),
+      monthlyBalanceMessage: `Saldo total para o mês de ${currentMonthName}`,
     })
   } catch (error) {
     console.error("Erro ao buscar transações:", error)
