@@ -22,41 +22,23 @@ export const fetchSummaryData = async () => {
     const data = await response.json()
 
     return {
-      totalBalance: formatCurrency(data.totalBalance ?? 0),
-      totalAvailableThisMonth: formatCurrency(
-        data.totalAvailableThisMonth ?? 0
-      ),
-      totalIncomeThisMonth: formatCurrency(data.totalIncomeThisMonth ?? 0),
-      totalExpenseThisMonth: formatCurrency(data.totalExpenseThisMonth ?? 0),
-      balanceThisMonth: formatCurrency(data.balanceThisMonth ?? 0),
-      balanceDifference:
-        data.balanceDifferenceString === "+Infinity%" ||
-        data.balanceDifferenceString === "NaN%" ||
-        !data.balanceDifferenceString
-          ? "0%"
-          : data.balanceDifferenceString,
-      incomeDifference:
-        data.incomeDifferenceString === "+Infinity%" ||
-        data.incomeDifferenceString === "NaN%" ||
-        !data.incomeDifferenceString
-          ? "0%"
-          : data.incomeDifferenceString,
-      expenseDifference:
-        data.expenseDifferenceString === "+Infinity%" ||
-        data.expenseDifferenceString === "NaN%" ||
-        !data.expenseDifferenceString
-          ? "0%"
-          : data.expenseDifferenceString,
+      annualIncome: formatCurrency(parseFloat(data.annualIncome) ?? 0),
+      annualIncomeMessage: data.annualIncomeMessage ?? '',
+      annualExpense: formatCurrency(parseFloat(data.annualExpense) ?? 0),
+      annualExpenseMessage: data.annualExpenseMessage ?? '',
+      annualBalance: formatCurrency(parseFloat(data.annualBalance) ?? 0),
+      annualBalanceMessage: data.annualBalanceMessage ?? '',
     }
   } catch (error) {
-    console.error("Erro ao buscar o total balance:", error)
+    console.error("Erro ao buscar o resumo anual:", error)
+    const currentYear = new Date().getFullYear()
     return {
-      totalIncomeThisMonth: formatCurrency(0),
-      totalExpenseThisMonth: formatCurrency(0),
-      balanceThisMonth: formatCurrency(0),
-      balanceDifference: "0%",
-      incomeDifference: "0%",
-      expenseDifference: "0%",
+      annualIncome: formatCurrency(0),
+      annualIncomeMessage: `Total de receitas para o ano de ${currentYear}`,
+      annualExpense: formatCurrency(0),
+      annualExpenseMessage: `Total de despesas para o ano de ${currentYear}`,
+      annualBalance: formatCurrency(0),
+      annualBalanceMessage: `Saldo total para o ano de ${currentYear}`,
     }
   }
 }

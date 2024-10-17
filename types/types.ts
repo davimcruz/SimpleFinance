@@ -30,13 +30,10 @@ export interface Transactions {
 }
 
 export interface SummaryData {
-  totalIncomeThisMonth: string
-  totalExpenseThisMonth: string
-  balanceThisMonth: string 
-  balanceDifference: string
-  incomeDifference: string
-  expenseDifference: string
-  totalBalance?: string 
-  totalAvailableThisMonth?: string 
+  annualIncome: string;
+  annualIncomeMessage: string;
+  annualExpense: string;
+  annualExpenseMessage: string;
+  annualBalance: string;
+  annualBalanceMessage: string;
 }
-

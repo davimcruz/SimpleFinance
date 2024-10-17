@@ -1,25 +1,25 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { MoveDownRight } from "lucide-react"
+import { ArrowDownUp } from "lucide-react"
 
 interface ExpenseCardProps {
-  totalExpenseThisMonth: string
-  expenseDifference: string
+  annualExpense: string
+  annualExpenseMessage: string
 }
 
 const ExpenseCard: React.FC<ExpenseCardProps> = ({
-  totalExpenseThisMonth,
-  expenseDifference,
+  annualExpense,
+  annualExpenseMessage,
 }) => {
   return (
-    <Card x-chunk="dashboard-01-chunk-1">
+    <Card x-chunk="dashboard-01-chunk-3">
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
         <CardTitle className="text-sm font-medium">Despesas</CardTitle>
-        <MoveDownRight className="h-4 w-4 text-muted-foreground" />
+        <ArrowDownUp className="h-4 w-4 text-muted-foreground" />
       </CardHeader>
       <CardContent>
-        <div className="text-2xl font-bold">{`${totalExpenseThisMonth}`}</div>
+        <div className="text-2xl font-bold">{annualExpense}</div>
         <p className="text-xs text-muted-foreground">
-          {expenseDifference} em comparação ao mês anterior
+          {annualExpenseMessage}
         </p>
       </CardContent>
     </Card>

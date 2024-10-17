@@ -95,16 +95,16 @@ const Summary: React.FC<SummaryProps> = ({ initialData }) => {
     <div className="grid gap-4 md:grid-cols-2 md:gap-8 lg:grid-cols-4">
       <>
         <IncomeCard
-          totalIncomeThisMonth={summaryData?.totalIncomeThisMonth || "0,00"}
-          incomeDifference={summaryData?.incomeDifference || "0%"}
+          annualIncome={summaryData?.annualIncome || "R$ 0,00"}
+          annualIncomeMessage={summaryData?.annualIncomeMessage || ""}
         />
         <ExpenseCard
-          totalExpenseThisMonth={summaryData?.totalExpenseThisMonth || "0,00"}
-          expenseDifference={summaryData?.expenseDifference || "0%"}
+          annualExpense={summaryData?.annualExpense || "R$ 0,00"}
+          annualExpenseMessage={summaryData?.annualExpenseMessage || ""}
         />
         <BalanceCard
-          balanceThisMonth={summaryData?.balanceThisMonth || "0,00"}
-          balanceDifference={summaryData?.balanceDifference || "0%"}
+          annualBalance={summaryData?.annualBalance || "R$ 0,00"}
+          annualBalanceMessage={summaryData?.annualBalanceMessage || ""}
         />
         <BudgetCard
           totalOrcamento={flowData?.saldo || 0}
