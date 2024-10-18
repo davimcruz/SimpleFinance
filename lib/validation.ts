@@ -153,3 +153,34 @@ export const updateFlowSchema = z.object({
 })
 
 export type UpdateFlowInput = z.infer<typeof updateFlowSchema>
+
+export const createTransactionSchema = z.object({
+  email: z.string().email({ message: "Email inválido" }),
+  nome: z.string().min(1, { message: "Nome é obrigatório" }),
+  tipo: z.enum(["receita", "despesa"], {
+    message: "Tipo deve ser 'receita' ou 'despesa'",
+  }),
+  fonte: z.string().min(1, { message: "Fonte é obrigatória" }),
+  detalhesFonte: z.string().optional(),
+  data: z.string().refine(
+    (date) => {
+      const ddMMyyyy = /^\d{2}-\d{2}-\d{4}$/.test(date)
+      const isoFormat = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{3}Z$/.test(date)
+      return ddMMyyyy || isoFormat
+    },
+    {
+      message:
+        "Data deve estar no formato DD-MM-YYYY ou ISO (yyyy-mm-ddTHH:MM:SS.sssZ)",
+    }
+  ),
+  valor: z.preprocess(
+    (val) => parseFloat(String(val)),
+    z.number().positive({ message: "Valor deve ser um número positivo" })
+  ),
+  cardId: z
+    .string()
+    .uuid({ message: "cardId deve ser um UUID válido" })
+    .optional(),
+})
+
+export type CreateTransactionInput = z.infer<typeof createTransactionSchema>

@@ -1,7 +1,7 @@
 export interface Transaction {
   userId: number
   nome: string
-  tipo: "receita" | "despesa"
+  tipo: string
   fonte: string
   detalhesFonte: string | null
   data: string | null

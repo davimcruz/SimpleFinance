@@ -2,6 +2,7 @@ import { NextApiRequest, NextApiResponse } from "next"
 import { verifyToken } from "../middleware/jwt-auth"
 import prisma from "@/lib/prisma"
 import Redis from "ioredis"
+import { invalidateSummaryCache } from "@/lib/invalidateSummaryCache"
 
 const redisUrl = process.env.REDIS_URL
 const redisToken = process.env.REDIS_TOKEN
@@ -105,9 +106,15 @@ export default async function handler(
 
     console.log("Transação deletada com sucesso:", transactionId)
 
-    const cacheKey = `transactions:user:${userId}`
-    await redis.del(cacheKey)
-    console.log("Cache de transações invalidado para o usuário:", userId)
+    const invalidateCaches = async () => {
+      const cacheKey = `transactions:user:${userId}`
+      await Promise.all([redis.del(cacheKey), invalidateSummaryCache(userId)])
+      console.log("Caches invalidados para o usuário:", userId)
+    }
+
+    invalidateCaches().catch((err) =>
+      console.error("Erro ao invalidar caches:", err)
+    )
 
     return res.status(200).json({ success: true })
   } catch (error) {

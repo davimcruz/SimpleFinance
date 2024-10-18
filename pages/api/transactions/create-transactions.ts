@@ -3,38 +3,8 @@ import { v4 as uuidv4 } from "uuid"
 import { verifyToken } from "../middleware/jwt-auth"
 import Redis from "ioredis"
 import prisma from "@/lib/prisma"
-import { z } from "zod"
-
-const transactionSchema = z.object({
-  email: z.string().email({ message: "Email inválido" }),
-  nome: z.string().min(1, { message: "Nome é obrigatório" }),
-  tipo: z.enum(["receita", "despesa"], {
-    message: "Tipo deve ser 'receita' ou 'despesa'",
-  }),
-  fonte: z.string().min(1, { message: "Fonte é obrigatória" }),
-  detalhesFonte: z.string().optional(),
-  data: z.string().refine(
-    (date) => {
-      const ddMMyyyy = /^\d{2}-\d{2}-\d{4}$/.test(date)
-      const isoFormat = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{3}Z$/.test(
-        date
-      )
-      return ddMMyyyy || isoFormat
-    },
-    {
-      message:
-        "Data deve estar no formato DD-MM-YYYY ou ISO (yyyy-mm-ddTHH:MM:SS.sssZ)",
-    }
-  ),
-  valor: z.preprocess(
-    (val) => parseFloat(String(val)),
-    z.number().positive({ message: "Valor deve ser um número positivo" })
-  ),
-  cardId: z
-    .string()
-    .uuid({ message: "cardId deve ser um UUID válido" })
-    .optional(),
-})
+import { createTransactionSchema } from "@/lib/validation"
+import { invalidateSummaryCache } from "@/lib/invalidateSummaryCache"
 
 const redisUrl = process.env.REDIS_URL
 const redisToken = process.env.REDIS_TOKEN
@@ -61,8 +31,6 @@ const redis = new Redis(redisUrl, {
   },
 })
 
-// realocarSaldo AQUI
-
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
@@ -76,7 +44,7 @@ export default async function handler(
     return res.status(405).json({ error: "Método não permitido" })
   }
 
-  const parseResult = transactionSchema.safeParse(req.body)
+  const parseResult = createTransactionSchema.safeParse(req.body)
 
   if (!parseResult.success) {
     const { errors } = parseResult.error
@@ -124,18 +92,20 @@ export default async function handler(
       },
     })
 
-    {/*const realocarSaldoPromise = realocarSaldo(
-      user.id,
-      new Date().getFullYear()
-    )*/}
+    await createTransactionPromise
 
-    await Promise.all([createTransactionPromise, {/*realocarSaldoPromise*/}])
+    const invalidateCaches = async () => {
+      const cacheKey = `transactions:user:${user.id}`
+      await Promise.all([redis.del(cacheKey), invalidateSummaryCache(user.id)])
+    }
 
-    const cacheKey = `transactions:user:${user.id}`
-    await redis.del(cacheKey)
+    invalidateCaches().catch((err) =>
+      console.error("Erro ao invalidar caches:", err)
+    )
 
     res.status(200).json({ success: true })
   } catch (error) {
+    console.error("Erro ao processar a requisição:", error)
     return res.status(500).json({ error: "Erro ao processar a requisição" })
   }
 }

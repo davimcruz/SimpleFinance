@@ -6,6 +6,7 @@ import { Prisma } from "@prisma/client"
 import Redis from "ioredis"
 import { createParcelsSchema } from "@/lib/validation"
 import { parse, format } from "date-fns"
+import { invalidateSummaryCache } from "@/lib/invalidateSummaryCache"
 
 const redisUrl = process.env.REDIS_URL
 const redisToken = process.env.REDIS_TOKEN
@@ -235,13 +236,15 @@ export default async function handler(
 
     await prisma.$transaction([...parcelasCriadas, ...faturasCriadas])
 
-    {/* realocarSaldo(user.id, new Date().getFullYear()).catch((err) =>
-      console.error("Erro ao realocar saldo:", err)
-    ) */}
+    const invalidateCaches = async () => {
+      const cacheKey = `transactions:user:${user.id}`
+      await Promise.all([redis.del(cacheKey), invalidateSummaryCache(user.id)])
+      console.log("Caches invalidados para o usuário:", user.id)
+    }
 
-    const cacheKey = `transactions:user:${user.id}`
-    await redis.del(cacheKey)
-    console.log("Cache de transações invalidado para o usuário:", user.id)
+    invalidateCaches().catch((err) =>
+      console.error("Erro ao invalidar caches:", err)
+    )
 
     res.status(200).json({ success: true, grupoParcelamentoId })
   } catch (error) {

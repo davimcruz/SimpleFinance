@@ -2,6 +2,32 @@ import { NextApiRequest, NextApiResponse } from "next"
 import { verifyToken } from "../middleware/jwt-auth"
 import { parseCookies } from "nookies"
 import prisma from "@/lib/prisma"
+import Redis from "ioredis"
+
+const redisUrl = process.env.REDIS_URL
+const redisToken = process.env.REDIS_TOKEN
+
+if (!redisUrl || !redisToken) {
+  throw new Error(
+    "Variáveis de Ambiente REDIS_URL e REDIS_TOKEN não estão definidas."
+  )
+}
+
+const redis = new Redis(redisUrl, {
+  password: redisToken,
+  maxRetriesPerRequest: 5,
+  retryStrategy: (times) => {
+    const delay = Math.min(times * 100, 3000)
+    return delay
+  },
+  reconnectOnError: (err) => {
+    const targetErrors = ["READONLY", "ECONNRESET", "ETIMEDOUT"]
+    if (targetErrors.some((targetError) => err.message.includes(targetError))) {
+      return true
+    }
+    return false
+  },
+})
 
 export default async function transactionsSummary(
   req: NextApiRequest,
@@ -27,6 +53,14 @@ export default async function transactionsSummary(
     if (!userId || isNaN(userId)) {
       console.log("ID de usuário inválido:", userId)
       return res.status(400).json({ error: "ID de usuário inválido" })
+    }
+
+    const cacheKey = `summary:${userId}:${new Date().getFullYear()}`
+    const cachedData = await redis.get(cacheKey)
+
+    if (cachedData) {
+      console.log("Dados recuperados do cache")
+      return res.status(200).json(JSON.parse(cachedData))
     }
 
     const currentDate = new Date()
@@ -91,7 +125,7 @@ export default async function transactionsSummary(
     const monthNames = ["janeiro", "fevereiro", "março", "abril", "maio", "junho", "julho", "agosto", "setembro", "outubro", "novembro", "dezembro"]
     const currentMonthName = monthNames[currentMonth - 1]
 
-    res.status(200).json({
+    const summaryData = {
       annualIncome: annualIncome.toFixed(2),
       annualIncomeMessage: `Total de receitas para o ano de ${currentYear}`,
       annualExpense: annualExpense.toFixed(2),
@@ -104,7 +138,11 @@ export default async function transactionsSummary(
       monthlyExpenseMessage: `Total de despesas para o mês de ${currentMonthName}`,
       monthlyBalance: monthlyBalance.toFixed(2),
       monthlyBalanceMessage: `Saldo total para o mês de ${currentMonthName}`,
-    })
+    }
+
+    await redis.set(cacheKey, JSON.stringify(summaryData), 'EX', 3600)
+
+    res.status(200).json(summaryData)
   } catch (error) {
     console.error("Erro ao buscar transações:", error)
     res.status(500).json({ error: "Erro interno do servidor" })

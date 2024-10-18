@@ -2,13 +2,14 @@ import { NextApiRequest, NextApiResponse } from "next"
 import { verifyToken } from "../middleware/jwt-auth"
 import prisma from "@/lib/prisma"
 import Redis from "ioredis"
+import { invalidateSummaryCache } from "@/lib/invalidateSummaryCache"
 
 const redisUrl = process.env.REDIS_URL
 const redisToken = process.env.REDIS_TOKEN
 
 let redis: Redis | null = null
 
-if (process.env.NODE_ENV !== 'test') {
+if (process.env.NODE_ENV !== "test") {
   if (!redisUrl || !redisToken) {
     throw new Error(
       "Variáveis de Ambiente REDIS_URL e REDIS_TOKEN não estão definidas."
@@ -24,7 +25,9 @@ if (process.env.NODE_ENV !== 'test') {
     },
     reconnectOnError: (err) => {
       const targetErrors = ["READONLY", "ECONNRESET", "ETIMEDOUT"]
-      if (targetErrors.some((targetError) => err.message.includes(targetError))) {
+      if (
+        targetErrors.some((targetError) => err.message.includes(targetError))
+      ) {
         return true
       }
       return false
@@ -34,7 +37,7 @@ if (process.env.NODE_ENV !== 'test') {
 
 //realocarSaldo AQUI
 
-const isTestEnvironment = process.env.NODE_ENV === 'test'
+const isTestEnvironment = process.env.NODE_ENV === "test"
 
 export default async function handler(
   req: NextApiRequest,
@@ -73,23 +76,26 @@ export default async function handler(
 
     const updates: any = {}
 
-    if ('nome' in updateFields) {
+    if ("nome" in updateFields) {
       updates.nome = updateFields.nome
     }
-    if ('tipo' in updateFields) {
+    if ("tipo" in updateFields) {
       updates.tipo = updateFields.tipo
     }
-    if ('fonte' in updateFields) {
+    if ("fonte" in updateFields) {
       updates.fonte = updateFields.fonte
     }
-    if ('detalhesFonte' in updateFields) {
+    if ("detalhesFonte" in updateFields) {
       updates.detalhesFonte = updateFields.detalhesFonte || null
     }
-    if ('data' in updateFields) {
-      updates.data = updateFields.data;
+    if ("data" in updateFields) {
+      updates.data = updateFields.data
     }
-    if ('valor' in updateFields) {
-      const valorFloat = typeof updateFields.valor === "number" ? updateFields.valor : parseFloat(updateFields.valor)
+    if ("valor" in updateFields) {
+      const valorFloat =
+        typeof updateFields.valor === "number"
+          ? updateFields.valor
+          : parseFloat(updateFields.valor)
       updates.valor = valorFloat
 
       if (currentTransaction.parcelas.length > 0) {
@@ -102,16 +108,20 @@ export default async function handler(
           },
         })
 
-        const faturaIds = [...new Set(currentTransaction.parcelas
-          .map((parcela) => parcela.faturaId)
-          .filter((id): id is string => id !== null))]
+        const faturaIds = [
+          ...new Set(
+            currentTransaction.parcelas
+              .map((parcela) => parcela.faturaId)
+              .filter((id): id is string => id !== null)
+          ),
+        ]
 
         for (const faturaId of faturaIds) {
           const totalParcelas = await prisma.parcelas.aggregate({
             where: { faturaId },
             _sum: {
-              valorParcela: true
-            }
+              valorParcela: true,
+            },
           })
 
           await prisma.faturas.update({
@@ -121,7 +131,7 @@ export default async function handler(
         }
       }
     }
-    if ('cardId' in updateFields) {
+    if ("cardId" in updateFields) {
       const cartao = await prisma.cartoes.findUnique({
         where: { cardId: updateFields.cardId },
       })
@@ -144,14 +154,33 @@ export default async function handler(
       console.log("Transação atualizada com sucesso:", updatedTransaction)
     }
 
-    const cacheKey = `transactions:user:${updatedTransaction.userId}`
-    if (redis) {
-      await redis.del(cacheKey)
+    const invalidateCaches = async () => {
+      const cacheKey = `transactions:user:${updatedTransaction.userId}`
+      if (redis) {
+        await Promise.all([
+          redis.del(cacheKey),
+          invalidateSummaryCache(updatedTransaction.userId),
+        ])
+      } else {
+        await invalidateSummaryCache(updatedTransaction.userId)
+      }
+      if (!isTestEnvironment) {
+        console.log(
+          "Caches invalidados para o usuário:",
+          updatedTransaction.userId
+        )
+      }
     }
 
-    {/*realocarSaldo(updatedTransaction.userId, new Date().getFullYear()).catch(
+    invalidateCaches().catch((err) =>
+      console.error("Erro ao invalidar caches:", err)
+    )
+
+    {
+      /*realocarSaldo(updatedTransaction.userId, new Date().getFullYear()).catch(
       (err) => console.error("Erro ao realocar saldo:", err)
-    )*/}
+    )*/
+    }
 
     res.status(200).json({ success: true })
   } catch (error) {
