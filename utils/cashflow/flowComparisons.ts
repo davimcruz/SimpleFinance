@@ -15,18 +15,23 @@ export async function compararFluxos(userId: number) {
   })
 
   const atualizacoes = orcamentos.map((orcamento) => {
-    const gapMoney = (orcamento.saldoRealizado || 0) - (orcamento.saldoOrcado || 0)
-    let gapPercentage = 0
-    let status = 'neutro'
+    const saldoRealizado = orcamento.saldoRealizado || 0;
+    const saldoOrcado = orcamento.saldoOrcado || 0;
+    const gapMoney = saldoRealizado - saldoOrcado;
 
-    if (orcamento.saldoOrcado !== 0) {
-      gapPercentage = (gapMoney / Math.abs(orcamento.saldoOrcado as number))
+    let gapPercentage = 0;
+    let status = 'neutro';
+
+    if (saldoOrcado !== 0) {
+      gapPercentage = (gapMoney / Math.abs(saldoOrcado)) 
     }
 
     if (gapMoney > 0) {
-      status = 'excedente'
+      status = 'excedente';
     } else if (gapMoney < 0) {
-      status = 'deficit'
+      status = 'deficit';
+    } else {
+      status = 'neutro';
     }
 
     return prisma.orcamento.update({
@@ -58,4 +63,3 @@ export async function compararFluxos(userId: number) {
 
   return fluxoAtualizado
 }
-

@@ -213,7 +213,7 @@ const BalanceComparisonTable = () => {
               <TableBody>
                 {filteredAndSortedData.map((item, index) => (
                   <TableRow key={index}>
-                    <TableCell>{item.nome}</TableCell>
+                    <TableCell className="font-semibold">{item.nome}</TableCell>
                     <TableCell>{formatCurrency(item.saldoOrcado)}</TableCell>
                     <TableCell>{formatCurrency(item.saldoRealizado)}</TableCell>
                     <TableCell>{formatCurrency(item.gapMoney)}</TableCell>

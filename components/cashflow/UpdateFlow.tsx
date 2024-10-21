@@ -48,11 +48,11 @@ const UpdateFlow = () => {
         [key: number]: { receitaOrcada: string; despesaOrcada: string }
       } = {}
       data.flows.forEach(
-        (item: { mes: number; receita: number; despesa: number }) => {
+        (item: { mes: number; receitaOrcada: number; despesaOrcada: number }) => {
           if (item.mes >= currentMonth) {
             budgets[item.mes] = {
-              receitaOrcada: formatToCurrency(item.receita),
-              despesaOrcada: formatToCurrency(item.despesa),
+              receitaOrcada: formatToCurrency(item.receitaOrcada),
+              despesaOrcada: formatToCurrency(item.despesaOrcada),
             }
           }
         }

@@ -35,6 +35,8 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
+  const anoAtual = new Date().getFullYear();
+
   console.log("Recebendo requisição:", req.method, req.body)
 
   const tokenValid = await verifyToken({ req } as any)
@@ -109,13 +111,16 @@ export default async function handler(
     console.log("Transação deletada com sucesso:", transactionId)
 
     const invalidateCaches = async () => {
-      const cacheKey = `transactions:user:${userId}`
+      const cacheKeyUserFlow = `userFlow:${userId}:${anoAtual}`; 
+      const cacheKeyTransactions = `transactions:user:${userId}`; 
+
       await Promise.all([
-        redis.del(cacheKey), 
+        redis.del(cacheKeyUserFlow), 
+        redis.del(cacheKeyTransactions), 
         invalidateSummaryCache(userId),
         atualizarFluxoReal(userId).then(() => compararFluxos(userId))
-      ])
-      console.log("Caches invalidados, fluxo real atualizado e comparações feitas para o usuário:", userId)
+      ]);
+      console.log("Caches invalidados, fluxo real atualizado e comparações feitas para o usuário:", userId);
     }
 
     invalidateCaches().catch((err) =>

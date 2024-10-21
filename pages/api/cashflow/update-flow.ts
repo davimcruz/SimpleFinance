@@ -88,18 +88,20 @@ export default async function handler(
 
     const fluxoRealocado = await realocarFluxo(userId)
 
-    const cacheKeyFlow = `userFlow:${userId}:${anoAtual}`
-    await redis.del(cacheKeyFlow)
-    console.log(`Cache invalidado para a chave: ${cacheKeyFlow}`)
+    const cacheKeyUserFlow = `userFlow:${userId}:${anoAtual}`; 
+    const cacheKeyTransactions = `transactions:user:${userId}`;
 
-    await redis.set(cacheKeyFlow, JSON.stringify(fluxoRealocado), 'EX', 3600) 
-    console.log(`Cache atualizado para a chave: ${cacheKeyFlow}`)
-  
+    await redis.del(cacheKeyUserFlow); 
+    console.log(`Cache invalidado para a chave: ${cacheKeyUserFlow}`);
+
+    await redis.del(cacheKeyTransactions); 
+    console.log(`Cache invalidado para a chave: ${cacheKeyTransactions}`);
+
     const mesAtual = new Date().getMonth() + 1
     const cacheKeyMonthly = `userMonthly:${userId}:${anoAtual}:${mesAtual}`
     const saldoMesAtual = fluxoRealocado.find(f => f.mes === mesAtual)?.saldoOrcado ?? 0
     await redis.set(cacheKeyMonthly, saldoMesAtual.toString(), 'EX', 3600)
-    console.log(`Cache atualizado para a chave: ${cacheKeyMonthly}`)
+    console.log(`Cache atualizado para a chave: ${cacheKeyMonthly}`);
 
     return res.status(200).json({
       message: "Cash flow atualizado e realocado com sucesso",

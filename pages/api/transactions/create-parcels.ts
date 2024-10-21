@@ -237,14 +237,19 @@ export default async function handler(
 
     await prisma.$transaction([...parcelasCriadas, ...faturasCriadas])
 
+    const anoAtual = new Date().getFullYear();
+
     const invalidateCaches = async () => {
-      const cacheKey = `transactions:user:${user.id}`
+      const cacheKeyUserFlow = `userFlow:${user.id}:${anoAtual}`; 
+      const cacheKeyTransactions = `transactions:user:${user.id}`; 
+
       await Promise.all([
-        redis.del(cacheKey), 
+        redis.del(cacheKeyUserFlow), 
+        redis.del(cacheKeyTransactions), 
         invalidateSummaryCache(user.id),
         atualizarFluxoReal(user.id).then(() => compararFluxos(user.id))
-      ])
-      console.log("Caches invalidados, fluxo real atualizado e comparações feitas para o usuário:", user.id)
+      ]);
+      console.log("Caches invalidados, fluxo real atualizado e comparações feitas para o usuário:", user.id);
     }
 
     invalidateCaches().catch((err) =>

@@ -43,6 +43,8 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
+  const anoAtual = new Date().getFullYear();
+
   if (!isTestEnvironment) {
     console.log("Recebendo requisição:", req.method, req.body)
   }
@@ -155,18 +157,21 @@ export default async function handler(
     }
 
     const invalidateCaches = async () => {
-      const cacheKey = `transactions:user:${updatedTransaction.userId}`
+      const cacheKeyUserFlow = `userFlow:${updatedTransaction.userId}:${anoAtual}`; 
+      const cacheKeyTransactions = `transactions:user:${updatedTransaction.userId}`; 
+
       if (redis) {
         await Promise.all([
-          redis.del(cacheKey),
+          redis.del(cacheKeyUserFlow), 
+          redis.del(cacheKeyTransactions), 
           invalidateSummaryCache(updatedTransaction.userId),
           atualizarFluxoReal(updatedTransaction.userId).then(() => compararFluxos(updatedTransaction.userId))
-        ])
+        ]);
       } else {
         await Promise.all([
           invalidateSummaryCache(updatedTransaction.userId),
           atualizarFluxoReal(updatedTransaction.userId).then(() => compararFluxos(updatedTransaction.userId))
-        ])
+        ]);
       }
       if (!isTestEnvironment) {
         console.log(
