@@ -1,6 +1,9 @@
 # ignorar arquivos .env em produção (essencial)
 *.env
 
+# commit helper
+*.py
+
 # dependencies
 /node_modules
 /.pnp
