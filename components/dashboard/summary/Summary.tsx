@@ -18,7 +18,7 @@ const Summary: React.FC<SummaryProps> = ({ initialData }) => {
     initialData
   )
   const [flowData, setFlowData] = useState<{
-    saldo: number
+    saldoOrcado: number
     mesAtual: string
   } | null>(null)
   const [loading, setLoading] = useState<boolean>(!initialData)
@@ -56,7 +56,7 @@ const Summary: React.FC<SummaryProps> = ({ initialData }) => {
       if (
         summaryData &&
         flowData &&
-        typeof flowData.saldo === "number"
+        typeof flowData.saldoOrcado === "number"
       ) {
         setSummaryData(summaryData)
         setFlowData(flowData)
@@ -111,7 +111,7 @@ const Summary: React.FC<SummaryProps> = ({ initialData }) => {
           annualBalanceMessage={summaryData?.annualBalanceMessage || ""}
         />
         <BudgetCard
-          totalOrcamento={flowData?.saldo || 0}
+          totalOrcamento={flowData?.saldoOrcado || 0}
           mesAtual={flowData?.mesAtual || ""}
         />
       </>

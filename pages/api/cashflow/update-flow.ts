@@ -2,7 +2,7 @@ import { NextApiRequest, NextApiResponse } from "next"
 import { verifyToken } from "../middleware/jwt-auth"
 import prisma from "@/lib/prisma"
 import { updateFlowSchema } from "@/lib/validation"
-import { realocarFluxo } from "@/utils/flowUtils"
+import { realocarFluxo } from "@/utils/cashflow/flowBudget"
 import Redis from "ioredis"
 import { z } from "zod"
 
@@ -79,8 +79,8 @@ export default async function handler(
             },
           },
           data: {
-            receita: receitaOrcada,
-            despesa: despesaOrcada,
+            receitaOrcada,
+            despesaOrcada,
           },
         })
       )
@@ -97,7 +97,7 @@ export default async function handler(
   
     const mesAtual = new Date().getMonth() + 1
     const cacheKeyMonthly = `userMonthly:${userId}:${anoAtual}:${mesAtual}`
-    const saldoMesAtual = fluxoRealocado.find(f => f.mes === mesAtual)?.saldo ?? 0
+    const saldoMesAtual = fluxoRealocado.find(f => f.mes === mesAtual)?.saldoOrcado ?? 0
     await redis.set(cacheKeyMonthly, saldoMesAtual.toString(), 'EX', 3600)
     console.log(`Cache atualizado para a chave: ${cacheKeyMonthly}`)
 

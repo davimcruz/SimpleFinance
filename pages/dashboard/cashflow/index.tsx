@@ -5,7 +5,7 @@ import "../../../app/globals.css"
 import { ThemeProvider } from "@/components/theme/theme-provider"
 
 import Header from "@/components/header/HeaderComponent"
-import BudgetTables from "@/components/cashflow/BudgetTables"
+import BudgetTables from "@/components/cashflow/RenderTables"
 
 import { getServerSidePropsDashboard } from "@/utils/getServerSideProps"
 import Head from "next/head"

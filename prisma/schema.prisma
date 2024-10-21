@@ -43,9 +43,14 @@ model orcamento {
   userId  Int
   mes     Int
   ano     Int
-  receita Float?
-  despesa Float?
-  saldo   Float?
+  receitaOrcada Float?
+  despesaOrcada Float?
+  saldoOrcado   Float?
+  receitaRealizada Float?
+  despesaRealizada Float?
+  saldoRealizado   Float?
+  gapMoney Float?
+  gapPercentage Float?
   status  String?
 
   @@id([userId, mes, ano])

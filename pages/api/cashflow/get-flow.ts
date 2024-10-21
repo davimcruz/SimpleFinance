@@ -105,9 +105,14 @@ function formatFlows(flows: any[]) {
   return flows.map((flow) => ({
     mes: flow.mes,
     nome: monthNames[flow.mes - 1] ?? 'Desconhecido',
-    receita: Number((flow.receita ?? 0).toFixed(2)),
-    despesa: Number((flow.despesa ?? 0).toFixed(2)),
-    saldo: Number((flow.saldo ?? 0).toFixed(2)),
+    receitaOrcada: Number((flow.receitaOrcada ?? 0).toFixed(2)),
+    despesaOrcada: Number((flow.despesaOrcada ?? 0).toFixed(2)),
+    saldoOrcado: Number((flow.saldoOrcado ?? 0).toFixed(2)),
+    receitaRealizada: Number((flow.receitaRealizada ?? 0).toFixed(2)),
+    despesaRealizada: Number((flow.despesaRealizada ?? 0).toFixed(2)),
+    saldoRealizado: Number((flow.saldoRealizado ?? 0).toFixed(2)),
+    gapMoney: Number((flow.gapMoney ?? 0).toFixed(2)),
+    gapPercentage: Number((flow.gapPercentage ?? 0).toFixed(2)),
     status: flow.status ?? 'neutro'
   }))
 }

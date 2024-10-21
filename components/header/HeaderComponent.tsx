@@ -70,9 +70,9 @@ const Header: React.FC<HeaderProps> = ({ userImage }) => {
           href="/dashboard/cashflow"
           className={`${linkClassName(
             "/dashboard/cashflow"
-          )} transition-colors hover:text-foreground`}
+          )} transition-colors hover:text-foreground whitespace-nowrap`}
         >
-          Orçamentos
+          Fluxos de Caixa
         </Link>
         <Link
           href="/dashboard/cards"
@@ -125,7 +125,7 @@ const Header: React.FC<HeaderProps> = ({ userImage }) => {
                 "/dashboard/cashflow"
               )} transition-colors hover:text-foreground`}
             >
-              Orçamentos
+              Fluxos de Caixa
             </Link>
             <Link
               href="/dashboard/cards"

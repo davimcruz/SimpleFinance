@@ -3,6 +3,8 @@ import { verifyToken } from "../middleware/jwt-auth"
 import prisma from "@/lib/prisma"
 import Redis from "ioredis"
 import { invalidateSummaryCache } from "@/lib/invalidateSummaryCache"
+import { atualizarFluxoReal } from "@/utils/cashflow/flowReal"
+import { compararFluxos } from "@/utils/cashflow/flowComparisons"
 
 const redisUrl = process.env.REDIS_URL
 const redisToken = process.env.REDIS_TOKEN
@@ -108,12 +110,16 @@ export default async function handler(
 
     const invalidateCaches = async () => {
       const cacheKey = `transactions:user:${userId}`
-      await Promise.all([redis.del(cacheKey), invalidateSummaryCache(userId)])
-      console.log("Caches invalidados para o usuário:", userId)
+      await Promise.all([
+        redis.del(cacheKey), 
+        invalidateSummaryCache(userId),
+        atualizarFluxoReal(userId).then(() => compararFluxos(userId))
+      ])
+      console.log("Caches invalidados, fluxo real atualizado e comparações feitas para o usuário:", userId)
     }
 
     invalidateCaches().catch((err) =>
-      console.error("Erro ao invalidar caches:", err)
+      console.error("Erro ao invalidar caches, atualizar fluxo real e fazer comparações:", err)
     )
 
     return res.status(200).json({ success: true })

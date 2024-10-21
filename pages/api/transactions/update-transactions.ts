@@ -3,6 +3,8 @@ import { verifyToken } from "../middleware/jwt-auth"
 import prisma from "@/lib/prisma"
 import Redis from "ioredis"
 import { invalidateSummaryCache } from "@/lib/invalidateSummaryCache"
+import { atualizarFluxoReal } from "@/utils/cashflow/flowReal"
+import { compararFluxos } from "@/utils/cashflow/flowComparisons"
 
 const redisUrl = process.env.REDIS_URL
 const redisToken = process.env.REDIS_TOKEN
@@ -34,8 +36,6 @@ if (process.env.NODE_ENV !== "test") {
     },
   })
 }
-
-//realocarSaldo AQUI
 
 const isTestEnvironment = process.env.NODE_ENV === "test"
 
@@ -160,27 +160,26 @@ export default async function handler(
         await Promise.all([
           redis.del(cacheKey),
           invalidateSummaryCache(updatedTransaction.userId),
+          atualizarFluxoReal(updatedTransaction.userId).then(() => compararFluxos(updatedTransaction.userId))
         ])
       } else {
-        await invalidateSummaryCache(updatedTransaction.userId)
+        await Promise.all([
+          invalidateSummaryCache(updatedTransaction.userId),
+          atualizarFluxoReal(updatedTransaction.userId).then(() => compararFluxos(updatedTransaction.userId))
+        ])
       }
       if (!isTestEnvironment) {
         console.log(
-          "Caches invalidados para o usuário:",
+          "Caches invalidados, fluxo real atualizado e comparações feitas para o usuário:",
           updatedTransaction.userId
         )
       }
     }
 
     invalidateCaches().catch((err) =>
-      console.error("Erro ao invalidar caches:", err)
+      console.error("Erro ao invalidar caches, atualizar fluxo real e fazer comparações:", err)
     )
 
-    {
-      /*realocarSaldo(updatedTransaction.userId, new Date().getFullYear()).catch(
-      (err) => console.error("Erro ao realocar saldo:", err)
-    )*/
-    }
 
     res.status(200).json({ success: true })
   } catch (error) {

@@ -1,93 +1,59 @@
-import { useEffect, useState, useMemo, useCallback } from "react"
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip"
-import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
+import { useState, useEffect, useMemo, useCallback } from "react"
+import { useRouter } from "next/router"
+import { parseCookies } from "nookies"
 import {
   Table,
   TableBody,
   TableCell,
-  TableFooter,
   TableHead,
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
-import { Skeleton } from "@/components/ui/skeleton"
-import { Badge } from "@/components/ui/badge"
-import { parseCookies } from "nookies"
-import { Switch } from "@/components/ui/switch"
-import { Separator } from "@/components/ui/separator"
-import { CircleHelp } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { useRouter } from "next/router"
+import { Badge } from "@/components/ui/badge"
+import { Skeleton } from "@/components/ui/skeleton"
 
-interface BudgetComparison {
-  month: number
-  budget: number
-  balanceRealocada: number
-  balanceSemRealocacao: number
-  statusRealocada: string
-  statusSemRealocacao: string
-  gapMoneyRealocada: number
-  gapPercentageRealocada: string
-  gapMoneySemRealocacao: number
-  gapPercentageSemRealocacao: string
-}
 
-const monthNames: { [key: number]: string } = {
-  1: "Janeiro",
-  2: "Fevereiro",
-  3: "Março",
-  4: "Abril",
-  5: "Maio",
-  6: "Junho",
-  7: "Julho",
-  8: "Agosto",
-  9: "Setembro",
-  10: "Outubro",
-  11: "Novembro",
-  12: "Dezembro",
+interface FlowItem {
+  mes: number
+  nome: string
+  receitaOrcada: number
+  despesaOrcada: number
+  saldoOrcado: number
+  receitaRealizada: number
+  despesaRealizada: number
+  saldoRealizado: number
+  gapMoney: number
+  gapPercentage: number
+  status: string
 }
 
 const statusTranslations: { [key: string]: string } = {
-  padrao: "Sem receita",
   excedente: "Excedente",
   deficit: "Déficit",
-  futuro: "Ainda sem receita",
+  neutro: "Neutro",
 }
 
 const getBadgeClass = (status: string) => {
   switch (status) {
     case "excedente":
-      return "border-blue-500"
+      return "bg-green-100 text-green-800 border-green-300 dark:bg-green-900 dark:text-green-100 dark:border-green-700"
     case "deficit":
-      return "border-red-500"
-    case "futuro":
-      return "border-zinc-500"
-    case "padrao":
-      return "border-gray-500"
+      return "bg-red-100 text-red-800 border-red-300 dark:bg-red-900 dark:text-red-100 dark:border-red-700"
+    case "neutro":
+      return "bg-yellow-100 text-yellow-800 border-yellow-300 dark:bg-yellow-900 dark:text-yellow-100 dark:border-yellow-700"
     default:
-      return "border-gray-500"
+      return "bg-gray-100 text-gray-800 border-gray-300 dark:bg-gray-700 dark:text-gray-100 dark:border-gray-600"
   }
 }
 
 const BalanceComparisonTable = () => {
-  const [data, setData] = useState<BudgetComparison[]>([])
+  const [data, setData] = useState<FlowItem[]>([])
   const [searchTerm, setSearchTerm] = useState("")
-  const [sortKey, setSortKey] = useState<keyof BudgetComparison>("month")
+  const [sortKey, setSortKey] = useState<keyof FlowItem>("mes")
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc")
-  const [showPadrao, setShowPadrao] = useState(false)
-  const [showCarryOver, setShowCarryOver] = useState(true)
   const [loading, setLoading] = useState(true)
   const router = useRouter()
 
@@ -105,18 +71,16 @@ const BalanceComparisonTable = () => {
       }
 
       try {
-        const response = await fetch(
-          `/api/cashflow/comparisons/annual/get-balance?userId=${userId}`
-        )
+        const response = await fetch(`/api/cashflow/get-flow?userId=${userId}`)
         if (!response.ok) {
           throw new Error("Erro ao buscar dados")
         }
-        const result: BudgetComparison[] = await response.json()
-        setData(result)
+        const result = await response.json()
+        console.log("Dados retornados pela API get-flow:", JSON.stringify(result, null, 2))
+        setData(result.flows)
       } catch (error) {
         console.error("Erro ao buscar dados:", error)
       }
-
       setLoading(false)
     }
     fetchData()
@@ -125,48 +89,19 @@ const BalanceComparisonTable = () => {
   const filteredAndSortedData = useMemo(() => {
     let filtered = data
 
-    if (!showPadrao) {
-      filtered = filtered.filter(
-        (item) =>
-          item.statusRealocada !== "padrao" &&
-          item.statusSemRealocacao !== "padrao"
-      )
-    }
-
     if (searchTerm !== "") {
       filtered = filtered.filter(
         (item) =>
-          monthNames[item.month]
-            .toLowerCase()
-            .includes(searchTerm.toLowerCase()) ||
-          statusTranslations[item.statusRealocada]
-            ?.toLowerCase()
-            .includes(searchTerm.toLowerCase()) ||
-          statusTranslations[item.statusSemRealocacao]
-            ?.toLowerCase()
-            .includes(searchTerm.toLowerCase())
+          item.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          statusTranslations[item.status]?.toLowerCase().includes(searchTerm.toLowerCase())
       )
     }
 
-    const sorted = [...filtered].sort((a, b) => {
-      let aValue: number | string
-      let bValue: number | string
+    return [...filtered].sort((a, b) => {
+      const aValue = a[sortKey]
+      const bValue = b[sortKey]
 
-      if (showCarryOver) {
-        aValue = a[sortKey]
-        bValue = b[sortKey]
-      } else {
-        const noCarryKey = sortKey.replace(
-          "Realocada",
-          "SemRealocacao"
-        ) as keyof BudgetComparison
-        aValue = a[noCarryKey]
-        bValue = b[noCarryKey]
-      }
-
-      if (sortKey === "month") {
-        return sortOrder === "asc" ? a.month - b.month : b.month - a.month
-      } else if (typeof aValue === "number" && typeof bValue === "number") {
+      if (typeof aValue === "number" && typeof bValue === "number") {
         return sortOrder === "asc" ? aValue - bValue : bValue - aValue
       } else {
         return sortOrder === "asc"
@@ -174,11 +109,9 @@ const BalanceComparisonTable = () => {
           : bValue.toString().localeCompare(aValue.toString())
       }
     })
+  }, [data, searchTerm, sortKey, sortOrder])
 
-    return sorted
-  }, [data, searchTerm, showPadrao, showCarryOver, sortKey, sortOrder])
-
-  const handleSort = useCallback((key: keyof BudgetComparison) => {
+  const handleSort = useCallback((key: keyof FlowItem) => {
     setSortKey(key)
     setSortOrder((prevOrder) => (prevOrder === "asc" ? "desc" : "asc"))
   }, [])
@@ -187,53 +120,36 @@ const BalanceComparisonTable = () => {
     router.push("/dashboard/cashflow/updateFlow")
   }
 
+  const formatCurrency = (value: number | null | undefined) => {
+    if (value === null || value === undefined || isNaN(value)) {
+      return "-"
+    }
+    return new Intl.NumberFormat("pt-BR", {
+      style: "currency",
+      currency: "BRL",
+    }).format(value)
+  }
+
+  const formatPercentage = (value: number | null | undefined) => {
+    if (value === null || value === undefined || isNaN(value)) {
+      return "-"
+    }
+    const formattedValue = new Intl.NumberFormat("pt-BR", {
+      style: "percent",
+      signDisplay: "never",
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }).format(Math.abs(value))
+    
+    return value > 0 ? `+${formattedValue}` : value < 0 ? `-${formattedValue}` : formattedValue
+  }
+
   return (
     <div className="flex justify-center items-center">
       <Card className="m-12 w-[90vw]">
         <CardHeader className="flex flex-col md:flex-row md:items-center md:justify-between space-y-4 md:space-y-0 mb-4">
-          <CardTitle>Comparação Orçamento e Saldo</CardTitle>
+          <CardTitle>Fluxo de Caixa</CardTitle>
           <div className="flex flex-col md:flex-row items-start md:items-center space-y-4 md:space-y-0 md:space-x-4">
-            <div className="flex items-center space-x-2">
-              <p className="text-xs text-zinc-400 text-nowrap">Mostrar Todos</p>
-              <TooltipProvider>
-                <Tooltip delayDuration={0}>
-                  <TooltipTrigger asChild>
-                    <span className="text-zinc-500 cursor-help">
-                      <CircleHelp className="w-4" />
-                    </span>
-                  </TooltipTrigger>
-                  <TooltipContent className="rounded bg-background p-2 text-primary text-sm">
-                    Ao ativar, mostrará também os meses sem transações
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-              <Switch
-                checked={showPadrao}
-                onCheckedChange={(checked) => setShowPadrao(checked)}
-              />
-            </div>
-            <div className="flex items-center space-x-2">
-              <p className="text-xs text-zinc-400 text-nowrap">
-                Mostrar com Realocação
-              </p>
-              <TooltipProvider>
-                <Tooltip delayDuration={0}>
-                  <TooltipTrigger asChild>
-                    <span className="text-zinc-500 cursor-help">
-                      <CircleHelp className="w-4" />
-                    </span>
-                  </TooltipTrigger>
-                  <TooltipContent className="rounded bg-background p-2 text-primary text-sm">
-                    Ao desligar, fará a comparação sem realocação de saldo (Não
-                    recomendado)
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-              <Switch
-                checked={showCarryOver}
-                onCheckedChange={(checked) => setShowCarryOver(checked)}
-              />
-            </div>
             <Input
               placeholder="Pesquisar por mês ou status"
               value={searchTerm}
@@ -254,121 +170,66 @@ const BalanceComparisonTable = () => {
               <TableHeader>
                 <TableRow>
                   <TableHead
-                    onClick={() => handleSort("month")}
+                    onClick={() => handleSort("mes")}
                     className="cursor-pointer"
                   >
-                    Mês{" "}
-                    {sortKey === "month" && (sortOrder === "asc" ? "↓" : "↑")}
+                    Mês {sortKey === "mes" && (sortOrder === "asc" ? "↓" : "↑")}
                   </TableHead>
                   <TableHead
-                    onClick={() => handleSort("budget")}
+                    onClick={() => handleSort("saldoOrcado")}
                     className="cursor-pointer"
                   >
-                    Orçamento{" "}
-                    {sortKey === "budget" && (sortOrder === "asc" ? "↑" : "↓")}
-                  </TableHead>
-                  <TableHead
-                    onClick={() =>
-                      handleSort(
-                        showCarryOver
-                          ? "balanceRealocada"
-                          : "balanceSemRealocacao"
-                      )
-                    }
-                    className="cursor-pointer"
-                  >
-                    Saldo{" "}
-                    {(sortKey === "balanceRealocada" ||
-                      sortKey === "balanceSemRealocacao") &&
+                    Orçado{" "}
+                    {sortKey === "saldoOrcado" &&
                       (sortOrder === "asc" ? "↑" : "↓")}
                   </TableHead>
                   <TableHead
-                    onClick={() =>
-                      handleSort(
-                        showCarryOver
-                          ? "gapMoneyRealocada"
-                          : "gapMoneySemRealocacao"
-                      )
-                    }
+                    onClick={() => handleSort("saldoRealizado")}
+                    className="cursor-pointer"
+                  >
+                    Realizado{" "}
+                    {sortKey === "saldoRealizado" &&
+                      (sortOrder === "asc" ? "↑" : "↓")}
+                  </TableHead>
+                  <TableHead
+                    onClick={() => handleSort("gapMoney")}
                     className="cursor-pointer"
                   >
                     Gap (R$){" "}
-                    {(sortKey === "gapMoneyRealocada" ||
-                      sortKey === "gapMoneySemRealocacao") &&
+                    {sortKey === "gapMoney" &&
                       (sortOrder === "asc" ? "↑" : "↓")}
                   </TableHead>
                   <TableHead
-                    onClick={() =>
-                      handleSort(
-                        showCarryOver
-                          ? "gapPercentageRealocada"
-                          : "gapPercentageSemRealocacao"
-                      )
-                    }
+                    onClick={() => handleSort("gapPercentage")}
                     className="cursor-pointer"
                   >
                     Gap (%){" "}
-                    {(sortKey === "gapPercentageRealocada" ||
-                      sortKey === "gapPercentageSemRealocacao") &&
+                    {sortKey === "gapPercentage" &&
                       (sortOrder === "asc" ? "↑" : "↓")}
                   </TableHead>
                   <TableHead>Status</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredAndSortedData.map((item, index) => {
-                  const balance = showCarryOver
-                    ? item.balanceRealocada
-                    : item.balanceSemRealocacao
-                  const gapMoney = showCarryOver
-                    ? item.gapMoneyRealocada
-                    : item.gapMoneySemRealocacao
-                  const gapPercentage = showCarryOver
-                    ? item.gapPercentageRealocada
-                    : item.gapPercentageSemRealocacao
-                  const status = showCarryOver
-                    ? item.statusRealocada
-                    : item.statusSemRealocacao
-
-                  return (
-                    <TableRow key={index}>
-                      <TableCell>{monthNames[item.month]}</TableCell>
-                      <TableCell>
-                        {new Intl.NumberFormat("pt-BR", {
-                          style: "currency",
-                          currency: "BRL",
-                        }).format(item.budget)}
-                      </TableCell>
-                      <TableCell>
-                        {status === "padrao"
-                          ? "-"
-                          : new Intl.NumberFormat("pt-BR", {
-                              style: "currency",
-                              currency: "BRL",
-                            }).format(balance)}
-                      </TableCell>
-                      <TableCell>
-                        {status === "padrao"
-                          ? "-"
-                          : new Intl.NumberFormat("pt-BR", {
-                              style: "currency",
-                              currency: "BRL",
-                            }).format(gapMoney)}
-                      </TableCell>
-                      <TableCell>
-                        {status === "padrao" ? "-" : gapPercentage}
-                      </TableCell>
-                      <TableCell>
-                        <Badge
-                          variant="outline"
-                          className={getBadgeClass(status)}
-                        >
-                          {statusTranslations[status] || status}
-                        </Badge>
-                      </TableCell>
-                    </TableRow>
-                  )
-                })}
+                {filteredAndSortedData.map((item, index) => (
+                  <TableRow key={index}>
+                    <TableCell>{item.nome}</TableCell>
+                    <TableCell>{formatCurrency(item.saldoOrcado)}</TableCell>
+                    <TableCell>{formatCurrency(item.saldoRealizado)}</TableCell>
+                    <TableCell>{formatCurrency(item.gapMoney)}</TableCell>
+                    <TableCell>
+                      {formatPercentage(item.gapPercentage)}
+                    </TableCell>
+                    <TableCell>
+                      <Badge
+                        variant="outline"
+                        className={getBadgeClass(item.status)}
+                      >
+                        {statusTranslations[item.status] || item.status}
+                      </Badge>
+                    </TableCell>
+                  </TableRow>
+                ))}
               </TableBody>
             </Table>
           )}
@@ -380,7 +241,8 @@ const BalanceComparisonTable = () => {
               className="mt-4 -mb-4 text-sm text-zinc-500"
               onClick={handleUpdateBudgetClick}
             >
-              Clique aqui para alterar seu orçamento
+              Clique aqui para alterar seu orçamento{" "}
+              <span className="lg:block hidden ml-1">mensal</span>
             </Button>
           </CardFooter>
         </div>

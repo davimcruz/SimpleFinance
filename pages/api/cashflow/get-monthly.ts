@@ -54,10 +54,10 @@ export default async function handler(
     const cacheKey = `userMonthly:${userId}:${anoAtual}:${mesAtual}`
     const cachedSaldo = await redis.get(cacheKey)
 
-    let saldo: number
+    let saldoOrcado: number
     if (cachedSaldo !== null) {
-      saldo = Number(cachedSaldo)
-      console.log(`Saldo obtido do cache para a chave: ${cacheKey}`)
+      saldoOrcado = Number(cachedSaldo)
+      console.log(`Saldo orçado obtido do cache para a chave: ${cacheKey}`)
     } else {
       const orcamentoMesAtual = await getOrcamentoMesAtual(userId, anoAtual, mesAtual)
 
@@ -67,18 +67,17 @@ export default async function handler(
         })
       }
 
-      saldo = orcamentoMesAtual.saldo ?? 0
+      saldoOrcado = orcamentoMesAtual.saldoOrcado ?? 0
       
- 
-      await redis.set(cacheKey, saldo.toString(), 'EX', 3600)
+      await redis.set(cacheKey, saldoOrcado.toString(), 'EX', 3600)
       console.log(`Cache atualizado para a chave: ${cacheKey}`)
     }
 
     const mesAtualNome = monthNames[mesAtual - 1] ?? 'Desconhecido'
 
     return res.status(200).json({
-      message: "Saldo do mês atual obtido com sucesso",
-      saldo: Number(saldo.toFixed(2)),
+      message: "Saldo orçado do mês atual obtido com sucesso",
+      saldoOrcado: Number(saldoOrcado.toFixed(2)),
       mesAtual: mesAtualNome,
     })
   } catch (error) {
@@ -114,7 +113,7 @@ async function getOrcamentoMesAtual(userId: number, ano: number, mes: number) {
       }
     },
     select: {
-      saldo: true,
+      saldoOrcado: true,
     },
   })
 }

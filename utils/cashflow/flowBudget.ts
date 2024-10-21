@@ -19,14 +19,14 @@ export async function realocarFluxo(userId: number) {
 
   let saldoAnterior = 0
   const fluxoRealocado = fluxoAtual.map((mes) => {
-    const receita = mes.receita ?? 0
-    const despesa = mes.despesa ?? 0
-    const novoSaldo = Number((saldoAnterior + (receita - despesa)).toFixed(2))
+    const receitaOrcada = mes.receitaOrcada ?? 0
+    const despesaOrcada = mes.despesaOrcada ?? 0
+    const novoSaldoOrcado = Number((saldoAnterior + (receitaOrcada - despesaOrcada)).toFixed(2))
     
     let status: 'deficit' | 'excedente' | 'neutro'
-    if (novoSaldo < 0) {
+    if (novoSaldoOrcado < 0) {
       status = 'deficit'
-    } else if (novoSaldo > 0) {
+    } else if (novoSaldoOrcado > 0) {
       status = 'excedente'
     } else {
       status = 'neutro'
@@ -34,10 +34,10 @@ export async function realocarFluxo(userId: number) {
 
     const mesAtualizado = {
       ...mes,
-      saldo: novoSaldo,
+      saldoOrcado: novoSaldoOrcado,
       status: status,
     }
-    saldoAnterior = novoSaldo
+    saldoAnterior = novoSaldoOrcado
     return mesAtualizado
   })
 
@@ -52,7 +52,7 @@ export async function realocarFluxo(userId: number) {
           },
         },
         data: {
-          saldo: mes.saldo,
+          saldoOrcado: mes.saldoOrcado,
           status: mes.status,
         },
       })

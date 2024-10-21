@@ -7,6 +7,8 @@ import Redis from "ioredis"
 import { createParcelsSchema } from "@/lib/validation"
 import { parse, format } from "date-fns"
 import { invalidateSummaryCache } from "@/lib/invalidateSummaryCache"
+import { atualizarFluxoReal } from "@/utils/cashflow/flowReal"
+import { compararFluxos } from "@/utils/cashflow/flowComparisons"
 
 const redisUrl = process.env.REDIS_URL
 const redisToken = process.env.REDIS_TOKEN
@@ -33,7 +35,6 @@ const redis = new Redis(redisUrl, {
   },
 })
 
-// realocarSaldo AQUI
 
 export default async function handler(
   req: NextApiRequest,
@@ -238,12 +239,16 @@ export default async function handler(
 
     const invalidateCaches = async () => {
       const cacheKey = `transactions:user:${user.id}`
-      await Promise.all([redis.del(cacheKey), invalidateSummaryCache(user.id)])
-      console.log("Caches invalidados para o usuário:", user.id)
+      await Promise.all([
+        redis.del(cacheKey), 
+        invalidateSummaryCache(user.id),
+        atualizarFluxoReal(user.id).then(() => compararFluxos(user.id))
+      ])
+      console.log("Caches invalidados, fluxo real atualizado e comparações feitas para o usuário:", user.id)
     }
 
     invalidateCaches().catch((err) =>
-      console.error("Erro ao invalidar caches:", err)
+      console.error("Erro ao invalidar caches, atualizar fluxo real e fazer comparações:", err)
     )
 
     res.status(200).json({ success: true, grupoParcelamentoId })

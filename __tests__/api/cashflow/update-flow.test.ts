@@ -2,7 +2,7 @@ import { createMocks } from "node-mocks-http"
 import handler from "@/pages/api/cashflow/update-flow"
 import prisma from "@/lib/prisma"
 import { verifyToken } from "@/pages/api/middleware/jwt-auth"
-import { realocarFluxo } from "@/utils/flowUtils"
+import { realocarFluxo } from "@/utils/cashflow/flowBudget"
 
 jest.mock("@/lib/prisma", () => ({
   orcamento: {
@@ -16,7 +16,7 @@ jest.mock("@/pages/api/middleware/jwt-auth", () => ({
   verifyToken: jest.fn(),
 }))
 
-jest.mock("@/utils/flowUtils", () => ({
+jest.mock("@/utils/cashflow/flowBudget", () => ({
   realocarFluxo: jest.fn(),
 }))
 

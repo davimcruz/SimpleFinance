@@ -2,7 +2,7 @@ import { NextApiRequest, NextApiResponse } from "next"
 import { verifyToken } from "../middleware/jwt-auth"
 import prisma from "@/lib/prisma"
 import { createFlowSchema } from "@/lib/validation"
-import { realocarFluxo } from "@/utils/flowUtils"
+import { realocarFluxo } from "@/utils/cashflow/flowBudget"
 import Redis from "ioredis"
 import { z } from "zod"
 
@@ -84,9 +84,9 @@ export default async function handler(
       userId,
       mes: Number(mes),
       ano: anoAtual,
-      receita: receitaOrcada,
-      despesa: despesaOrcada,
-      saldo: 0,
+      receitaOrcada,
+      despesaOrcada,
+      saldoOrcado: 0,
       status: 'neutro',
     }))
 
