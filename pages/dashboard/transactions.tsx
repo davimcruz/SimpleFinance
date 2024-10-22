@@ -38,6 +38,7 @@ const Transactions = ({
           name="viewport"
           content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
         />
+        <link rel="icon" href="/favicon.ico" type="image/x-icon" />
       </Head>
       <div className={`${inter.className} flex min-h-screen w-full flex-col`}>
         <Header userImage={user?.image} />
