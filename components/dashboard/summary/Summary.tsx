@@ -17,10 +17,6 @@ const Summary: React.FC<SummaryProps> = ({ initialData }) => {
   const [summaryData, setSummaryData] = useState<SummaryData | null>(
     initialData
   )
-  const [flowData, setFlowData] = useState<{
-    saldoOrcado: number
-    mesAtual: string
-  } | null>(null)
   const [loading, setLoading] = useState<boolean>(!initialData)
   const [error, setError] = useState<boolean>(false)
 
@@ -45,23 +41,13 @@ const Summary: React.FC<SummaryProps> = ({ initialData }) => {
         return
       }
 
-      const [summaryResponse, budgetResponse] = await Promise.all([
-        fetchSummaryData(),
-        fetch(`/api/cashflow/get-monthly?userId=${userId}`),
-      ])
-
+      const summaryResponse = await fetchSummaryData()
       const summaryData = await summaryResponse
-      const flowData = await budgetResponse.json()
 
-      if (
-        summaryData &&
-        flowData &&
-        typeof flowData.saldoOrcado === "number"
-      ) {
+      if (summaryData) {
         setSummaryData(summaryData)
-        setFlowData(flowData)
       } else {
-        console.error("Erro ao carregar os dados")
+        console.error("Erro ao carregar os dados do resumo")
         setError(true)
       }
     } catch (error) {
@@ -91,6 +77,9 @@ const Summary: React.FC<SummaryProps> = ({ initialData }) => {
     )
   }
 
+  const cookies = parseCookies()
+  const userId = cookies.userId
+
   return (
     <div className="grid gap-4 md:grid-cols-2 md:gap-8 lg:grid-cols-4">
       <>
@@ -110,10 +99,7 @@ const Summary: React.FC<SummaryProps> = ({ initialData }) => {
           annualBalance={summaryData?.annualBalance || "R$ 0,00"}
           annualBalanceMessage={summaryData?.annualBalanceMessage || ""}
         />
-        <BudgetCard
-          totalOrcamento={flowData?.saldoOrcado || 0}
-          mesAtual={flowData?.mesAtual || ""}
-        />
+        {userId && <BudgetCard userId={userId} />}
       </>
     </div>
   )
